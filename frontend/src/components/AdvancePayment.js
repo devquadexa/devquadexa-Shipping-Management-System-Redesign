@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import API_BASE from '../api/config';
 
-function AdvancePayment({ job, onUpdate }) {
+function AdvancePayment({ job, onUpdate, hideTitle }) {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [showSlotsModal, setShowSlotsModal] = useState(false);
@@ -344,10 +344,14 @@ function AdvancePayment({ job, onUpdate }) {
 
   return (
     <div>
-      <div className="font-semibold text-gray-900 mb-2">Advance Payments</div>
-      <p className="text-sm text-gray-600 mb-4">
-        Record and track advance payments received for this job
-      </p>
+      {!hideTitle && (
+        <>
+          <div className="font-semibold text-gray-900 mb-2">Advance Payments</div>
+          <p className="text-sm text-gray-600 mb-4">
+            Record and track advance payments received for this job
+          </p>
+        </>
+      )}
 
       {message && (
         <div className={`mb-4 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>

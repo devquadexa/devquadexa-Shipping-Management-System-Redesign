@@ -18,6 +18,7 @@ function Jobs() {
   const [transporters, setTransporters] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [collapsedSections, setCollapsedSections] = useState({});
   const [selectedJob, setSelectedJob] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -464,6 +465,18 @@ function Jobs() {
     setExpandedRow(null);
   };
 
+  const toggleSection = (jobId, section) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [`${jobId}-${section}`]: !prev[`${jobId}-${section}`]
+    }));
+  };
+
+  const isSectionCollapsed = (jobId, section) => {
+    // Default to collapsed (true) if not explicitly set
+    return collapsedSections[`${jobId}-${section}`] !== false;
+  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex items-start justify-between mb-8">
@@ -759,18 +772,52 @@ function Jobs() {
                         
                         {/* Office Pay Items Section */}
                         <div className="mt-8 pt-6 border-t border-gray-200">
-                          <OfficePayItems 
-                            jobId={job.jobId} 
-                            onUpdate={fetchJobs}
-                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleSection(job.jobId, 'officePay')}
+                            className="w-full flex items-center justify-between text-left mb-2"
+                          >
+                            <span className="font-semibold text-gray-900">Office Pay Items</span>
+                            <svg
+                              className={`w-5 h-5 text-gray-500 transition-transform ${isSectionCollapsed(job.jobId, 'officePay') ? '' : 'rotate-180'}`}
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                          {!isSectionCollapsed(job.jobId, 'officePay') && (
+                            <OfficePayItems 
+                              jobId={job.jobId} 
+                              onUpdate={fetchJobs}
+                              hideTitle={true}
+                            />
+                          )}
                         </div>
                         
                         {/* Advance Payment Section */}
                         <div className="mt-8 pt-6 border-t border-gray-200">
-                          <AdvancePayment 
-                            job={job} 
-                            onUpdate={fetchJobs}
-                          />
+                          <button
+                            type="button"
+                            onClick={() => toggleSection(job.jobId, 'advancePayment')}
+                            className="w-full flex items-center justify-between text-left mb-2"
+                          >
+                            <span className="font-semibold text-gray-900">Advance Payments</span>
+                            <svg
+                              className={`w-5 h-5 text-gray-500 transition-transform ${isSectionCollapsed(job.jobId, 'advancePayment') ? '' : 'rotate-180'}`}
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                          {!isSectionCollapsed(job.jobId, 'advancePayment') && (
+                            <AdvancePayment 
+                              job={job} 
+                              onUpdate={fetchJobs}
+                              hideTitle={true}
+                            />
+                          )}
                         </div>
                         
                         {/* Petty Cash Section */}
