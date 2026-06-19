@@ -911,10 +911,25 @@ class MSSQLJobRepository extends IJobRepository {
     // Merge office pay items from JSON and table (prefer table data)
     const finalOfficePayItems = officePayItems.length > 0 ? officePayItems : officePayItemsFromJson;
     
+    // Look up customer name from Customers table
+    let customerName = null;
+    try {
+      const pool = await this.db();
+      const customerResult = await pool.request()
+        .input('customerId', this.sql.VarChar, row.CustomerId)
+        .query('SELECT Name FROM Customers WHERE CustomerId = @customerId');
+      if (customerResult.recordset.length > 0) {
+        customerName = customerResult.recordset[0].Name;
+      }
+    } catch (error) {
+      console.log('Could not fetch customer name:', error.message);
+    }
+    
     // Create and return Job entity instance
     const job = new Job({
       jobId: row.JobId,
       customerId: row.CustomerId,
+      customerName: customerName,
       blNumber: row.BLNumber,
       cusdecNumber: row.CUSDECNumber,
       cusdecDate: row.CUSDECDate,

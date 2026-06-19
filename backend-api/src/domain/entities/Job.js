@@ -6,6 +6,7 @@ class Job {
   constructor({
     jobId,
     customerId,
+    customerName = null,
     blNumber = null,
     cusdecNumber = null,
     cusdecDate = null,
@@ -37,6 +38,7 @@ class Job {
   }) {
     this.jobId = jobId;
     this.customerId = customerId;
+    this.customerName = customerName;
     this.blNumber = blNumber;
     this.cusdecNumber = cusdecNumber;
     this.cusdecDate = cusdecDate;
@@ -198,6 +200,7 @@ class Job {
     return {
       jobId: this.jobId,
       customerId: this.customerId,
+      customerName: this.customerName,
       blNumber: this.blNumber,
       cusdecNumber: this.cusdecNumber,
       cusdecDate: this.cusdecDate,

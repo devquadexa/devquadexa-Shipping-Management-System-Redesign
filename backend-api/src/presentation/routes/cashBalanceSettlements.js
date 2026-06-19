@@ -9,10 +9,10 @@ const { auth, checkRole } = require('../../middleware/auth');
 module.exports = (container) => {
   const cashBalanceSettlementController = container.get('CashBalanceSettlementController');
 
-  // Create a new settlement request (Waff Clerk only)
+  // Create a new settlement request (Waff Clerk or Manager)
   router.post('/', 
     auth, 
-    checkRole('Waff Clerk'), 
+    checkRole('Waff Clerk', 'Manager', 'Admin', 'Super Admin'), 
     (req, res) => cashBalanceSettlementController.createSettlement(req, res)
   );
 
