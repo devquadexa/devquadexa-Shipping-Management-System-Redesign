@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Pagination from './Pagination';
-import '../styles/PaymentManagement.css';
 import apiClient from '../api/client';
 
 function PaymentManagement() {
@@ -207,30 +206,33 @@ function PaymentManagement() {
 
   if (!hasAccess()) {
     return (
-      <div className="payment-management-container">
-        <div className="alert alert-error">Access Denied: Admin, Super Admin, or Manager only.</div>
+      <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
+        Access Denied: Admin, Super Admin, or Manager only.
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="payment-management-container">
-        <div className="loading-state"><div className="spinner"></div><p>Loading payment data...</p></div>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+          <p className="text-gray-600">Loading payment data...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="payment-management-container">
+    <div className="bg-white rounded-lg shadow-sm">
 
       {/* ── Header ── */}
-      <div className="pm-header">
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <div>
-          <h1 className="pm-title">Payment Management</h1>
-          <p className="pm-subtitle">Track cheques, bank transfers and cash payments linked to invoices</p>
+          <h1 className="text-2xl font-bold text-gray-900">Payment Management</h1>
+          <p className="text-gray-600 text-sm mt-1">Track cheques, bank transfers and cash payments linked to invoices</p>
         </div>
-        <button onClick={fetchPayments} className="pm-refresh-btn">
+        <button onClick={fetchPayments} className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition font-medium">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
           </svg>
@@ -239,38 +241,38 @@ function PaymentManagement() {
       </div>
 
       {message && (
-        <div className={`pm-alert ${message.includes('Error') ? 'pm-alert-error' : 'pm-alert-success'}`}>
+        <div className={`m-6 p-4 rounded-lg font-medium ${message.includes('Error') ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-green-50 text-green-800 border border-green-200'}`}>
           {message}
         </div>
       )}
 
       {/* ── Controls ── */}
-      <div className="pm-controls">
-        <div className="pm-tabs">
-          <button className={`pm-tab ${activeTab === 'cheques' ? 'active' : ''}`} onClick={() => setActiveTab('cheques')}>
+      <div className="p-6 space-y-4">
+        <div className="flex border-b border-gray-200 gap-0">
+          <button className={`flex items-center gap-2 px-6 py-4 font-medium transition ${activeTab === 'cheques' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`} onClick={() => setActiveTab('cheques')}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
             </svg>
-            Cheques <span className="pm-tab-count">{chequeGroups.length}</span>
+            Cheques <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">{chequeGroups.length}</span>
           </button>
-          <button className={`pm-tab ${activeTab === 'bank' ? 'active' : ''}`} onClick={() => setActiveTab('bank')}>
+          <button className={`flex items-center gap-2 px-6 py-4 font-medium transition ${activeTab === 'bank' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`} onClick={() => setActiveTab('bank')}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
             </svg>
-            Bank Transfers <span className="pm-tab-count">{bankTransfers.length}</span>
+            Bank Transfers <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">{bankTransfers.length}</span>
           </button>
-          <button className={`pm-tab ${activeTab === 'cash' ? 'active' : ''}`} onClick={() => setActiveTab('cash')}>
+          <button className={`flex items-center gap-2 px-6 py-4 font-medium transition ${activeTab === 'cash' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`} onClick={() => setActiveTab('cash')}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/>
               <path d="M6 12h.01M18 12h.01"/>
             </svg>
-            Cash <span className="pm-tab-count">{cashPayments.length}</span>
+            Cash <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs font-semibold">{cashPayments.length}</span>
           </button>
         </div>
 
-        <div className="pm-filters">
-          <div className="pm-search">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3 top-3 text-gray-400">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
@@ -282,10 +284,11 @@ function PaymentManagement() {
               }
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
           {activeTab !== 'cash' && (
-            <select className="pm-filter-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+            <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
               <option value="All">All Status</option>
               <option value="Pending">Pending</option>
               <option value="Cleared">Cleared / Deposited</option>
@@ -297,122 +300,104 @@ function PaymentManagement() {
 
       {/* ── Cheques Table ── */}
       {activeTab === 'cheques' && (
-        <div className="pm-table-card">
+        <div className="p-6">
           {paginatedList.length === 0 ? (
-            <div className="pm-empty">
-              <div className="pm-empty-icon">📋</div>
-              <p>{searchTerm ? 'No cheques match your search' : 'No cheque payments recorded yet'}</p>
+            <div className="text-center py-12">
+              <div className="text-4xl mb-3">📋</div>
+              <p className="text-gray-600">{searchTerm ? 'No cheques match your search' : 'No cheque payments recorded yet'}</p>
             </div>
           ) : (
             <>
-              <div className="pm-table-wrap">
-                <table className="pm-table">
+              <div className="overflow-x-auto">
+                <table className="w-full">
                   <thead>
-                    <tr>
-                      <th>Cheque No.</th>
-                      <th>Cheque Date</th>
-                      <th>Customer</th>
-                      <th>Cheque Amount</th>
-                      <th>Allocated</th>
-                      <th>Balance</th>
-                      <th>Jobs</th>
-                      <th>Actions</th>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cheque No.</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cheque Date</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Customer</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cheque Amount</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Allocated</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Balance</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Jobs</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedList.map((group) => (
                       <React.Fragment key={group.chequeNumber}>
-                        <tr className={expandedCheque === group.chequeNumber ? 'pm-row-expanded' : ''}>
-                          <td data-label="Cheque No.">
-                            <span className="pm-cheque-num">{group.chequeNumber || '-'}</span>
+                        <tr className="border-b border-gray-200 hover:bg-gray-50 transition">
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-900">{group.chequeNumber || '-'}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{formatDate(group.chequeDate)}</td>
+                          <td className="px-6 py-4 text-sm">
+                            <div className="font-medium text-gray-900">{group.customerName || '-'}</div>
+                            <div className="text-xs text-gray-500">{group.customerId}</div>
                           </td>
-                          <td data-label="Cheque Date">{formatDate(group.chequeDate)}</td>
-                          <td data-label="Customer">
-                            <div className="pm-customer-name">{group.customerName || '-'}</div>
-                            <div className="pm-customer-id">{group.customerId}</div>
-                          </td>
-                          <td data-label="Cheque Amount">
-                            <span className="pm-amount-cheque">{formatCurrency(group.chequeAmount)}</span>
-                          </td>
-                          <td data-label="Allocated">
-                            <span className="pm-amount-allocated">{formatCurrency(group.totalAllocated)}</span>
-                          </td>
-                          <td data-label="Balance">
-                            <span className={`pm-amount-balance ${group.remainingBalance < 0 ? 'negative' : group.remainingBalance === 0 ? 'zero' : ''}`}>
+                          <td className="px-6 py-4 text-sm font-semibold text-gray-900">{formatCurrency(group.chequeAmount)}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(group.totalAllocated)}</td>
+                          <td className="px-6 py-4 text-sm">
+                            <span className={`font-semibold ${group.remainingBalance < 0 ? 'text-red-700' : group.remainingBalance === 0 ? 'text-green-700' : 'text-gray-900'}`}>
                               {formatCurrency(group.remainingBalance)}
                             </span>
                           </td>
-                          <td data-label="Jobs">
-                            <span className="pm-job-count">{group.invoices.length} job{group.invoices.length !== 1 ? 's' : ''}</span>
-                          </td>
-                          <td data-label="Actions">
-                            <div className="pm-actions">
-                              <button
-                                className="pm-btn pm-btn-view"
-                                onClick={() => setExpandedCheque(expandedCheque === group.chequeNumber ? null : group.chequeNumber)}
-                              >
-                                {expandedCheque === group.chequeNumber ? 'Hide' : 'View'}
-                              </button>
-                            </div>
+                          <td className="px-6 py-4 text-sm text-gray-600">{group.invoices.length} job{group.invoices.length !== 1 ? 's' : ''}</td>
+                          <td className="px-6 py-4 text-sm">
+                            <button
+                              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition text-xs font-medium"
+                              onClick={() => setExpandedCheque(expandedCheque === group.chequeNumber ? null : group.chequeNumber)}
+                            >
+                              {expandedCheque === group.chequeNumber ? 'Hide' : 'View'}
+                            </button>
                           </td>
                         </tr>
 
                         {/* ── Expanded Cheque Detail ── */}
                         {expandedCheque === group.chequeNumber && (
-                          <tr className="pm-detail-row">
-                            <td colSpan="8">
-                              <div className="pm-detail-panel">
-                                <div className="pm-invoices-section">
-                                  <div className="pm-detail-section-title">
+                          <tr className="border-b border-gray-200 bg-gray-50">
+                            <td colSpan="8" className="px-6 py-6">
+                              <div className="space-y-4">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-4 font-semibold text-gray-900">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
                                     </svg>
                                     Invoices Covered by This Cheque ({group.invoices.length})
                                   </div>
 
-                                  {/* Header row */}
-                                  <div className="pm-inv-header">
-                                    <div className="pm-inv-col pm-inv-num">#</div>
-                                    <div className="pm-inv-col pm-inv-job">Job ID / CUSDEC Number</div>
-                                    <div className="pm-inv-col pm-inv-invoice">Invoice No.</div>
-                                    <div className="pm-inv-col pm-inv-amount-col">Invoice Amount</div>
-                                    <div className="pm-inv-col pm-inv-date">Payment Date</div>
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                      <thead>
+                                        <tr className="border-b border-gray-300 bg-gray-100">
+                                          <th className="px-4 py-2 text-left font-semibold text-gray-700">#</th>
+                                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Job ID / CUSDEC Number</th>
+                                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Invoice No.</th>
+                                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Invoice Amount</th>
+                                          <th className="px-4 py-2 text-left font-semibold text-gray-700">Payment Date</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {group.invoices.map((inv, i) => (
+                                          <tr key={i} className="border-b border-gray-200 hover:bg-white transition">
+                                            <td className="px-4 py-2 text-gray-900 font-medium">{i + 1}</td>
+                                            <td className="px-4 py-2 text-gray-900">
+                                              {inv.cusdecNumber && inv.cusdecNumber.trim() ? (
+                                                <span>{inv.jobId || '-'} / {formatCusdecNumberForDisplay(inv.cusdecNumber)}</span>
+                                              ) : (
+                                                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">{inv.jobId}</span>
+                                              )}
+                                            </td>
+                                            <td className="px-4 py-2 text-gray-600">{inv.invoiceNumber || '—'}</td>
+                                            <td className="px-4 py-2 text-gray-900 font-semibold">LKR {new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(inv.amount||0)}</td>
+                                            <td className="px-4 py-2 text-gray-600">{formatDate(inv.paymentDate)}</td>
+                                          </tr>
+                                        ))}
+                                        <tr className="border-t-2 border-gray-300 bg-gray-100">
+                                          <td colSpan="2" className="px-4 py-2 font-semibold text-gray-900">Total Allocated</td>
+                                          <td colSpan="2"></td>
+                                          <td className="px-4 py-2 font-semibold text-gray-900">LKR {new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(group.totalAllocated||0)}</td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
                                   </div>
-
-                                  {/* Data rows */}
-                                  <div className="pm-inv-body">
-                                    {group.invoices.map((inv, i) => (
-                                      <div key={i} className="pm-inv-row">
-                                        <div className="pm-inv-col pm-inv-num pm-inv-num-val">{i + 1}</div>
-                                        <div className="pm-inv-col pm-inv-job">
-                                          {inv.cusdecNumber && inv.cusdecNumber.trim() ? (
-                                            <span className="pm-job-cusdec-combined">{inv.jobId || '-'} / {formatCusdecNumberForDisplay(inv.cusdecNumber)}</span>
-                                          ) : (
-                                            <span className="pm-job-badge">{inv.jobId}</span>
-                                          )}
-                                        </div>
-                                        <div className="pm-inv-col pm-inv-invoice">
-                                          {inv.invoiceNumber || <span style={{color:'#9ca3af'}}>—</span>}
-                                        </div>
-                                        <div className="pm-inv-col pm-inv-amount-col pm-inv-amount-val">
-                                          LKR {new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(inv.amount||0)}
-                                        </div>
-                                        <div className="pm-inv-col pm-inv-date">{formatDate(inv.paymentDate)}</div>
-                                      </div>
-                                    ))}
-
-                                    {/* Total row */}
-                                    <div className="pm-inv-row pm-inv-total-row">
-                                      <div className="pm-inv-col pm-inv-num"></div>
-                                      <div className="pm-inv-col pm-inv-job pm-inv-total-label">Total Allocated</div>
-                                      <div className="pm-inv-col pm-inv-invoice"></div>
-                                      <div className="pm-inv-col pm-inv-amount-col pm-inv-amount-val">
-                                        LKR {new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(group.totalAllocated||0)}
-                                      </div>
-                                      <div className="pm-inv-col pm-inv-date"></div>
-                                    </div>
-                                  </div>
-
                                 </div>
                               </div>
                             </td>
@@ -440,50 +425,52 @@ function PaymentManagement() {
 
       {/* ── Bank Transfers Table ── */}
       {activeTab === 'bank' && (
-        <div className="pm-table-card">
+        <div className="p-6">
           {paginatedList.length === 0 ? (
-            <div className="pm-empty">
-              <div className="pm-empty-icon">🏦</div>
-              <p>{searchTerm ? 'No transfers match your search' : 'No bank transfer payments recorded yet'}</p>
+            <div className="text-center py-12">
+              <div className="text-4xl mb-3">🏦</div>
+              <p className="text-gray-600">{searchTerm ? 'No transfers match your search' : 'No bank transfer payments recorded yet'}</p>
             </div>
           ) : (
             <>
-              <div className="pm-table-wrap">
-                <table className="pm-table">
+              <div className="overflow-x-auto">
+                <table className="w-full">
                   <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Customer</th>
-                      <th>Bank</th>
-                      <th>Job ID</th>
-                      <th>Invoice No.</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Customer</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Bank</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Job ID</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Invoice No.</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Amount</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedList.map(p => (
-                      <tr key={p.paymentId}>
-                        <td data-label="Date">{formatDate(p.paymentDate)}</td>
-                        <td data-label="Customer">
-                          <div className="pm-customer-name">{p.customerName || '-'}</div>
+                      <tr key={p.paymentId} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(p.paymentDate)}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <div className="font-medium text-gray-900">{p.customerName || '-'}</div>
                         </td>
-                        <td data-label="Bank">{p.bankName || '-'}</td>
-                        <td data-label="Job ID"><span className="pm-job-badge">{p.jobId}</span></td>
-                        <td data-label="Invoice No.">{p.invoiceNumber || '-'}</td>
-                        <td data-label="Amount"><span className="pm-amount-cheque">{formatCurrency(p.amount)}</span></td>
-                        <td data-label="Status">
-                          <span className={`pm-status pm-status-${(p.status || 'pending').toLowerCase()}`}>{p.status || 'Pending'}</span>
+                        <td className="px-6 py-4 text-sm text-gray-600">{p.bankName || '-'}</td>
+                        <td className="px-6 py-4 text-sm"><span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">{p.jobId}</span></td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{p.invoiceNumber || '-'}</td>
+                        <td className="px-6 py-4 text-sm font-semibold text-gray-900">{formatCurrency(p.amount)}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            (p.status || 'pending').toLowerCase() === 'cleared' ? 'bg-green-100 text-green-800' :
+                            (p.status || 'pending').toLowerCase() === 'bounced' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>{p.status || 'Pending'}</span>
                         </td>
-                        <td data-label="Actions">
-                          <div className="pm-actions">
-                            {p.status === 'Pending' && (
-                              <button className="pm-btn pm-btn-clear" onClick={() => updatePaymentStatus(p.paymentId, 'Cleared')}>
-                                Confirm
-                              </button>
-                            )}
-                          </div>
+                        <td className="px-6 py-4 text-sm">
+                          {p.status === 'Pending' && (
+                            <button className="px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded transition text-xs font-medium" onClick={() => updatePaymentStatus(p.paymentId, 'Cleared')}>
+                              Confirm
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -506,52 +493,44 @@ function PaymentManagement() {
       )}
       {/* ── Cash Payments Table ── */}
       {activeTab === 'cash' && (
-        <div className="pm-table-card">
+        <div className="p-6">
           {paginatedList.length === 0 ? (
-            <div className="pm-empty">
-              <div className="pm-empty-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                </svg>
-              </div>
-              <p>{searchTerm ? 'No cash payments match your search' : 'No cash payments recorded yet'}</p>
+            <div className="text-center py-12">
+              <div className="text-4xl mb-3">💵</div>
+              <p className="text-gray-600">{searchTerm ? 'No cash payments match your search' : 'No cash payments recorded yet'}</p>
             </div>
           ) : (
             <>
-              <div className="pm-table-wrap">
-                <table className="pm-table">
+              <div className="overflow-x-auto">
+                <table className="w-full">
                   <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Customer</th>
-                      <th>Job ID</th>
-                      <th>Invoice No.</th>
-                      <th>Amount</th>
-                      <th>Notes</th>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Date</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Customer</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Job ID</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Invoice No.</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Amount</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Notes</th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedList.map(p => (
-                      <tr key={p.paymentId}>
-                        <td data-label="Date">{formatDate(p.paymentDate)}</td>
-                        <td data-label="Customer">
-                          <div className="pm-customer-name">{p.customerName || '-'}</div>
-                          <div className="pm-customer-id">{p.customerId}</div>
+                      <tr key={p.paymentId} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(p.paymentDate)}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <div className="font-medium text-gray-900">{p.customerName || '-'}</div>
+                          <div className="text-xs text-gray-500">{p.customerId}</div>
                         </td>
-                        <td data-label="Job ID">
+                        <td className="px-6 py-4 text-sm">
                           {p.cusdecNumber && p.cusdecNumber.trim() ? (
-                            <span className="pm-job-cusdec-combined">{p.jobId} / {formatCusdecNumberForDisplay(p.cusdecNumber)}</span>
+                            <span>{p.jobId} / {formatCusdecNumberForDisplay(p.cusdecNumber)}</span>
                           ) : (
-                            <span className="pm-job-badge">{p.jobId}</span>
+                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">{p.jobId}</span>
                           )}
                         </td>
-                        <td data-label="Invoice No.">{p.invoiceNumber || '-'}</td>
-                        <td data-label="Amount">
-                          <span className="pm-amount-cheque">{formatCurrency(p.amount)}</span>
-                        </td>
-                        <td data-label="Notes">
-                          <span style={{ color: '#6b7280', fontSize: '13px' }}>{p.notes || '-'}</span>
-                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{p.invoiceNumber || '-'}</td>
+                        <td className="px-6 py-4 text-sm font-semibold text-gray-900">{formatCurrency(p.amount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{p.notes || '-'}</td>
                       </tr>
                     ))}
                   </tbody>

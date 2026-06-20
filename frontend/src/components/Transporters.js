@@ -5,7 +5,6 @@ import { transporterService } from '../api/services/transporterService';
 import { jobService } from '../api/services/jobService';
 import { billingService } from '../api/services/billingService';
 import { formatDate, formatDateWithMonth } from '../utils/dateFormatter';
-import '../styles/Transporters.css';
 
 const initialFormData = {
   name: '',
@@ -887,29 +886,28 @@ function Transporters() {
 
   if (!canViewTransporters) {
     return (
-      <div className="container">
-        <div className="alert alert-error">Access Denied</div>
+      <div className="w-full max-w-7xl mx-auto px-4 py-6">
+        <div className="bg-red-100 text-red-800 px-4 py-3 rounded-lg border border-red-300">Access Denied</div>
       </div>
     );
   }
 
   return (
-    <>
-    <div className="container transporters-page">
-      <div className="page-header">
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h1>Transporters</h1>
-          <p>Manage transporter details and contact information</p>
+          <h1 className="text-3xl font-bold text-gray-900">Transporters</h1>
+          <p className="text-gray-600 mt-1">Manage transporter details and contact information</p>
         </div>
         {canManageTransporters && (
-          <button onClick={openCreateModal} className="btn btn-primary">
+          <button onClick={openCreateModal} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
             + New Transporter
           </button>
         )}
       </div>
 
       {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+        <div className={`mb-6 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>
           {message}
         </div>
       )}
@@ -917,127 +915,133 @@ function Transporters() {
       {(() => {
         const summary = calculateTransporterSummary();
         return (
-          <div className="summary-cards-container">
-            <div className="summary-card">
-              <div className="summary-card-icon">👥</div>
-              <div className="summary-card-content">
-                <div className="summary-card-label">Total Transporters</div>
-                <div className="summary-card-value">{summary.totalTransporters}</div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">👥</span>
+                <div>
+                  <div className="text-xs font-medium text-gray-500">Total Transporters</div>
+                  <div className="text-xl font-bold text-gray-900">{summary.totalTransporters}</div>
+                </div>
               </div>
             </div>
-            <div className="summary-card">
-              <div className="summary-card-icon">📋</div>
-              <div className="summary-card-content">
-                <div className="summary-card-label">With Jobs</div>
-                <div className="summary-card-value">{summary.transportersWithJobs}</div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">📋</span>
+                <div>
+                  <div className="text-xs font-medium text-gray-500">With Jobs</div>
+                  <div className="text-xl font-bold text-gray-900">{summary.transportersWithJobs}</div>
+                </div>
               </div>
             </div>
-            <div className="summary-card paid">
-              <div className="summary-card-icon">✅</div>
-              <div className="summary-card-content">
-                <div className="summary-card-label">Paid</div>
-                <div className="summary-card-value">{summary.paidTransporters}</div>
-                <div className="summary-card-amount">LKR {formatAmount(summary.totalPaidAmount)}</div>
+            <div className="bg-white rounded-lg border-l-4 border-l-green-500 border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">✅</span>
+                <div>
+                  <div className="text-xs font-medium text-gray-500">Paid</div>
+                  <div className="text-xl font-bold text-gray-900">{summary.paidTransporters}</div>
+                  <div className="text-xs text-green-600 mt-0.5">LKR {formatAmount(summary.totalPaidAmount)}</div>
+                </div>
               </div>
             </div>
-            <div className="summary-card unpaid">
-              <div className="summary-card-icon">⏳</div>
-              <div className="summary-card-content">
-                <div className="summary-card-label">Unpaid</div>
-                <div className="summary-card-value">{summary.unpaidTransporters}</div>
-                <div className="summary-card-amount">LKR {formatAmount(summary.totalUnpaidAmount)}</div>
+            <div className="bg-white rounded-lg border-l-4 border-l-orange-500 border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">⏳</span>
+                <div>
+                  <div className="text-xs font-medium text-gray-500">Unpaid</div>
+                  <div className="text-xl font-bold text-gray-900">{summary.unpaidTransporters}</div>
+                  <div className="text-xs text-orange-600 mt-0.5">LKR {formatAmount(summary.totalUnpaidAmount)}</div>
+                </div>
               </div>
             </div>
           </div>
         );
       })()}
 
-      <div className="card">
-        <div className="card-header">
-          <h2>All Transporters ({filteredTransporters.length})</h2>
-          <div className="search-box">
+      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">All Transporters ({filteredTransporters.length})</h2>
+          <div className="relative">
+            <svg className="absolute left-3 top-3 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
             <input
               type="text"
-              placeholder="Search by transporter, contact, phone, email, or registration date..."
+              placeholder="Search by transporter, contact, phone, email, or date..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              className="search-input"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
         </div>
 
         {filteredTransporters.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">🚚</div>
-            <p>{searchTerm ? 'No transporters found matching your search' : 'No transporters added yet'}</p>
+          <div className="p-12 text-center">
+            <svg className="mx-auto mb-4 text-gray-400" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 1 0 4 0m0 0a2 2 0 1 1 4 0m-6 9l2 2m0 0l2-2m-2 2v-6"></path>
+            </svg>
+            <p className="text-gray-600">{searchTerm ? 'No transporters found matching your search' : 'No transporters added yet'}</p>
           </div>
         ) : (
-          <div className="transporters-table-wrapper">
-            <table className="transporters-table">
-              <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th>Transporter ID</th>
-                  <th>Name</th>
-                  <th>Main Phone</th>
-                  <th>Email</th>
-                  <th>Registration Date</th>
-                  <th>Contact Person</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Transporter ID</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Main Phone</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Registration Date</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Contact Person</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {filteredTransporters.map((transporter) => (
                   (() => {
                     const assignedJobs = getAssignedJobs(transporter);
                     return (
                   <React.Fragment key={transporter.transporterId}>
-                    <tr className={expandedRow === transporter.transporterId ? 'expanded' : ''}>
-                      <td data-label="Transporter ID"><strong className="cell-value transporter-id">{transporter.transporterId}</strong></td>
-                      <td data-label="Name"><span className="cell-value">{transporter.name}</span></td>
-                      <td data-label="Main Phone"><span className="cell-value">{transporter.mainPhone || transporter.phone}</span></td>
-                      <td data-label="Email"><span className="cell-value">{transporter.email || '-'}</span></td>
-                      <td data-label="Registration Date">
-                        <span className="cell-value">{formatDate(transporter.registrationDate)}</span>
-                      </td>
-                      <td data-label="Contact Person"><span className="cell-value">{transporter.contactPersons?.[0]?.name || transporter.contactPerson || '-'}</span></td>
-                      <td data-label="Status">
-                        <span className={`status-badge cell-value ${transporter.isActive ? 'status-active' : 'status-inactive'}`}>
+                    <tr className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-4 text-sm font-semibold text-blue-600">{transporter.transporterId}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{transporter.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{transporter.mainPhone || transporter.phone}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{transporter.email || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{formatDate(transporter.registrationDate)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{transporter.contactPersons?.[0]?.name || transporter.contactPerson || '-'}</td>
+                      <td className="px-6 py-4 text-sm">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${transporter.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                           {transporter.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
-                      <td data-label="Actions">
-                        <div className="row-actions transporter-actions">
-                          {canManageTransporters && (
-                            <button
-                              type="button"
-                              className="btn-action btn-edit"
-                              onClick={() => openEditModal(transporter)}
-                              title="Edit Transporter"
-                            >
-                              Edit
-                            </button>
-                          )}
+                      <td className="px-6 py-4 text-sm flex gap-2">
+                        {canManageTransporters && (
                           <button
-                            type="button"
-                            className="btn-action btn-view"
-                            onClick={() => setExpandedRow(expandedRow === transporter.transporterId ? null : transporter.transporterId)}
-                            title="View Details"
+                            onClick={() => openEditModal(transporter)}
+                            className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition text-xs font-medium"
                           >
-                            {expandedRow === transporter.transporterId ? 'Hide' : 'View'}
+                            Edit
                           </button>
-                        </div>
+                        )}
+                        <button
+                          onClick={() => setExpandedRow(expandedRow === transporter.transporterId ? null : transporter.transporterId)}
+                          className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded transition text-xs font-medium"
+                        >
+                          {expandedRow === transporter.transporterId ? 'Hide' : 'View'}
+                        </button>
                       </td>
                     </tr>
                     {expandedRow === transporter.transporterId && (
-                      <tr className="expanded-details">
-                        <td colSpan="8">
-                          <div className="details-grid">
-                            <div className="detail-section">
-                              <h4 className="section-title">Address Information</h4>
-                              <div className="detail-item-block">
-                                <span className="detail-label">Address:</span>
-                                <span className="detail-value-block">
+                      <tr className="bg-gray-50">
+                        <td colSpan="8" className="px-6 py-6">
+                          <div className="space-y-6">
+                            <div>
+                              <h4 className="font-bold text-gray-900 mb-2">Address Information</h4>
+                              <div>
+                                <span className="text-gray-600">Address: </span>
+                                <span className="text-gray-900">
                                   {[
                                     transporter.addressNumber,
                                     transporter.addressStreet1,
@@ -1052,54 +1056,57 @@ function Transporters() {
                               </div>
                             </div>
 
-                            <div className="detail-section">
-                              <h4 className="section-title">Contact Persons</h4>
+                            <div>
+                              <h4 className="font-bold text-gray-900 mb-2">Contact Persons</h4>
                               {transporter.contactPersons && transporter.contactPersons.length > 0 ? (
-                                <div className="contact-persons-list">
+                                <div className="space-y-2">
                                   {transporter.contactPersons.map((contactPerson, index) => (
-                                    <div key={index} className="contact-person-card">
-                                      <div className="contact-person-summary">
-                                        <div className="contact-name">{contactPerson.name}</div>
+                                    <div key={index} className="bg-white rounded border border-gray-200 p-3">
+                                      <div className="mb-2">
+                                        <div className="font-semibold text-gray-900">{contactPerson.name}</div>
                                         {contactPerson.designation && (
-                                          <div className="contact-designation">{contactPerson.designation}</div>
+                                          <div className="text-sm text-gray-600">{contactPerson.designation}</div>
                                         )}
                                       </div>
-                                      <div className="contact-person-hover-details">
-                                        <div className="contact-detail-row">
-                                          <span className="detail-label-small">Phone:</span>
-                                          <span className="detail-value-small">{contactPerson.phone || '-'}</span>
-                                          <button
-                                            className="btn-copy-small"
-                                            onClick={(event) => {
-                                              event.stopPropagation();
-                                              if (!contactPerson.phone) {
-                                                return;
-                                              }
-                                              navigator.clipboard.writeText(contactPerson.phone);
-                                              setMessage('Phone number copied!');
-                                              setTimeout(() => setMessage(''), 2000);
-                                            }}
-                                            title="Copy phone number"
-                                          >
-                                            Copy
-                                          </button>
+                                      <div className="space-y-1 text-sm">
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-gray-600">Phone:</span>
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-gray-900">{contactPerson.phone || '-'}</span>
+                                            {contactPerson.phone && (
+                                              <button
+                                                className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                                                onClick={(event) => {
+                                                  event.stopPropagation();
+                                                  navigator.clipboard.writeText(contactPerson.phone);
+                                                  setMessage('Phone number copied!');
+                                                  setTimeout(() => setMessage(''), 2000);
+                                                }}
+                                                title="Copy phone number"
+                                              >
+                                                Copy
+                                              </button>
+                                            )}
+                                          </div>
                                         </div>
                                         {contactPerson.email && (
-                                          <div className="contact-detail-row">
-                                            <span className="detail-label-small">Email:</span>
-                                            <span className="detail-value-small">{contactPerson.email}</span>
-                                            <button
-                                              className="btn-copy-small"
-                                              onClick={(event) => {
-                                                event.stopPropagation();
-                                                navigator.clipboard.writeText(contactPerson.email);
-                                                setMessage('Email copied!');
-                                                setTimeout(() => setMessage(''), 2000);
-                                              }}
-                                              title="Copy email"
-                                            >
-                                              Copy
-                                            </button>
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Email:</span>
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-gray-900">{contactPerson.email}</span>
+                                              <button
+                                                className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded text-gray-700"
+                                                onClick={(event) => {
+                                                  event.stopPropagation();
+                                                  navigator.clipboard.writeText(contactPerson.email);
+                                                  setMessage('Email copied!');
+                                                  setTimeout(() => setMessage(''), 2000);
+                                                }}
+                                                title="Copy email"
+                                              >
+                                                Copy
+                                              </button>
+                                            </div>
                                           </div>
                                         )}
                                       </div>
@@ -1107,81 +1114,79 @@ function Transporters() {
                                   ))}
                                 </div>
                               ) : (
-                                <div className="detail-value-block">No contact persons added</div>
+                                <div className="text-gray-600">No contact persons added</div>
                               )}
                             </div>
 
                             {canManageTransporters && (
-                              <div className="detail-section">
-                                <div className="detail-actions">
-                                  <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleDeactivate(transporter.transporterId)}
-                                    title="Deactivate Transporter"
-                                  >
-                                    Deactivate Transporter
-                                  </button>
-                                </div>
+                              <div>
+                                <button
+                                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
+                                  onClick={() => handleDeactivate(transporter.transporterId)}
+                                  title="Deactivate Transporter"
+                                >
+                                  Deactivate Transporter
+                                </button>
                               </div>
                             )}
 
-                            <div className="detail-section assigned-jobs-section">
-                              <div className="settlement-items-header">
-                                <span className="settlement-items-title">Assigned Jobs</span>
-                                <span className="settlement-items-count">{assignedJobs.length} job{assignedJobs.length !== 1 ? 's' : ''}</span>
+                            <div>
+                              <div className="flex justify-between items-center mb-4">
+                                <span className="font-bold text-gray-900">Assigned Jobs</span>
+                                <span className="text-sm text-gray-600">{assignedJobs.length} job{assignedJobs.length !== 1 ? 's' : ''}</span>
                               </div>
                               {assignedJobs.length === 0 ? (
-                                <div className="no-settlement-items">
-                                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+                                <div className="text-center py-8 bg-gray-50 rounded border border-gray-200">
+                                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" className="mx-auto mb-2">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                                     <polyline points="14 2 14 8 20 8"/>
                                   </svg>
-                                  <p>No jobs assigned to this transporter</p>
+                                  <p className="text-gray-600">No jobs assigned to this transporter</p>
                                 </div>
                               ) : (
                                 <>
-                                  <div className="date-range-filter">
-                                    <div className="filter-group">
-                                      <label>From Date:</label>
+                                  <div className="flex gap-4 mb-4 bg-gray-50 p-4 rounded">
+                                    <div className="flex-1">
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">From Date:</label>
                                       <input
                                         type="date"
                                         value={dateRangeFilter.startDate}
                                         onChange={(e) => setDateRangeFilter({...dateRangeFilter, startDate: e.target.value})}
-                                        className="filter-input"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                       />
                                     </div>
-                                    <div className="filter-group">
-                                      <label>To Date:</label>
+                                    <div className="flex-1">
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">To Date:</label>
                                       <input
                                         type="date"
                                         value={dateRangeFilter.endDate}
                                         onChange={(e) => setDateRangeFilter({...dateRangeFilter, endDate: e.target.value})}
-                                        className="filter-input"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                       />
                                     </div>
                                     {(dateRangeFilter.startDate || dateRangeFilter.endDate) && (
                                       <button
                                         onClick={() => setDateRangeFilter({startDate: '', endDate: ''})}
-                                        className="btn-clear-filter"
+                                        className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded text-sm font-medium self-end"
                                       >
                                         Clear Filter
                                       </button>
                                     )}
                                   </div>
-                                  <div className="settlement-review-table">
-                                  <div className="settlement-table-header">
-                                    <div className="settlement-header-cell settlement-num-col">#</div>
-                                    <div className="settlement-header-cell settlement-name-col">Job ID</div>
-                                    <div className="settlement-header-cell settlement-type-col">Category</div>
-                                    <div className="settlement-header-cell settlement-type-col">Delivery Date</div>
-                                    <div className="settlement-header-cell settlement-bill-col">Cost</div>
-                                    <div className="settlement-header-cell settlement-bill-col">Billing Amount</div>
-                                    <div className="settlement-header-cell settlement-bill-col">Paid Amount</div>
-                                    <div className="settlement-header-cell settlement-bill-col">Balance</div>
-                                    <div className="settlement-header-cell settlement-amount-col">Status</div>
-                                    <div className="settlement-header-cell settlement-actions-col">Action</div>
+                                  <div className="border border-gray-200 rounded overflow-hidden">
+                                  <div className="bg-gray-50 border-b border-gray-200 grid gap-0" style={{gridTemplateColumns: 'repeat(10, minmax(0, 1fr))'}}>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">#</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Job ID</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Category</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Delivery Date</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Cost</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Billing Amount</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Paid Amount</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Balance</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Status</div>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Action</div>
                                   </div>
-                                  <div className="settlement-table-body">
+                                  <div className="divide-y divide-gray-200">
                                     {assignedJobs.filter((job) => {
                                       if (!dateRangeFilter.startDate && !dateRangeFilter.endDate) {
                                         return true;
@@ -1204,208 +1209,203 @@ function Transporters() {
                                       return true;
                                     }).map((job, idx) => (
                                       <React.Fragment key={job.jobId}>
-                                        <div className="settlement-table-row">
-                                          <div className="settlement-table-cell settlement-num-col settlement-num">{idx + 1}</div>
-                                          <div className="settlement-table-cell settlement-name-col">
-                                            <span className="job-id-cell">
-                                              {job.jobId || '-'}{job.cusdecNumber && ` / ${job.cusdecNumber}`}
-                                            </span>
+                                        <div className="grid gap-0" style={{gridTemplateColumns: 'repeat(10, minmax(0, 1fr))'}}>
+                                          <div className="px-4 py-3 text-sm text-gray-900">{idx + 1}</div>
+                                          <div className="px-4 py-3 text-sm text-gray-900">
+                                            {job.jobId || '-'}{job.cusdecNumber && ` / ${job.cusdecNumber}`}
                                           </div>
-                                          <div className="settlement-table-cell settlement-type-col">
+                                          <div className="px-4 py-3 text-sm text-gray-900">
                                             {job.shipmentCategory || '-'}
                                           </div>
-                                          <div className="settlement-table-cell settlement-type-col">
+                                          <div className="px-4 py-3 text-sm text-gray-900">
                                             {formatDate(job.transportDeliveryDate)}
                                           </div>
-                                          <div className="settlement-table-cell settlement-bill-col">
+                                          <div className="px-4 py-3 text-sm">
                                             {getTransporterCostAmount(job) > 0 ? (
-                                              <span className="transporter-cost-amount">
+                                              <span className="text-gray-900 font-medium">
                                                 LKR {formatAmount(getTransporterCostAmount(job))}
                                               </span>
                                             ) : (
-                                              <span className="transporter-no-cost">-</span>
+                                              <span className="text-gray-400">-</span>
                                             )}
                                           </div>
-                                          <div className="settlement-table-cell settlement-bill-col">
+                                          <div className="px-4 py-3 text-sm">
                                             {getBillingAmount(job.jobId) > 0 ? (
-                                              <span className="billing-amount">
+                                              <span className="text-gray-900 font-medium">
                                                 LKR {formatAmount(getBillingAmount(job.jobId))}
                                               </span>
                                             ) : (
-                                              <span className="transporter-no-cost">-</span>
+                                              <span className="text-gray-400">-</span>
                                             )}
                                           </div>
-                                          <div className="settlement-table-cell settlement-bill-col">
+                                          <div className="px-4 py-3 text-sm">
                                             {getPaymentDetails(job)?.paidAmount > 0 ? (
-                                              <span className="paid-amount">
+                                              <span className="text-green-600 font-medium">
                                                 LKR {formatAmount(getPaymentDetails(job)?.paidAmount || 0)}
                                               </span>
                                             ) : (
-                                              <span className="transporter-no-cost">-</span>
+                                              <span className="text-gray-400">-</span>
                                             )}
                                           </div>
-                                          <div className="settlement-table-cell settlement-bill-col">
+                                          <div className="px-4 py-3 text-sm">
                                             {getRemainingTransporterCost(job) > 0 ? (
-                                              <span className="balance-amount">
+                                              <span className="text-orange-600 font-medium">
                                                 LKR {formatAmount(getRemainingTransporterCost(job))}
                                               </span>
                                             ) : (
-                                              <span className="transporter-no-cost">-</span>
+                                              <span className="text-gray-400">-</span>
                                             )}
                                           </div>
-                                          <div className="settlement-table-cell settlement-amount-col">
+                                          <div className="px-4 py-3 text-sm">
                                             {(() => {
                                               if (getTransporterCostAmount(job) > 0) {
                                                 if (isTransporterCostPaid(job)) {
-                                                  return <span className="transporter-paid-badge">Paid</span>;
+                                                  return <span className="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">Paid</span>;
                                                 } else if (isTransporterCostPartiallyPaid(job)) {
-                                                  return <span className="transporter-partial-badge">Partial</span>;
+                                                  return <span className="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">Partial</span>;
                                                 } else {
-                                                  return <span className="transporter-unpaid-badge">Unpaid</span>;
+                                                  return <span className="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">Unpaid</span>;
                                                 }
                                               } else {
-                                                return <span className="transporter-no-cost">-</span>;
+                                                return <span className="text-gray-400">-</span>;
                                               }
                                             })()}
                                           </div>
-                                          <div className="settlement-table-cell settlement-actions-col">
-                                            <div className="inline-action-btns">
-                                              {getTransporterCostAmount(job) > 0 && canPayTransporterCosts && !isTransporterCostPaid(job) ? (
-                                                <button
-                                                  type="button"
-                                                  className="inline-btn-edit"
-                                                  onClick={() => openPaymentModal(job)}
-                                                  title="Record payment"
-                                                >
-                                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                                </button>
-                                              ) : null}
-                                              {getTransporterCostAmount(job) > 0 && (
-                                                <button
-                                                  type="button"
-                                                  className="inline-btn-delete"
-                                                  onClick={() => handleViewPaymentDetails(job)}
-                                                  title={expandedPaymentDetails === job.jobId ? "Hide details" : "View details"}
-                                                >
-                                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <polyline points={expandedPaymentDetails === job.jobId ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}></polyline>
-                                                  </svg>
-                                                </button>
-                                              )}
-                                            </div>
+                                          <div className="px-4 py-3 text-sm flex gap-1">
+                                            {getTransporterCostAmount(job) > 0 && canPayTransporterCosts && !isTransporterCostPaid(job) ? (
+                                              <button
+                                                type="button"
+                                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                                onClick={() => openPaymentModal(job)}
+                                                title="Record payment"
+                                              >
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                              </button>
+                                            ) : null}
+                                            {getTransporterCostAmount(job) > 0 && (
+                                              <button
+                                                type="button"
+                                                className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                                                onClick={() => handleViewPaymentDetails(job)}
+                                                title={expandedPaymentDetails === job.jobId ? "Hide details" : "View details"}
+                                              >
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                  <polyline points={expandedPaymentDetails === job.jobId ? "18 15 12 9 6 15" : "6 9 12 15 18 9"}></polyline>
+                                                </svg>
+                                              </button>
+                                            )}
                                           </div>
                                         </div>
                                         {expandedPaymentDetails === job.jobId && (
-                                          <div className="settlement-table-row payment-details-expanded-row">
-                                            <div className="settlement-table-cell" style={{gridColumn: '1 / -1'}}>
-                                              <div className="payment-tracking-section">
-                                                <div className="payment-tracking-header">
-                                                  <span className="payment-tracking-title">Payment Breakdown</span>
+                                          <div className="col-span-full bg-gray-50 border-t border-gray-200 p-4">
+                                            <div>
+                                              <div className="mb-4">
+                                                <span className="font-bold text-gray-900">Payment Breakdown</span>
+                                              </div>
+                                              
+                                              <div className="border border-gray-200 rounded bg-white">
+                                                <div className="bg-gray-50 border-b border-gray-200 grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                                                  <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Description</div>
+                                                  <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Amount</div>
                                                 </div>
                                                 
-                                                <div className="payment-tracking-table payment-breakdown-table">
-                                                  <div className="payment-table-header">
-                                                    <div className="payment-header-cell payment-label-col">Description</div>
-                                                    <div className="payment-header-cell payment-amount-col">Amount</div>
+                                                <div className="divide-y divide-gray-200">
+                                                  <div className="grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                                                    <div className="px-4 py-2 text-sm">
+                                                      <span className="text-gray-700">Total Amount</span>
+                                                    </div>
+                                                    <div className="px-4 py-2 text-sm">
+                                                      <span className="text-gray-900 font-medium">LKR {formatAmount(getTransporterCostAmount(job))}</span>
+                                                    </div>
                                                   </div>
                                                   
-                                                  <div className="payment-table-body">
-                                                    <div className="payment-table-row">
-                                                      <div className="payment-table-cell payment-label-col">
-                                                        <span className="payment-label">Total Amount</span>
-                                                      </div>
-                                                      <div className="payment-table-cell payment-amount-col">
-                                                        <span className="payment-amount-value">LKR {formatAmount(getTransporterCostAmount(job))}</span>
-                                                      </div>
+                                                  <div className="grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                                                    <div className="px-4 py-2 text-sm">
+                                                      <span className="text-gray-700">Paid Amount</span>
                                                     </div>
-                                                    
-                                                    <div className="payment-table-row">
-                                                      <div className="payment-table-cell payment-label-col">
-                                                        <span className="payment-label">Paid Amount</span>
-                                                      </div>
-                                                      <div className="payment-table-cell payment-amount-col">
-                                                        <span className="payment-amount-value payment-amount-paid">LKR {formatAmount(getPaymentDetails(job)?.paidAmount || 0)}</span>
-                                                      </div>
+                                                    <div className="px-4 py-2 text-sm">
+                                                      <span className="text-green-600 font-medium">LKR {formatAmount(getPaymentDetails(job)?.paidAmount || 0)}</span>
                                                     </div>
-                                                    
-                                                    <div className="payment-table-row">
-                                                      <div className="payment-table-cell payment-label-col">
-                                                        <span className="payment-label">Remaining Amount</span>
-                                                      </div>
-                                                      <div className="payment-table-cell payment-amount-col">
-                                                        <span className="payment-amount-value payment-amount-remaining">LKR {formatAmount(getRemainingTransporterCost(job))}</span>
-                                                      </div>
+                                                  </div>
+                                                  
+                                                  <div className="grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                                                    <div className="px-4 py-2 text-sm">
+                                                      <span className="text-gray-700">Remaining Amount</span>
+                                                    </div>
+                                                    <div className="px-4 py-2 text-sm">
+                                                      <span className="text-orange-600 font-medium">LKR {formatAmount(getRemainingTransporterCost(job))}</span>
                                                     </div>
                                                   </div>
                                                 </div>
+                                              </div>
 
-                                                {getPaymentDetails(job)?.paidAmount > 0 && (
-                                                  <div className="payment-tracking-table" style={{marginTop: '16px'}}>
-                                                    <div className="payment-table-header">
-                                                      <div className="payment-header-cell payment-date-col">Payment Date</div>
-                                                      <div className="payment-header-cell payment-method-col">Method</div>
-                                                      <div className="payment-header-cell payment-reference-col">Reference</div>
-                                                      <div className="payment-header-cell payment-amount-col">Amount</div>
-                                                      <div className="payment-header-cell payment-by-col">Paid By</div>
+                                              {getPaymentDetails(job)?.paidAmount > 0 && (
+                                                <div style={{marginTop: '16px'}}>
+                                                  <div className="border border-gray-200 rounded bg-white">
+                                                    <div className="bg-gray-50 border-b border-gray-200 grid gap-0" style={{gridTemplateColumns: 'repeat(5, minmax(0, 1fr))'}}>
+                                                      <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Payment Date</div>
+                                                      <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Method</div>
+                                                      <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Reference</div>
+                                                      <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Amount</div>
+                                                      <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Paid By</div>
                                                     </div>
                                                     
-                                                    <div className="payment-table-body">
+                                                    <div className="divide-y divide-gray-200">
                                                       {getAllPaymentRecords(job).map((payment, idx) => (
-                                                        <div key={idx} className="payment-table-row">
-                                                          <div className="payment-table-cell payment-date-col" data-label="Date">
+                                                        <div key={idx} className="grid gap-0" style={{gridTemplateColumns: 'repeat(5, minmax(0, 1fr))'}}>
+                                                          <div className="px-4 py-2 text-sm text-gray-900">
                                                             {formatDateWithMonth(payment.paymentDate)}
                                                           </div>
-                                                          <div className="payment-table-cell payment-method-col" data-label="Method">
-                                                            <span className={`payment-method-badge payment-method-${payment.paymentMethod?.toLowerCase().replace(' ', '-')}`}>
+                                                          <div className="px-4 py-2 text-sm">
+                                                            <span className="inline-block px-2 py-1 rounded text-xs font-medium" style={{
+                                                              backgroundColor: payment.paymentMethod === 'Cash' ? '#dbeafe' : payment.paymentMethod === 'Cheque' ? '#fef3c7' : '#d1fae5',
+                                                              color: payment.paymentMethod === 'Cash' ? '#0c4a6e' : payment.paymentMethod === 'Cheque' ? '#92400e' : '#065f46'
+                                                            }}>
                                                               {payment.paymentMethod === 'Cash' && '💵'}
                                                               {payment.paymentMethod === 'Cheque' && '📝'}
                                                               {payment.paymentMethod === 'Bank Transfer' && '🏦'}
                                                               {' '}{payment.paymentMethod || '-'}
                                                             </span>
                                                           </div>
-                                                          <div className="payment-table-cell payment-reference-col" data-label="Reference">
+                                                          <div className="px-4 py-2 text-sm text-gray-900">
                                                             {payment.paymentMethod === 'Cheque' && payment.chequeNumber ? (
-                                                              <span className="reference-text">CHQ: {payment.chequeNumber}</span>
+                                                              <span>CHQ: {payment.chequeNumber}</span>
                                                             ) : payment.paymentMethod === 'Bank Transfer' && payment.bankName ? (
-                                                              <span className="reference-text">{payment.bankName}</span>
+                                                              <span>{payment.bankName}</span>
                                                             ) : payment.paymentMethod === 'Cash' ? (
-                                                              <span className="reference-text">Cash</span>
+                                                              <span>Cash</span>
                                                             ) : (
-                                                              <span className="reference-empty">-</span>
+                                                              <span className="text-gray-400">-</span>
                                                             )}
                                                           </div>
-                                                          <div className="payment-table-cell payment-amount-col" data-label="Amount">
-                                                            <span className="payment-amount-value">LKR {formatAmount(payment.amount || 0)}</span>
-                                                          </div>
-                                                          <div className="payment-table-cell payment-by-col" data-label="Paid By">
-                                                            <span className="payment-by-value">{payment.paidByName || '-'}</span>
-                                                          </div>
+                                                          <div className="px-4 py-2 text-sm text-gray-900 font-medium">LKR {formatAmount(payment.amount || 0)}</div>
+                                                          <div className="px-4 py-2 text-sm text-gray-900">{payment.paidByName || '-'}</div>
                                                         </div>
                                                       ))}
                                                     </div>
                                                   </div>
-                                                )}
-                                              </div>
+                                                </div>
+                                              )}
                                             </div>
                                           </div>
                                         )}
                                       </React.Fragment>
                                     ))}
-                                    <div className="settlement-table-row settlement-total-row">
-                                      <div className="settlement-table-cell settlement-num-col"></div>
-                                      <div className="settlement-table-cell settlement-name-col"><strong>Total</strong></div>
-                                      <div className="settlement-table-cell settlement-type-col"></div>
-                                      <div className="settlement-table-cell settlement-type-col"></div>
-                                      <div className="settlement-table-cell settlement-bill-col settlement-amount-value">
+                                    <div className="border-t-2 border-gray-300 bg-gray-50 grid gap-0" style={{gridTemplateColumns: 'repeat(10, minmax(0, 1fr))'}}>
+                                      <div className="px-4 py-2"></div>
+                                      <div className="px-4 py-2 text-sm font-bold text-gray-900"><strong>Total</strong></div>
+                                      <div className="px-4 py-2"></div>
+                                      <div className="px-4 py-2"></div>
+                                      <div className="px-4 py-2 text-sm text-gray-900 font-bold">
                                         <strong>LKR {formatAmount(assignedJobs.reduce((sum, job) => sum + getTransporterCostAmount(job), 0))}</strong>
                                       </div>
-                                      <div className="settlement-table-cell settlement-bill-col settlement-amount-value">
+                                      <div className="px-4 py-2 text-sm text-gray-900 font-bold">
                                         <strong>LKR {formatAmount(assignedJobs.reduce((sum, job) => sum + getBillingAmount(job.jobId), 0))}</strong>
                                       </div>
-                                      <div className="settlement-table-cell settlement-bill-col"></div>
-                                      <div className="settlement-table-cell settlement-bill-col"></div>
-                                      <div className="settlement-table-cell settlement-amount-col"></div>
-                                      <div className="settlement-table-cell settlement-actions-col"></div>
+                                      <div className="px-4 py-2"></div>
+                                      <div className="px-4 py-2"></div>
+                                      <div className="px-4 py-2"></div>
+                                      <div className="px-4 py-2"></div>
                                     </div>
                                   </div>
                                 </div>
@@ -1427,31 +1427,32 @@ function Transporters() {
       </div>
 
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
-            <div className="modal-header">
-              <h2>{editingTransporter ? 'Edit Transporter' : 'New Transporter'}</h2>
-              <button className="btn-close" onClick={() => setShowModal(false)}>×</button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+              <h2 className="text-xl font-bold text-gray-900">{editingTransporter ? 'Edit Transporter' : 'New Transporter'}</h2>
+              <button className="text-gray-400 hover:text-gray-600 text-2xl" onClick={() => setShowModal(false)}>×</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="transporter-form">
-              <div className="form-section">
-                <h3 className="section-heading">Basic Information</h3>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>Transporter Name <span className="required">*</span></label>
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="border-b border-gray-200 px-0 py-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Transporter Name <span className="text-red-600">*</span></label>
                     <input
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       onKeyPress={validateNameInput}
                       placeholder="Enter name (letters, spaces, and hyphens only)"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {formErrors.name && <span className="form-error">{formErrors.name}</span>}
+                    {formErrors.name && <span className="text-red-600 text-sm mt-1 block">{formErrors.name}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Main Phone Number <span className="required">*</span></label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Main Phone Number <span className="text-red-600">*</span></label>
                     <input
                       name="mainPhone"
                       value={formData.mainPhone}
@@ -1459,38 +1460,42 @@ function Transporters() {
                       onKeyPress={validatePhoneInput}
                       placeholder="0771234567"
                       maxLength="10"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {formErrors.mainPhone && <span className="form-error">{formErrors.mainPhone}</span>}
+                    {formErrors.mainPhone && <span className="text-red-600 text-sm mt-1 block">{formErrors.mainPhone}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Lorry Number <span className="required">*</span></label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Lorry Number <span className="text-red-600">*</span></label>
                     <input
                       name="lorryNumber"
                       value={formData.lorryNumber}
                       onChange={handleChange}
                       placeholder="e.g., ABC-1234"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {formErrors.lorryNumber && <span className="form-error">{formErrors.lorryNumber}</span>}
+                    {formErrors.lorryNumber && <span className="text-red-600 text-sm mt-1 block">{formErrors.lorryNumber}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Email Address</label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                     <input
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="email@example.com"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {formErrors.email && <span className="form-error">{formErrors.email}</span>}
+                    {formErrors.email && <span className="text-red-600 text-sm mt-1 block">{formErrors.email}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Transporter Type <span className="required">*</span></label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Transporter Type <span className="text-red-600">*</span></label>
                     <select
                       name="transporterType"
                       value={formData.transporterType}
                       onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="FCL">FCL</option>
                       <option value="Non FCL">Non FCL</option>
@@ -1499,93 +1504,100 @@ function Transporters() {
 
                   {formData.transporterType === 'FCL' && (
                     <>
-                      <div className="form-group">
-                        <label>Driver Name <span className="required">*</span></label>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Driver Name <span className="text-red-600">*</span></label>
                         <input
                           name="driverName"
                           value={formData.driverName}
                           onChange={handleChange}
                           onKeyPress={validateNameInput}
                           placeholder="Enter driver name"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        {formErrors.driverName && <span className="form-error">{formErrors.driverName}</span>}
+                        {formErrors.driverName && <span className="text-red-600 text-sm mt-1 block">{formErrors.driverName}</span>}
                       </div>
 
-                      <div className="form-group">
-                        <label>Size <span className="required">*</span></label>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Size <span className="text-red-600">*</span></label>
                         <input
                           name="size"
                           value={formData.size}
                           onChange={handleChange}
                           placeholder="e.g., 20ft, 40ft"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        {formErrors.size && <span className="form-error">{formErrors.size}</span>}
+                        {formErrors.size && <span className="text-red-600 text-sm mt-1 block">{formErrors.size}</span>}
                       </div>
                     </>
                   )}
 
-                  <div className="form-group">
-                    <label>Registration Date <span className="required">*</span></label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Registration Date <span className="text-red-600">*</span></label>
                     <input
                       type="date"
                       name="registrationDate"
                       value={formData.registrationDate}
                       onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
-                  <div className="form-group transporter-checkbox">
-                    <label>
-                      <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} />
-                      Active Transporter
+                  <div className="mb-4 flex items-center">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="w-4 h-4 rounded" />
+                      <span className="text-sm font-medium text-gray-700">Active Transporter</span>
                     </label>
                   </div>
                 </div>
               </div>
 
-              <div className="form-section">
-                <h3 className="section-heading">Address Information</h3>
-                <div className="form-grid form-grid-three">
-                  <div className="form-group">
-                    <label>Address Number <span className="required">*</span></label>
+              <div className="border-b border-gray-200 px-0 py-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Address Information</h3>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address Number <span className="text-red-600">*</span></label>
                     <input
                       name="addressNumber"
                       value={formData.addressNumber}
                       onChange={handleChange}
                       placeholder="e.g., 45, 123/2A"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {formErrors.addressNumber && <span className="form-error">{formErrors.addressNumber}</span>}
+                    {formErrors.addressNumber && <span className="text-red-600 text-sm mt-1 block">{formErrors.addressNumber}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Street Name 1 <span className="required">*</span></label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Name 1 <span className="text-red-600">*</span></label>
                     <input
                       name="addressStreet1"
                       value={formData.addressStreet1}
                       onChange={handleChange}
                       placeholder="e.g., Galle Road, Temple Road"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {formErrors.addressStreet1 && <span className="form-error">{formErrors.addressStreet1}</span>}
+                    {formErrors.addressStreet1 && <span className="text-red-600 text-sm mt-1 block">{formErrors.addressStreet1}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Street Name 2</label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Name 2</label>
                     <input
                       name="addressStreet2"
                       value={formData.addressStreet2}
                       onChange={handleChange}
                       placeholder="e.g., Lane 3, Near School"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
                 </div>
 
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label>District <span className="required">*</span></label>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">District <span className="text-red-600">*</span></label>
                     <select
                       name="addressDistrict"
                       value={formData.addressDistrict}
                       onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="">Select District</option>
                       {districts.map((district) => (
@@ -1594,16 +1606,17 @@ function Transporters() {
                         </option>
                       ))}
                     </select>
-                    {formErrors.addressDistrict && <span className="form-error">{formErrors.addressDistrict}</span>}
+                    {formErrors.addressDistrict && <span className="text-red-600 text-sm mt-1 block">{formErrors.addressDistrict}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>City / Town <span className="required">*</span></label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City / Town <span className="text-red-600">*</span></label>
                     <select
                       name="addressCity"
                       value={formData.addressCity}
                       onChange={handleChange}
                       disabled={!formData.addressDistrict}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
                     >
                       <option value="">Select City / Town</option>
                       {filteredCities.map((city) => (
@@ -1612,42 +1625,43 @@ function Transporters() {
                         </option>
                       ))}
                     </select>
-                    {formErrors.addressCity && <span className="form-error">{formErrors.addressCity}</span>}
+                    {formErrors.addressCity && <span className="text-red-600 text-sm mt-1 block">{formErrors.addressCity}</span>}
                   </div>
 
-                  <div className="form-group">
-                    <label>Country <span className="required">*</span></label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Country <span className="text-red-600">*</span></label>
                     <input
                       name="addressCountry"
                       value={formData.addressCountry}
                       onChange={handleChange}
                       placeholder="Sri Lanka"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    {formErrors.addressCountry && <span className="form-error">{formErrors.addressCountry}</span>}
+                    {formErrors.addressCountry && <span className="text-red-600 text-sm mt-1 block">{formErrors.addressCountry}</span>}
                   </div>
                 </div>
               </div>
 
-              <div className="form-section">
-                <div className="section-heading-row">
-                  <h3 className="section-heading">Contact Persons <span className="required">*</span> (At least 1 required, up to 2)</h3>
+              <div className="border-b border-gray-200 px-0 py-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold text-gray-900">Contact Persons <span className="text-red-600">*</span> (At least 1 required, up to 2)</h3>
                   {formData.contactPersons.length < 2 && (
-                    <button type="button" className="btn btn-secondary btn-small" onClick={addContactPerson}>
+                    <button type="button" className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded text-sm font-medium" onClick={addContactPerson}>
                       + Add Contact Person
                     </button>
                   )}
                 </div>
 
-                {formErrors.contactPersons && <span className="form-error section-error">{formErrors.contactPersons}</span>}
+                {formErrors.contactPersons && <span className="text-red-600 text-sm mb-4 block">{formErrors.contactPersons}</span>}
 
                 {formData.contactPersons.map((contactPerson, index) => (
-                  <div key={index} className="contact-person-card">
-                    <div className="contact-person-header">
-                      <h4>Contact Person {index + 1}</h4>
+                  <div key={index} className="bg-gray-50 rounded-lg border border-gray-200 p-4 mb-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="font-semibold text-gray-900">Contact Person {index + 1}</h4>
                       {formData.contactPersons.length > 1 && (
                         <button
                           type="button"
-                          className="btn btn-danger btn-small"
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-medium"
                           onClick={() => removeContactPerson(index)}
                         >
                           Remove
@@ -1655,43 +1669,46 @@ function Transporters() {
                       )}
                     </div>
 
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label>Name <span className="required">*</span></label>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-600">*</span></label>
                         <input
                           value={contactPerson.name}
                           onChange={(event) => handleContactPersonChange(index, 'name', event.target.value)}
                           onKeyPress={validateNameInput}
                           placeholder="Enter contact person name"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {formErrors[`contactPersonName${index}`] && (
-                          <span className="form-error">{formErrors[`contactPersonName${index}`]}</span>
+                          <span className="text-red-600 text-sm mt-1 block">{formErrors[`contactPersonName${index}`]}</span>
                         )}
                       </div>
 
-                      <div className="form-group">
-                        <label>Phone <span className="required">*</span></label>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone <span className="text-red-600">*</span></label>
                         <input
                           value={contactPerson.phone}
                           onChange={(event) => handleContactPersonChange(index, 'phone', event.target.value)}
                           onKeyPress={validatePhoneInput}
                           placeholder="0771234567"
                           maxLength="10"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {formErrors[`contactPersonPhone${index}`] && (
-                          <span className="form-error">{formErrors[`contactPersonPhone${index}`]}</span>
+                          <span className="text-red-600 text-sm mt-1 block">{formErrors[`contactPersonPhone${index}`]}</span>
                         )}
                       </div>
 
-                      <div className="form-group">
-                        <label>Email</label>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                         <input
                           value={contactPerson.email}
                           onChange={(event) => handleContactPersonChange(index, 'email', event.target.value)}
                           placeholder="email@example.com"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         {formErrors[`contactPersonEmail${index}`] && (
-                          <span className="form-error">{formErrors[`contactPersonEmail${index}`]}</span>
+                          <span className="text-red-600 text-sm mt-1 block">{formErrors[`contactPersonEmail${index}`]}</span>
                         )}
                       </div>
                     </div>
@@ -1699,11 +1716,11 @@ function Transporters() {
                 ))}
               </div>
 
-              <div className="form-actions">
-                <button type="submit" className="btn btn-primary">
+              <div className="flex gap-3 mt-6">
+                <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
                   {editingTransporter ? 'Update Transporter' : 'Create Transporter'}
                 </button>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                <button type="button" className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium" onClick={() => setShowModal(false)}>
                   Cancel
                 </button>
               </div>
@@ -1711,52 +1728,51 @@ function Transporters() {
           </div>
         </div>
       )}
-    </div>
 
-    {showPaymentModal && selectedJobForPayment && (
-      <div className="pm-overlay" onClick={() => setShowPaymentModal(false)}>
-        <div className="pm-modal" onClick={e => e.stopPropagation()}>
+      {showPaymentModal && selectedJobForPayment && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setShowPaymentModal(false)}>
+        <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
           {/* ── Title bar ── */}
-          <div className="pm-titlebar">
-            <div className="pm-titlebar-left">
+          <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{flexShrink:0}}>
                 <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
               </svg>
               <div>
-                <span className="pm-title">Record Payment</span>
-                <span className="pm-subtitle">Job&nbsp;#{selectedJobForPayment.jobId}</span>
+                <span className="font-bold text-gray-900">Record Payment</span>
+                <span className="text-sm text-gray-600 block">Job&nbsp;#{selectedJobForPayment.jobId}</span>
               </div>
             </div>
-            <button className="pm-close" onClick={() => setShowPaymentModal(false)} aria-label="Close">×</button>
+            <button className="text-gray-400 hover:text-gray-600 text-2xl" onClick={() => setShowPaymentModal(false)} aria-label="Close">×</button>
           </div>
 
           {/* ══════════════════════════════════════════
               ROW 1 — Job details (horizontal strip)
           ══════════════════════════════════════════ */}
-          <div className="pm-body">
-          <div className="pm-row pm-row-details">
-            <div className="pm-detail-cell">
-              <span className="pm-detail-label">Job ID</span>
-              <span className="pm-detail-value"><code className="pm-code">{selectedJobForPayment.jobId}</code></span>
+          <div className="p-6">
+          <div className="flex gap-4 flex-wrap mb-6 pb-6 border-b border-gray-200">
+            <div className="flex-1 min-w-32">
+              <span className="text-xs font-bold text-gray-600 uppercase">Job ID</span>
+              <span className="block text-gray-900 font-mono">{selectedJobForPayment.jobId}</span>
             </div>
-            <div className="pm-detail-cell">
-              <span className="pm-detail-label">Category</span>
-              <span className="pm-detail-value">{selectedJobForPayment.shipmentCategory || '-'}</span>
+            <div className="flex-1 min-w-32">
+              <span className="text-xs font-bold text-gray-600 uppercase">Category</span>
+              <span className="block text-gray-900">{selectedJobForPayment.shipmentCategory || '-'}</span>
             </div>
-            <div className="pm-detail-cell">
-              <span className="pm-detail-label">Transporter Cost</span>
-              <span className="pm-detail-value pm-amount-total">LKR {formatAmount(getTransporterCostAmount(selectedJobForPayment))}</span>
+            <div className="flex-1 min-w-32">
+              <span className="text-xs font-bold text-gray-600 uppercase">Transporter Cost</span>
+              <span className="block text-lg font-bold text-gray-900">LKR {formatAmount(getTransporterCostAmount(selectedJobForPayment))}</span>
             </div>
             {parseFloat(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0) > 0 && (
-              <div className="pm-detail-cell">
-                <span className="pm-detail-label">Already Paid</span>
-                <span className="pm-detail-value pm-amount-paid">LKR {formatAmount(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0)}</span>
+              <div className="flex-1 min-w-32">
+                <span className="text-xs font-bold text-gray-600 uppercase">Already Paid</span>
+                <span className="block text-lg font-bold text-green-600">LKR {formatAmount(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0)}</span>
               </div>
             )}
-            <div className={parseFloat(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0) > 0 ? 'pm-detail-cell pm-detail-cell--due' : 'pm-detail-cell pm-detail-cell--due pm-detail-cell--due-only'}>
-              <span className="pm-detail-label">Amount Due</span>
-              <span className="pm-detail-value pm-amount-due">
+            <div className={`flex-1 min-w-32 ${parseFloat(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0) > 0 ? '' : ''}`}>
+              <span className="text-xs font-bold text-gray-600 uppercase">Amount Due</span>
+              <span className="block text-lg font-bold text-orange-600">
                 LKR {formatAmount(getRemainingTransporterCost(selectedJobForPayment))}
               </span>
             </div>
@@ -1765,65 +1781,62 @@ function Transporters() {
           {/* ══════════════════════════════════════════
               ROW 2 — Payment type + amount
           ══════════════════════════════════════════ */}
-          <div className="pm-row pm-row-type">
+          <div className="grid grid-cols-2 gap-6 mb-6 pb-6 border-b border-gray-200">
 
             {/* Left: radio buttons */}
-            <div className="pm-type-panel">
-              <p className="pm-panel-label">Payment Type</p>
-              <div className="pm-radio-group">
+            <div>
+              <p className="text-sm font-bold text-gray-700 mb-3">Payment Type</p>
+              <div className="space-y-2">
                 <label
-                  className={`pm-radio-card ${paymentMode === 'full' ? 'pm-radio-card--active' : ''}`}
+                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${paymentMode === 'full' ? 'bg-blue-50 border-blue-300' : 'border-gray-200 hover:border-gray-300'}`}
                   onClick={() => { setPaymentMode('full'); setPartialPaymentAmount(''); }}
                 >
                   <input
                     type="radio" name="pmMode" value="full"
                     checked={paymentMode === 'full'}
                     onChange={() => { setPaymentMode('full'); setPartialPaymentAmount(''); }}
+                    className="w-4 h-4 mr-3"
                   />
-                  <span className="pm-radio-dot"></span>
-                  <span className="pm-radio-text">
-                    <strong>Full Payment</strong>
-                    <small>Settle entire balance</small>
+                  <span>
+                    <strong className="block text-gray-900 text-sm">Full Payment</strong>
+                    <small className="text-gray-600 text-xs">Settle entire balance</small>
                   </span>
                 </label>
                 <label
-                  className={`pm-radio-card ${paymentMode === 'partial' ? 'pm-radio-card--active' : ''}`}
+                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${paymentMode === 'partial' ? 'bg-blue-50 border-blue-300' : 'border-gray-200 hover:border-gray-300'}`}
                   onClick={() => setPaymentMode('partial')}
                 >
                   <input
                     type="radio" name="pmMode" value="partial"
                     checked={paymentMode === 'partial'}
                     onChange={() => setPaymentMode('partial')}
+                    className="w-4 h-4 mr-3"
                   />
-                  <span className="pm-radio-dot"></span>
-                  <span className="pm-radio-text">
-                    <strong>Partial Payment</strong>
-                    <small>Pay a portion now</small>
+                  <span>
+                    <strong className="block text-gray-900 text-sm">Partial Payment</strong>
+                    <small className="text-gray-600 text-xs">Pay a portion now</small>
                   </span>
                 </label>
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="pm-col-divider" />
-
             {/* Right: amount area */}
-            <div className="pm-amount-panel">
+            <div>
               {paymentMode === 'full' ? (
-                <div className="pm-full-amount-display">
-                  <p className="pm-panel-label">Amount to Collect</p>
-                  <div className="pm-full-amount">
+                <div>
+                  <p className="text-sm font-bold text-gray-700 mb-3">Amount to Collect</p>
+                  <div className="text-3xl font-bold text-gray-900 mb-1">
                     LKR {formatAmount(getRemainingTransporterCost(selectedJobForPayment))}
                   </div>
-                  <span className="pm-full-badge">{isTransporterCostPartiallyPaid(selectedJobForPayment) ? 'Remaining balance' : 'Full balance'}</span>
+                  <span className="text-xs text-gray-600 inline-block px-2 py-1 bg-gray-100 rounded">{isTransporterCostPartiallyPaid(selectedJobForPayment) ? 'Remaining balance' : 'Full balance'}</span>
                 </div>
               ) : (
-                <div className="pm-partial-area">
-                  <div className="pm-field">
-                    <label className="pm-field-label">Enter Amount (LKR) <span className="pm-req">*</span></label>
+                <div>
+                  <div className="mb-3">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Enter Amount (LKR) <span className="text-red-600">*</span></label>
                     <input
                       type="number" step="0.01"
-                      className="pm-input pm-input--amount"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={partialPaymentAmount}
                       onChange={e => setPartialPaymentAmount(e.target.value)}
                       placeholder="0.00"
@@ -1831,24 +1844,24 @@ function Transporters() {
                     />
                   </div>
                   {/* Mini breakdown */}
-                  <div className="pm-breakdown">
-                    <div className="pm-bk-row">
-                      <span>Total Amount</span>
-                      <span>LKR {formatAmount(getTransporterCostAmount(selectedJobForPayment))}</span>
+                  <div className="bg-gray-50 rounded p-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Total Amount</span>
+                      <span className="text-gray-900">LKR {formatAmount(getTransporterCostAmount(selectedJobForPayment))}</span>
                     </div>
                     {parseFloat(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0) > 0 && (
-                      <div className="pm-bk-row">
-                        <span>Already Paid</span>
-                        <span className="pm-bk-paid">LKR {formatAmount(parseFloat(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0))}</span>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Already Paid</span>
+                        <span className="text-green-600">LKR {formatAmount(parseFloat(getPaymentDetails(selectedJobForPayment)?.paidAmount || 0))}</span>
                       </div>
                     )}
-                    <div className="pm-bk-row">
-                      <span>This Payment</span>
-                      <span className="pm-bk-current">LKR {formatAmount(parseFloat(partialPaymentAmount) || 0)}</span>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">This Payment</span>
+                      <span className="text-blue-600">LKR {formatAmount(parseFloat(partialPaymentAmount) || 0)}</span>
                     </div>
-                    <div className="pm-bk-row pm-bk-row--total">
-                      <span>Remaining After</span>
-                      <span>LKR {formatAmount(Math.max(0, getRemainingTransporterCost(selectedJobForPayment) - (parseFloat(partialPaymentAmount) || 0)))}</span>
+                    <div className="border-t border-gray-200 pt-2 flex justify-between text-sm font-semibold">
+                      <span className="text-gray-900">Remaining After</span>
+                      <span className="text-gray-900">LKR {formatAmount(Math.max(0, getRemainingTransporterCost(selectedJobForPayment) - (parseFloat(partialPaymentAmount) || 0)))}</span>
                     </div>
                   </div>
                 </div>
@@ -1860,17 +1873,17 @@ function Transporters() {
           {/* ══════════════════════════════════════════
               ROW 3 — Payment method + details
           ══════════════════════════════════════════ */}
-          <div className="pm-row pm-row-method">
+          <div className="grid grid-cols-2 gap-6 mb-6">
 
             {/* Left: method selector */}
-            <div className="pm-method-panel">
-              <p className="pm-panel-label">Payment Method</p>
-              <div className="pm-method-tabs">
+            <div>
+              <p className="text-sm font-bold text-gray-700 mb-3">Payment Method</p>
+              <div className="flex gap-2 mb-3">
                 {['Cash','Cheque','Bank Transfer'].map(m => (
                   <button
                     key={m}
                     type="button"
-                    className={`pm-method-tab ${paymentMethod === m ? 'pm-method-tab--active' : ''}`}
+                    className={`flex-1 py-2 px-3 rounded-lg border-2 transition text-sm font-medium flex items-center justify-center gap-2 ${paymentMethod === m ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`}
                     onClick={() => {
                       setPaymentMethod(m);
                       setChequeNumber('');
@@ -1890,28 +1903,25 @@ function Transporters() {
 
               {/* Cash — no extra fields */}
               {paymentMethod === 'Cash' && (
-                <div className="pm-cash-note">
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-800">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
                   Cash payment — no additional details required.
                 </div>
               )}
             </div>
 
-            {/* Divider */}
-            <div className="pm-col-divider" />
-
             {/* Right: cheque / bank fields */}
-            <div className="pm-details-panel">
+            <div>
 
               {/* ── Cheque ── */}
               {paymentMethod === 'Cheque' && (
                 <>
-                  <p className="pm-panel-label">Cheque Details</p>
-                  <div className="pm-fields-grid">
-                    <div className="pm-field">
-                      <label className="pm-field-label">Select Cheque <span className="pm-req">*</span></label>
+                  <p className="text-sm font-bold text-gray-700 mb-3">Cheque Details</p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Select Cheque <span className="text-red-600">*</span></label>
                       <select 
-                        className="pm-input"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         value={selectedChequeId}
                         onChange={(e) => {
                           const selected = e.target.value;
@@ -1944,11 +1954,11 @@ function Transporters() {
                       </select>
                     </div>
                     {selectedChequeId && (
-                      <div className="pm-field">
-                        <label className="pm-field-label">Remaining Balance</label>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Remaining Balance</label>
                         <input 
                           type="text" 
-                          className="pm-input" 
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-900"
                           value={`LKR ${formatAmount(chequeAmount)}`}
                           disabled
                         />
@@ -1956,24 +1966,24 @@ function Transporters() {
                     )}
                     {!selectedChequeId && (
                       <>
-                        <div className="pm-field">
-                          <label className="pm-field-label">Cheque Number <span className="pm-req">*</span></label>
-                          <input type="text" className="pm-input"
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Cheque Number <span className="text-red-600">*</span></label>
+                          <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             value={chequeNumber}
                             onChange={e => setChequeNumber(e.target.value)}
                             placeholder="e.g. 001234"
                           />
                         </div>
-                        <div className="pm-field">
-                          <label className="pm-field-label">Cheque Date <span className="pm-req">*</span></label>
-                          <input type="date" className="pm-input"
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Cheque Date <span className="text-red-600">*</span></label>
+                          <input type="date" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             value={chequeDate}
                             onChange={e => setChequeDate(e.target.value)}
                           />
                         </div>
-                        <div className="pm-field">
-                          <label className="pm-field-label">Cheque Amount (LKR) <span className="pm-req">*</span></label>
-                          <input type="number" step="0.01" className="pm-input"
+                        <div>
+                          <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Cheque Amount (LKR) <span className="text-red-600">*</span></label>
+                          <input type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             value={chequeAmount}
                             onChange={e => setChequeAmount(e.target.value)}
                             placeholder="0.00"
@@ -1981,9 +1991,9 @@ function Transporters() {
                         </div>
                       </>
                     )}
-                    <div className="pm-field">
-                      <label className="pm-field-label">Bank Name</label>
-                      <select className="pm-input" value={bankName} onChange={e => setBankName(e.target.value)}>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Bank Name</label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" value={bankName} onChange={e => setBankName(e.target.value)}>
                         <option>Commercial Bank</option>
                         <option>Peoples Bank</option>
                         <option>Bank of Ceylon</option>
@@ -2001,11 +2011,11 @@ function Transporters() {
               {/* ── Bank Transfer ── */}
               {paymentMethod === 'Bank Transfer' && (
                 <>
-                  <p className="pm-panel-label">Transfer Details</p>
-                  <div className="pm-fields-grid">
-                    <div className="pm-field pm-field--full">
-                      <label className="pm-field-label">Bank Name <span className="pm-req">*</span></label>
-                      <select className="pm-input" value={bankName} onChange={e => setBankName(e.target.value)}>
+                  <p className="text-sm font-bold text-gray-700 mb-3">Transfer Details</p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Bank Name <span className="text-red-600">*</span></label>
+                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" value={bankName} onChange={e => setBankName(e.target.value)}>
                         <option>Commercial Bank</option>
                         <option>Peoples Bank</option>
                         <option>Bank of Ceylon</option>
@@ -2022,9 +2032,9 @@ function Transporters() {
 
               {/* ── Cash placeholder ── */}
               {paymentMethod === 'Cash' && (
-                <div className="pm-empty-panel">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-                  <p>No additional details needed for cash.</p>
+                <div className="text-center py-6">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" className="mx-auto mb-2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                  <p className="text-sm text-gray-600">No additional details needed for cash.</p>
                 </div>
               )}
 
@@ -2034,9 +2044,9 @@ function Transporters() {
           </div>{/* end pm-body */}
 
           {/* ── Footer ── */}
-          <div className="pm-footer">
-            <button className="pm-btn pm-btn--cancel" onClick={() => setShowPaymentModal(false)}>Cancel</button>
-            <button className="pm-btn pm-btn--confirm" onClick={submitTransporterPayment}>
+          <div className="border-t border-gray-200 px-6 py-4 flex gap-3 justify-end">
+            <button className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium" onClick={() => setShowPaymentModal(false)}>Cancel</button>
+            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2" onClick={submitTransporterPayment}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               Confirm Payment
             </button>
@@ -2047,54 +2057,54 @@ function Transporters() {
     )}
 
     {showBreakdownModal && breakdownJob && (
-      <div className="pm-overlay" onClick={() => setShowBreakdownModal(false)}>
-        <div className="pm-modal" onClick={e => e.stopPropagation()}>
-          <div className="pm-titlebar">
-            <div className="pm-titlebar-left">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setShowBreakdownModal(false)}>
+        <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{flexShrink:0}}>
                 <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
               </svg>
               <div>
-                <span className="pm-title">Payment Breakdown</span>
-                <span className="pm-subtitle">Job #{breakdownJob.jobId}</span>
+                <span className="font-bold text-gray-900">Payment Breakdown</span>
+                <span className="text-sm text-gray-600 block">Job #{breakdownJob.jobId}</span>
               </div>
             </div>
-            <button className="pm-close" onClick={() => setShowBreakdownModal(false)} aria-label="Close">×</button>
+            <button className="text-gray-400 hover:text-gray-600 text-2xl" onClick={() => setShowBreakdownModal(false)} aria-label="Close">×</button>
           </div>
 
-          <div className="pm-body" style={{ padding: '1.25rem' }}>
-            <div className="payment-tracking-section" style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
-              <div className="payment-tracking-table payment-breakdown-table" style={{ display: 'block' }}>
-                <div className="payment-table-header" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                  <div className="payment-header-cell payment-label-col">Description</div>
-                  <div className="payment-header-cell payment-amount-col">Amount</div>
+          <div className="p-6">
+            <div>
+              <div className="border border-gray-200 rounded bg-white overflow-hidden">
+                <div className="bg-gray-50 border-b border-gray-200 grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                  <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Description</div>
+                  <div className="px-4 py-2 text-xs font-bold text-gray-700 uppercase">Amount</div>
                 </div>
                 
-                <div className="payment-table-body">
-                  <div className="payment-table-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                    <div className="payment-table-cell payment-label-col">
-                      <span className="payment-label">Total Amount</span>
+                <div className="divide-y divide-gray-200">
+                  <div className="grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                    <div className="px-4 py-2 text-sm">
+                      <span className="text-gray-700">Total Amount</span>
                     </div>
-                    <div className="payment-table-cell payment-amount-col">
-                      <span className="payment-amount-value">LKR {formatAmount(getTransporterCostAmount(breakdownJob))}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="payment-table-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                    <div className="payment-table-cell payment-label-col">
-                      <span className="payment-label">Paid Amount</span>
-                    </div>
-                    <div className="payment-table-cell payment-amount-col">
-                      <span className="payment-amount-value payment-amount-paid">LKR {formatAmount(getPaymentDetails(breakdownJob)?.paidAmount || 0)}</span>
+                    <div className="px-4 py-2 text-sm">
+                      <span className="text-gray-900 font-medium">LKR {formatAmount(getTransporterCostAmount(breakdownJob))}</span>
                     </div>
                   </div>
                   
-                  <div className="payment-table-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-                    <div className="payment-table-cell payment-label-col">
-                      <span className="payment-label">Remaining Amount</span>
+                  <div className="grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                    <div className="px-4 py-2 text-sm">
+                      <span className="text-gray-700">Paid Amount</span>
                     </div>
-                    <div className="payment-table-cell payment-amount-col">
-                      <span className="payment-amount-value payment-amount-remaining">LKR {formatAmount(getRemainingTransporterCost(breakdownJob))}</span>
+                    <div className="px-4 py-2 text-sm">
+                      <span className="text-green-600 font-medium">LKR {formatAmount(getPaymentDetails(breakdownJob)?.paidAmount || 0)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-0" style={{gridTemplateColumns: '1fr 1fr'}}>
+                    <div className="px-4 py-2 text-sm">
+                      <span className="text-gray-700">Remaining Amount</span>
+                    </div>
+                    <div className="px-4 py-2 text-sm">
+                      <span className="text-orange-600 font-medium">LKR {formatAmount(getRemainingTransporterCost(breakdownJob))}</span>
                     </div>
                   </div>
                 </div>
@@ -2102,56 +2112,57 @@ function Transporters() {
 
               {getPaymentDetails(breakdownJob)?.paidAmount > 0 && (
                 <div style={{ marginTop: '20px' }}>
-                  <p className="pm-panel-label" style={{ marginBottom: '10px', fontWeight: 'bold' }}>Payment History</p>
-                  <div className="payment-tracking-table" style={{ display: 'block' }}>
-                    <div className="payment-table-body">
-                      {getAllPaymentRecords(breakdownJob).map((payment, idx) => (
-                        <div key={idx} className="payment-table-row" style={{ display: 'block', padding: '10px', borderBottom: '1px solid #e5e7eb' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>DATE</span>
-                            <span style={{ fontSize: '0.8rem', color: '#1f2937' }}>{formatDateWithMonth(payment.paymentDate)}</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>METHOD</span>
-                            <span className={`payment-method-badge payment-method-${payment.paymentMethod?.toLowerCase().replace(' ', '-')}`}>
-                              {payment.paymentMethod === 'Cash' && '💵'}
-                              {payment.paymentMethod === 'Cheque' && '📝'}
-                              {payment.paymentMethod === 'Bank Transfer' && '🏦'}
-                              {' '}{payment.paymentMethod || '-'}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>REFERENCE</span>
-                            <span className="reference-text" style={{ fontSize: '0.8rem' }}>
-                              {payment.paymentMethod === 'Cheque' && payment.chequeNumber ? `CHQ: ${payment.chequeNumber}` :
-                               payment.paymentMethod === 'Bank Transfer' && payment.bankName ? payment.bankName :
-                               payment.paymentMethod === 'Cash' ? 'Cash' : '-'}
-                            </span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>AMOUNT</span>
-                            <span className="payment-amount-value" style={{ fontSize: '0.85rem' }}>LKR {formatAmount(payment.amount || 0)}</span>
-                          </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: 'bold' }}>PAID BY</span>
-                            <span style={{ fontSize: '0.8rem', color: '#1f2937' }}>{payment.paidByName || '-'}</span>
-                          </div>
+                  <p className="font-bold text-gray-900 mb-3">Payment History</p>
+                  <div className="space-y-3">
+                    {getAllPaymentRecords(breakdownJob).map((payment, idx) => (
+                      <div key={idx} className="bg-gray-50 border border-gray-200 rounded p-3">
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span className="text-gray-600 font-semibold uppercase text-xs">DATE</span>
+                          <span className="text-gray-900">{formatDateWithMonth(payment.paymentDate)}</span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span className="text-gray-600 font-semibold uppercase text-xs">METHOD</span>
+                          <span className="inline-block px-2 py-1 rounded text-xs font-medium" style={{
+                            backgroundColor: payment.paymentMethod === 'Cash' ? '#dbeafe' : payment.paymentMethod === 'Cheque' ? '#fef3c7' : '#d1fae5',
+                            color: payment.paymentMethod === 'Cash' ? '#0c4a6e' : payment.paymentMethod === 'Cheque' ? '#92400e' : '#065f46'
+                          }}>
+                            {payment.paymentMethod === 'Cash' && '💵'}
+                            {payment.paymentMethod === 'Cheque' && '📝'}
+                            {payment.paymentMethod === 'Bank Transfer' && '🏦'}
+                            {' '}{payment.paymentMethod || '-'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span className="text-gray-600 font-semibold uppercase text-xs">REFERENCE</span>
+                          <span className="text-gray-900">
+                            {payment.paymentMethod === 'Cheque' && payment.chequeNumber ? `CHQ: ${payment.chequeNumber}` :
+                             payment.paymentMethod === 'Bank Transfer' && payment.bankName ? payment.bankName :
+                             payment.paymentMethod === 'Cash' ? 'Cash' : '-'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between mb-1 text-sm">
+                          <span className="text-gray-600 font-semibold uppercase text-xs">AMOUNT</span>
+                          <span className="text-gray-900 font-medium">LKR {formatAmount(payment.amount || 0)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 font-semibold uppercase text-xs">PAID BY</span>
+                          <span className="text-gray-900">{payment.paidByName || '-'}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="pm-footer">
-            <button className="pm-btn pm-btn--cancel" style={{ width: '100%' }} onClick={() => setShowBreakdownModal(false)}>Close</button>
+          <div className="border-t border-gray-200 px-6 py-4">
+            <button className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium" onClick={() => setShowBreakdownModal(false)}>Close</button>
           </div>
         </div>
       </div>
     )}
-    </>
+    </div>
   );
 }
 

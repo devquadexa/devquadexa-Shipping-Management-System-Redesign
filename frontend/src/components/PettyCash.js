@@ -6,8 +6,6 @@ import { customerService } from '../api/services/customerService';
 import { cashWithdrawalService } from '../api/services/cashWithdrawalService';
 import CashWithdrawalModal from './CashWithdrawalModal';
 import Pagination from './Pagination';
-import '../styles/PettyCash.css';
-import '../styles/CashWithdrawals.css';
 import API_BASE from '../api/config';
 
 function PettyCash() {
@@ -1419,133 +1417,120 @@ function PettyCash() {
 
   // Renders the expanded details row for a single assignment
   const renderExpandedDetails = (assignment) => (
-    <tr className="expanded-details-row" key={`exp-${assignment.assignmentId}`}>
-      <td colSpan="8">
-        <div className="expanded-content">
+    <tr className="bg-gray-50" key={`exp-${assignment.assignmentId}`}>
+      <td colSpan="9" className="p-6">
+        <div className="space-y-6">
           {/* Financial Summary Strip */}
-          <div className="financial-summary-strip">
-            <div className="fin-stat-item">
-              <span className="fin-stat-label">Assigned Amount</span>
-              <span className="fin-stat-value">LKR {formatAmount(assignment.assignedAmount)}</span>
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 bg-white p-4 rounded-lg border border-gray-200">
+            <div>
+              <span className="block text-xs font-medium text-gray-600 mb-1">Assigned Amount</span>
+              <span className="block text-sm font-semibold text-gray-900">LKR {formatAmount(assignment.assignedAmount)}</span>
             </div>
-            <div className="fin-stat-divider" />
-            <div className="fin-stat-item">
-              <span className="fin-stat-label">Actual Spent</span>
-              <span className="fin-stat-value">{assignment.actualSpent >= 0 ? `LKR ${formatAmount(assignment.actualSpent)}` : '—'}</span>
+            <div>
+              <span className="block text-xs font-medium text-gray-600 mb-1">Actual Spent</span>
+              <span className="block text-sm font-semibold text-gray-900">{assignment.actualSpent >= 0 ? `LKR ${formatAmount(assignment.actualSpent)}` : '—'}</span>
             </div>
             {assignment.balanceAmount > 0 && !['Balance Returned', 'Settled/Approved', 'Closed'].includes(assignment.status) && (
-              <>
-                <div className="fin-stat-divider" />
-                <div className="fin-stat-item">
-                  <span className="fin-stat-label">Balance to Return</span>
-                  <span className="fin-stat-value positive">LKR {formatAmount(assignment.balanceAmount)}</span>
-                </div>
-              </>
+              <div>
+                <span className="block text-xs font-medium text-gray-600 mb-1">Balance to Return</span>
+                <span className="block text-sm font-semibold text-green-600">LKR {formatAmount(assignment.balanceAmount)}</span>
+              </div>
             )}
             {assignment.overAmount > 0 && !['Overdue Collected', 'Settled/Approved', 'Closed'].includes(assignment.status) && (
-              <>
-                <div className="fin-stat-divider" />
-                <div className="fin-stat-item">
-                  <span className="fin-stat-label">Over Amount</span>
-                  <span className="fin-stat-value negative">LKR {formatAmount(assignment.overAmount)}</span>
-                </div>
-              </>
+              <div>
+                <span className="block text-xs font-medium text-gray-600 mb-1">Over Amount</span>
+                <span className="block text-sm font-semibold text-red-600">LKR {formatAmount(assignment.overAmount)}</span>
+              </div>
             )}
             {(assignment.status === 'Balance Returned' || assignment.status === 'Closed' || (assignment.status === 'Settled/Approved' && assignment.balanceAmount > 0)) && assignment.balanceAmount > 0 && (
-              <>
-                <div className="fin-stat-divider" />
-                <div className="fin-stat-item">
-                  <span className="fin-stat-label">Balance Returned</span>
-                  <span className="fin-stat-value">LKR {formatAmount(assignment.balanceAmount)}</span>
-                </div>
-              </>
+              <div>
+                <span className="block text-xs font-medium text-gray-600 mb-1">Balance Returned</span>
+                <span className="block text-sm font-semibold text-gray-900">LKR {formatAmount(assignment.balanceAmount)}</span>
+              </div>
             )}
             {(assignment.status === 'Overdue Collected' || (assignment.status === 'Settled/Approved' && assignment.overAmount > 0)) && (
-              <>
-                <div className="fin-stat-divider" />
-                <div className="fin-stat-item">
-                  <span className="fin-stat-label">Overdue Collected</span>
-                  <span className="fin-stat-value">LKR {formatAmount(assignment.overAmount)}</span>
-                </div>
-              </>
+              <div>
+                <span className="block text-xs font-medium text-gray-600 mb-1">Overdue Collected</span>
+                <span className="block text-sm font-semibold text-gray-900">LKR {formatAmount(assignment.overAmount)}</span>
+              </div>
             )}
           </div>
 
           {/* Settlement Items Table */}
           {assignment.settlementItems && assignment.settlementItems.length > 0 && (
-            <div className="settlement-items-section">
-              <div className="settlement-items-header">
-                <span className="settlement-items-title">Settlement Items</span>
-                <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                  <span className="settlement-items-count">{assignment.settlementItems.length} item{assignment.settlementItems.length !== 1 ? 's' : ''}</span>
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Settlement Items</h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">{assignment.settlementItems.length} item{assignment.settlementItems.length !== 1 ? 's' : ''}</span>
                   {(assignment.status === 'Settled' || assignment.status === 'Balance To Be Return' || assignment.status === 'Over Due') && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId) && (
-                    <button className="btn-add-inline-item" onClick={() => {
+                    <button onClick={() => {
                       setInlineAddingRow(assignment.assignmentId);
                       setInlineNewItem({ itemName: '', actualCost: '', hasBill: false });
-                    }}>
+                    }} className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       Add New Pay Item
                     </button>
                   )}
                 </div>
               </div>
-              <div className="settlement-review-table">
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
                 {(() => {
                   const canEditItems = (assignment.status === 'Settled' || assignment.status === 'Balance To Be Return' || assignment.status === 'Over Due') && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId);
                   return (
                     <>
-                      <div className={`settlement-table-header ${canEditItems ? 'with-actions' : ''}`}>
-                        <div className="settlement-header-cell settlement-num-col">#</div>
-                        <div className="settlement-header-cell settlement-name-col">Item Name</div>
-                        <div className="settlement-header-cell settlement-type-col">Type</div>
-                        <div className="settlement-header-cell settlement-bill-col">Bill</div>
-                        <div className="settlement-header-cell settlement-amount-col">Actual Cost</div>
-                        {canEditItems && <div className="settlement-header-cell settlement-actions-col">Actions</div>}
+                      <div className="bg-gray-100 border-b border-gray-200 grid gap-0" style={{gridTemplateColumns: canEditItems ? '2rem 1fr 6rem 5rem 8rem 5rem' : '2rem 1fr 6rem 5rem 8rem'}}>
+                        <div className="px-3 py-3 text-xs font-semibold text-gray-700 text-center">#</div>
+                        <div className="px-3 py-3 text-xs font-semibold text-gray-700">Item Name</div>
+                        <div className="px-3 py-3 text-xs font-semibold text-gray-700">Type</div>
+                        <div className="px-3 py-3 text-xs font-semibold text-gray-700">Bill</div>
+                        <div className="px-3 py-3 text-xs font-semibold text-gray-700 text-right">Actual Cost</div>
+                        {canEditItems && <div className="px-3 py-3 text-xs font-semibold text-gray-700">Actions</div>}
                       </div>
-                      <div className="settlement-table-body">
+                      <div>
                         {assignment.settlementItems.map((item, idx) => {
                           const isEditing = inlineEditingItem?.assignmentId === assignment.assignmentId && inlineEditingItem?.itemId === item.settlementItemId;
                           return (
-                            <div key={idx} className={`settlement-table-row ${isEditing ? 'editing-row' : ''} ${canEditItems ? 'with-actions' : ''}`}>
-                              <div className="settlement-table-cell settlement-num-col settlement-num">{idx + 1}</div>
-                              <div className="settlement-table-cell settlement-name-col">
-                                {isEditing ? <input className="inline-edit-field" value={inlineEditName} onChange={e => setInlineEditName(e.target.value)} autoFocus /> : item.itemName}
+                            <div key={idx} className="grid gap-0 border-b border-gray-200 hover:bg-blue-50 transition" style={{gridTemplateColumns: (assignment.status === 'Settled' || assignment.status === 'Balance To Be Return' || assignment.status === 'Over Due') && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId) ? '2rem 1fr 6rem 5rem 8rem 5rem' : '2rem 1fr 6rem 5rem 8rem'}}>
+                              <div className="px-3 py-3 flex items-center justify-center text-sm text-gray-600">{idx + 1}</div>
+                              <div className="px-3 py-3 flex items-center">
+                                {isEditing ? <input className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" value={inlineEditName} onChange={e => setInlineEditName(e.target.value)} autoFocus /> : <span className="text-sm text-gray-900">{item.itemName}</span>}
                               </div>
-                              <div className="settlement-table-cell settlement-type-col">
-                                <span className={`type-badge ${item.isCustomItem ? 'custom' : 'template'}`}>{item.isCustomItem ? 'Custom' : 'Template'}</span>
+                              <div className="px-3 py-3 flex items-center">
+                                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${item.isCustomItem ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{item.isCustomItem ? 'Custom' : 'Template'}</span>
                               </div>
-                              <div className="settlement-table-cell settlement-bill-col">
+                              <div className="px-3 py-3 flex items-center">
                                 {item.hasBill ? (
-                                  <span className="bill-badge-small has-bill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>Bill</span>
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-medium"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>Bill</span>
                                 ) : (
-                                  <span className="bill-badge-small no-bill">No Bill</span>
+                                  <span className="text-xs text-gray-500">No Bill</span>
                                 )}
                               </div>
-                              <div className="settlement-table-cell settlement-amount-col settlement-amount-value">
+                              <div className="px-3 py-3 flex items-center justify-end">
                                 {isEditing ? (
-                                  <input className="inline-edit-field inline-edit-amount" type="number" step="0.01" value={inlineEditCost} onChange={e => setInlineEditCost(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveInlineEdit(assignment.assignmentId); if (e.key === 'Escape') cancelInlineEdit(); }} />
-                                ) : `LKR ${formatAmount(item.actualCost)}`}
+                                  <input className="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm text-right" type="number" step="0.01" value={inlineEditCost} onChange={e => setInlineEditCost(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveInlineEdit(assignment.assignmentId); if (e.key === 'Escape') cancelInlineEdit(); }} />
+                                ) : <span className="text-sm font-medium text-gray-900">LKR {formatAmount(item.actualCost)}</span>}
                               </div>
-                              {canEditItems && (
-                                <div className="settlement-table-cell settlement-actions-col">
+                              {((assignment.status === 'Settled' || assignment.status === 'Balance To Be Return' || assignment.status === 'Over Due') && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId)) && (
+                                <div className="px-3 py-3 flex items-center justify-center">
                                   {isEditing ? (
-                                    <div className="inline-action-btns">
-                                      <button className="inline-btn-save" onClick={() => saveInlineEdit(assignment.assignmentId)} title="Save"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
-                                      <button className="inline-btn-cancel" onClick={cancelInlineEdit} title="Cancel"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                    <div className="flex gap-2">
+                                      <button onClick={() => saveInlineEdit(assignment.assignmentId)} title="Save" className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-green-700 hover:bg-green-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
+                                      <button onClick={cancelInlineEdit} title="Cancel" className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                                     </div>
                                   ) : (
-                                    <div className="inline-action-btns">
-                                      <button className="inline-btn-edit" onClick={() => {
+                                    <div className="flex gap-2">
+                                      <button onClick={() => {
                                         if (invoicedJobIds.has(assignment.jobId)) { 
                                           setMessage('❌ Invoice already generated'); 
                                           setTimeout(() => setMessage(''), 3000); 
                                           return; 
                                         }
                                         startInlineEdit(assignment.assignmentId, item);
-                                      }} title="Edit item">
+                                      }} title="Edit item" className="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                       </button>
-                                      <button className="inline-btn-delete" onClick={() => deleteInlineItem(assignment.assignmentId, item)} title="Delete item">
+                                      <button onClick={() => deleteInlineItem(assignment.assignmentId, item)} title="Delete item" className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                       </button>
                                     </div>
@@ -1556,29 +1541,27 @@ function PettyCash() {
                           );
                         })}
                         {inlineAddingRow === assignment.assignmentId && (
-                          <div className="settlement-table-row new-item-row with-actions">
-                            <div className="settlement-table-cell settlement-num-col settlement-num"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-                            <div className="settlement-table-cell settlement-name-col"><input className="inline-edit-field" placeholder="Item name" value={inlineNewItem.itemName} onChange={e => setInlineNewItem({...inlineNewItem, itemName: e.target.value})} autoFocus /></div>
-                            <div className="settlement-table-cell settlement-type-col"><span className="type-badge custom">Custom</span></div>
-                            <div className="settlement-table-cell settlement-bill-col"><label className="inline-bill-check"><input type="checkbox" checked={inlineNewItem.hasBill} onChange={e => setInlineNewItem({...inlineNewItem, hasBill: e.target.checked})} />Bill</label></div>
-                            <div className="settlement-table-cell settlement-amount-col"><input className="inline-edit-field inline-edit-amount" type="number" step="0.01" placeholder="0.00" value={inlineNewItem.actualCost} onChange={e => setInlineNewItem({...inlineNewItem, actualCost: e.target.value})} onKeyDown={e => { if (e.key === 'Enter') saveInlineNewItem(assignment.assignmentId); if (e.key === 'Escape') { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); } }} /></div>
-                            <div className="settlement-table-cell settlement-actions-col">
-                              <div className="inline-action-btns">
-                                <button className="inline-btn-save" onClick={() => saveInlineNewItem(assignment.assignmentId)} title="Save new item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
-                                <button className="inline-btn-cancel" onClick={() => { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); }} title="Cancel"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                          <div className="grid gap-0 border-b border-gray-200 bg-green-50" style={{gridTemplateColumns: '2rem 1fr 6rem 5rem 8rem 5rem'}}>
+                            <div className="px-3 py-3 flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                            <div className="px-3 py-3"><input className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="Item name" value={inlineNewItem.itemName} onChange={e => setInlineNewItem({...inlineNewItem, itemName: e.target.value})} autoFocus /></div>
+                            <div className="px-3 py-3 flex items-center"><span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Custom</span></div>
+                            <div className="px-3 py-3 flex items-center"><label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={inlineNewItem.hasBill} onChange={e => setInlineNewItem({...inlineNewItem, hasBill: e.target.checked})} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" /><span className="text-xs font-medium text-gray-700">Bill</span></label></div>
+                            <div className="px-3 py-3"><input className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm text-right" type="number" step="0.01" placeholder="0.00" value={inlineNewItem.actualCost} onChange={e => setInlineNewItem({...inlineNewItem, actualCost: e.target.value})} onKeyDown={e => { if (e.key === 'Enter') saveInlineNewItem(assignment.assignmentId); if (e.key === 'Escape') { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); } }} /></div>
+                            <div className="px-3 py-3 flex items-center justify-center">
+                              <div className="flex gap-2">
+                                <button onClick={() => saveInlineNewItem(assignment.assignmentId)} title="Save new item" className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-green-700 hover:bg-green-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
+                                <button onClick={() => { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); }} title="Cancel" className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                               </div>
                             </div>
                           </div>
                         )}
-                        <div className={`settlement-table-row settlement-total-row ${assignment.status === 'Settled' && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId) ? 'with-actions' : ''}`}>
-                          <div className="settlement-table-cell settlement-num-col"></div>
-                          <div className="settlement-table-cell settlement-name-col"><strong>Total</strong></div>
-                          <div className="settlement-table-cell settlement-type-col"></div>
-                          <div className="settlement-table-cell settlement-bill-col"></div>
-                          <div className="settlement-table-cell settlement-amount-col settlement-amount-value">
-                            <strong>LKR {formatAmount(assignment.settlementItems.reduce((sum, i) => sum + parseFloat(i.actualCost || 0), 0))}</strong>
-                          </div>
-                          {assignment.status === 'Settled' && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId) && <div className="settlement-table-cell settlement-actions-col"></div>}
+                        <div className="grid gap-0 border-t-2 border-gray-300 bg-gray-100" style={{gridTemplateColumns: (assignment.status === 'Settled' && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId)) ? '2rem 1fr 6rem 5rem 8rem 5rem' : '2rem 1fr 6rem 5rem 8rem'}}>
+                          <div className="px-3 py-3"></div>
+                          <div className="px-3 py-3"><strong className="text-sm text-gray-900">Total</strong></div>
+                          <div className="px-3 py-3"></div>
+                          <div className="px-3 py-3"></div>
+                          <div className="px-3 py-3 text-right"><strong className="text-sm text-gray-900">LKR {formatAmount(assignment.settlementItems.reduce((sum, i) => sum + parseFloat(i.actualCost || 0), 0))}</strong></div>
+                          {(assignment.status === 'Settled' && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && assignment.assignedTo === user?.userId && !invoicedJobIds.has(assignment.jobId)) && <div className="px-3 py-3"></div>}
                         </div>
                       </div>
                     </>
@@ -1589,12 +1572,12 @@ function PettyCash() {
           )}
 
           {(!assignment.settlementItems || assignment.settlementItems.length === 0) && (
-            <div className="no-settlement-items">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+            <div className="flex flex-col items-center justify-center py-8 px-4 border border-gray-200 rounded-lg bg-gray-50">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" className="mb-3">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
               </svg>
-              <p>No settlement items recorded</p>
+              <p className="text-sm text-gray-600">No settlement items recorded</p>
             </div>
           )}
         </div>
@@ -1603,14 +1586,14 @@ function PettyCash() {
   );
 
   return (
-    <div className="petty-cash-page">
-      <div className="page-header">
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h1>Petty Cash Management</h1>
-          <p>{user?.role === 'Waff Clerk' ? 'Your assigned petty cash' : 'Manage petty cash assignments'}</p>
+          <h1 className="text-3xl font-bold text-gray-900">Petty Cash Management</h1>
+          <p className="text-gray-600 mt-1">{user?.role === 'Waff Clerk' ? 'Your assigned petty cash' : 'Manage petty cash assignments'}</p>
         </div>
         {(user?.role === 'Admin' || user?.role === 'Super Admin' || user?.role === 'Manager') && (
-          <button onClick={() => setShowAssignModal(true)} className="btn btn-primary">
+          <button onClick={() => setShowAssignModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
             + Assign Petty Cash
           </button>
         )}
@@ -1644,10 +1627,10 @@ function PettyCash() {
         const visible = balanceList.slice(userCarouselIndex, userCarouselIndex + CARDS_PER_VIEW);
 
         return (
-          <div className="card">
-            <div className="card-header" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-              <h2>User Petty Cash Summary</h2>
-              <span style={{fontSize:'13px', color:'#6b7280'}}>
+          <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm overflow-hidden mb-6">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">User Petty Cash Summary</h2>
+              <span className="text-xs text-gray-600">
                 {balanceList.length > 0 
                   ? `Showing ${userCarouselIndex + 1}–${Math.min(userCarouselIndex + CARDS_PER_VIEW, balanceList.length)} of ${balanceList.length} users`
                   : 'No Waff Clerks available'}
@@ -1655,19 +1638,13 @@ function PettyCash() {
             </div>
 
             {/* Month and Year Filter */}
-            <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center', padding: '15px' }}>
+            <div className="flex gap-4 mb-6 items-center p-4 bg-gray-50">
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '14px' }}>Month</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
                 <select 
                   value={userSummaryFilterMonth} 
                   onChange={(e) => setUserSummaryFilterMonth(parseInt(e.target.value))}
-                  style={{
-                    padding: '8px 12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                 >
                   <option value={1}>January</option>
                   <option value={2}>February</option>
@@ -1684,17 +1661,11 @@ function PettyCash() {
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '14px' }}>Year</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
                 <select 
                   value={userSummaryFilterYear} 
                   onChange={(e) => setUserSummaryFilterYear(parseInt(e.target.value))}
-                  style={{
-                    padding: '8px 12px',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                 >
                   {[2024, 2025, 2026].map(year => (
                     <option key={year} value={year}>{year}</option>
@@ -1705,33 +1676,35 @@ function PettyCash() {
 
             {balanceList.length > 0 ? (
               <>
-                <div className="ubc-wrapper">
-                  <div className="ubc-grid">
+                <div className="relative px-6 py-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {visible.map(([userId, balance]) => (
-                      <div key={userId} className="user-balance-card">
-                        <div className="user-balance-header">
-                          <div className="user-avatar">{balance.userName.charAt(0).toUpperCase()}</div>
-                          <div className="user-info">
-                            <h4>{balance.userName}</h4>
-                            <p className="user-id">{userId}</p>
+                      <div key={userId} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">{balance.userName.charAt(0).toUpperCase()}</div>
+                          <div>
+                            <h4 className="font-semibold text-sm text-gray-900">{balance.userName}</h4>
+                            <p className="text-xs text-gray-600">{userId}</p>
                           </div>
                         </div>
-                        <div className="user-balance-stats">
-                          <div className="stat-row">
-                            <span className="stat-label">Total Assigned:</span>
-                            <span className="stat-value">LKR {formatAmount(balance.totalAssigned)}</span>
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Assigned:</span>
+                            <span className="font-semibold text-gray-900">LKR {formatAmount(balance.totalAssigned)}</span>
                           </div>
-                          <div className="stat-row">
-                            <span className="stat-label">Total Spent:</span>
-                            <span className="stat-value">LKR {formatAmount(balance.totalSpent)}</span>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Spent:</span>
+                            <span className="font-semibold text-gray-900">LKR {formatAmount(balance.totalSpent)}</span>
                           </div>
-                          <div className="stat-row stat-row-divider">
-                            <span className="stat-label">Active Assignments:</span>
-                            <span className="stat-value stat-badge">{balance.activeAssignments}</span>
+                          <div className="border-t border-blue-200 pt-2">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Active:</span>
+                              <span className="inline-block bg-blue-200 text-blue-800 px-2 py-0.5 rounded text-xs font-medium">{balance.activeAssignments}</span>
+                            </div>
                           </div>
-                          <div className="stat-row">
-                            <span className="stat-label">Settled Assignments:</span>
-                            <span className="stat-value stat-badge">{balance.settledAssignments}</span>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Settled:</span>
+                            <span className="inline-block bg-green-200 text-green-800 px-2 py-0.5 rounded text-xs font-medium">{balance.settledAssignments}</span>
                           </div>
                         </div>
                       </div>
@@ -1739,29 +1712,32 @@ function PettyCash() {
                   </div>
 
                   {/* Carousel arrows — always visible */}
-                  <div className="ubc-arrows">
+                  <div className="flex items-center justify-between mt-4">
                     <button
-                      className={`ubc-arrow ${canPrev ? '' : 'disabled'}`}
+                      className={`p-2 rounded-lg transition ${canPrev ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-gray-50 text-gray-300 cursor-not-allowed'}`}
                       onClick={() => canPrev && setUserCarouselIndex(i => i - 1)}
                       title="Previous"
+                      disabled={!canPrev}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <polyline points="15 18 9 12 15 6"/>
                       </svg>
                     </button>
-                    <div className="ubc-dots">
+                    <div className="flex gap-1">
                       {Array.from({length: maxIndex + 1}).map((_, i) => (
                         <button
                           key={i}
-                          className={`ubc-dot ${i === userCarouselIndex ? 'active' : ''}`}
+                          className={`w-2 h-2 rounded-full transition ${i === userCarouselIndex ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'}`}
                           onClick={() => setUserCarouselIndex(i)}
+                          title={`Go to page ${i + 1}`}
                         />
                       ))}
                     </div>
                     <button
-                      className={`ubc-arrow ${canNext ? '' : 'disabled'}`}
+                      className={`p-2 rounded-lg transition ${canNext ? 'bg-gray-100 hover:bg-gray-200 text-gray-700' : 'bg-gray-50 text-gray-300 cursor-not-allowed'}`}
                       onClick={() => canNext && setUserCarouselIndex(i => i + 1)}
                       title="Next"
+                      disabled={!canNext}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <polyline points="9 18 15 12 9 6"/>
@@ -1771,7 +1747,7 @@ function PettyCash() {
                 </div>
               </>
             ) : (
-              <div style={{ padding: '20px', textAlign: 'center', color: '#6b7280' }}>
+              <div className="p-6 text-center text-gray-600">
                 <p>No Waff Clerks available</p>
               </div>
             )}
@@ -1781,30 +1757,34 @@ function PettyCash() {
 
       {/* User's Own Balance Summary */}
       {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+        <div className={`mb-6 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>
           {message}
         </div>
       )}
 
       {/* Cash Withdrawals Section */}
       {(user?.role === 'Admin' || user?.role === 'Super Admin') && (
-        <div className="card">
-          <div className="card-header collapsible-header" onClick={() => setWithdrawalsCollapsed(c => !c)}>
-            <h2>Cash Withdrawals / Deposits ({getFilteredCashWithdrawals().length})</h2>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm overflow-hidden mb-6">
+          <div className="p-6 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition" onClick={() => setWithdrawalsCollapsed(c => !c)}>
+            <h2 className="text-xl font-bold text-gray-900">
+              Cash Withdrawals / Deposits ({getFilteredCashWithdrawals().length})
+            </h2>
+            <div className="flex gap-3 items-center">
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowWithdrawalModal(true);
                 }} 
-                className="btn btn-primary"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition text-sm"
               >
                 + Record Withdrawal / Deposit
               </button>
               <svg
-                className={`collapse-arrow ${withdrawalsCollapsed ? 'collapsed' : ''}`}
-                width="20" height="20" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" strokeWidth="2"
+                className={`w-5 h-5 text-gray-600 transition transform ${withdrawalsCollapsed ? '-rotate-180' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2"
               >
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -1812,21 +1792,15 @@ function PettyCash() {
           </div>
 
           {!withdrawalsCollapsed && (
-            <div className="card-body">
+            <div className="p-6">
               {/* Month and Year Filters */}
-              <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
+              <div className="flex gap-4 mb-6 items-center">
                 <div>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '14px' }}>Month</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
                   <select 
                     value={withdrawalFilterMonth} 
                     onChange={(e) => setWithdrawalFilterMonth(parseInt(e.target.value))}
-                    style={{
-                      padding: '8px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      cursor: 'pointer'
-                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                   >
                     <option value={1}>January</option>
                     <option value={2}>February</option>
@@ -1843,17 +1817,11 @@ function PettyCash() {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '14px' }}>Year</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
                   <select 
                     value={withdrawalFilterYear} 
                     onChange={(e) => setWithdrawalFilterYear(parseInt(e.target.value))}
-                    style={{
-                      padding: '8px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      cursor: 'pointer'
-                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                   >
                     {[2024, 2025, 2026, 2027].map(year => (
                       <option key={year} value={year}>{year}</option>
@@ -1863,47 +1831,37 @@ function PettyCash() {
               </div>
 
               {getFilteredCashWithdrawals().length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>
+                <p className="text-center text-gray-600 py-8">
                   No cash withdrawals recorded for this period
                 </p>
               ) : (
-                <div className="assignments-table-wrapper">
-                  <table className="assignments-table-modern">
-                    <thead>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th style={{ width: '160px' }}>Withdrawal ID</th>
-                        <th style={{ width: '100px' }}>Type</th>
-                        <th style={{ width: '140px' }}>Date</th>
-                        <th style={{ width: '220px' }}>Bank Name</th>
-                        <th style={{ width: '180px' }}>Amount</th>
-                        <th style={{ width: '200px' }}>Recorded By</th>
-                        <th style={{ minWidth: '250px' }}>Notes</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-700 w-40">Withdrawal ID</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-700 w-24">Type</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-700 w-32">Date</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-700 min-w-fit">Bank Name</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-700 w-32">Amount</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-700 w-40">Recorded By</th>
+                        <th className="px-4 py-3 text-left font-semibold text-gray-700">Notes</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-200">
                       {getFilteredCashWithdrawals().map((withdrawal) => (
-                        <tr key={withdrawal.withdrawalId} className="assignment-row">
-                          <td>
-                            <span className="assignment-id">{withdrawal.withdrawalId}</span>
-                          </td>
-                          <td>
-                            <span className={`status-badge ${withdrawal.transactionType === 'withdrawal' ? 'status-unpaid' : 'status-completed'}`}>
+                        <tr key={withdrawal.withdrawalId} className="hover:bg-gray-50 transition">
+                          <td className="px-4 py-3 text-sm font-semibold text-blue-600">{withdrawal.withdrawalId}</td>
+                          <td className="px-4 py-3 text-sm">
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${withdrawal.transactionType === 'withdrawal' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                               {withdrawal.transactionType === 'withdrawal' ? 'Withdrawal' : 'Deposit'}
                             </span>
                           </td>
-                          <td>{new Date(withdrawal.withdrawalDate).toLocaleDateString()}</td>
-                          <td>{withdrawal.bankName}</td>
-                          <td>
-                            <span className="amount-badge">
-                              LKR {formatAmount(withdrawal.amount)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="assigned-to-name">
-                              {withdrawal.createdByName || withdrawal.createdBy}
-                            </span>
-                          </td>
-                          <td style={{ color: withdrawal.notes ? '#374151' : '#9ca3af' }}>
+                          <td className="px-4 py-3 text-sm text-gray-600">{new Date(withdrawal.withdrawalDate).toLocaleDateString()}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{withdrawal.bankName}</td>
+                          <td className="px-4 py-3 text-sm font-semibold text-gray-900">LKR {formatAmount(withdrawal.amount)}</td>
+                          <td className="px-4 py-3 text-sm text-gray-700">{withdrawal.createdByName || withdrawal.createdBy}</td>
+                          <td className="px-4 py-3 text-sm" style={{ color: withdrawal.notes ? '#374151' : '#9ca3af' }}>
                             {withdrawal.notes || 'No notes'}
                           </td>
                         </tr>
@@ -1922,9 +1880,9 @@ function PettyCash() {
         <ManagementSettlementSection user={user} />
       )}
 
-      <div className="card">
-        <div className="card-header collapsible-header" onClick={() => setAssignmentsCollapsed(c => !c)}>
-          <h2>
+      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm overflow-hidden mb-6">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition" onClick={() => setAssignmentsCollapsed(c => !c)}>
+          <h2 className="text-xl font-bold text-gray-900">
             Petty Cash Assignments 
             {(searchTerm || statusFilter !== 'all') ? (
               <span> ({getFilteredCount()} of {assignments.length})</span>
@@ -1933,8 +1891,8 @@ function PettyCash() {
             )}
           </h2>
           <svg
-            className={`collapse-arrow ${assignmentsCollapsed ? 'collapsed' : ''}`}
-            width="20" height="20" viewBox="0 0 24 24"
+            className={`w-5 h-5 text-gray-600 transition transform ${assignmentsCollapsed ? '-rotate-180' : ''}`}
+            viewBox="0 0 24 24"
             fill="none" stroke="currentColor" strokeWidth="2.5"
           >
             <polyline points="6 9 12 15 18 9"></polyline>
@@ -1942,18 +1900,22 @@ function PettyCash() {
         </div>
         
         {/* Search and Filter Bar */}
-        {!assignmentsCollapsed && <div className="search-filter-bar">
-          <div className="search-box">
+        {!assignmentsCollapsed && <div className="p-4 bg-gray-50 border-b border-gray-200 flex gap-4 items-center">
+          <div className="relative flex-1">
+            <svg className="absolute left-3 top-2.5 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search by ID, customer, or name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
             />
             {searchTerm && (
               <button 
-                className="clear-search-btn" 
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 transition" 
                 onClick={() => setSearchTerm('')}
                 title="Clear search"
               >
@@ -1965,58 +1927,54 @@ function PettyCash() {
             )}
           </div>
           
-          <div className="filter-box">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="all">All Statuses</option>
-              <option value="Assigned">Assigned</option>
-              <option value="Settled">Settled</option>
-              <option value="Balance To Be Return">Balance To Be Return</option>
-              <option value="Over Due">Over Due</option>
-              <option value="Pending Approval">Pending Approval</option>
-              <option value="Pending Approval / Balance">Pending Approval / Balance</option>
-              <option value="Pending Approval / Over Due">Pending Approval / Over Due</option>
-              <option value="Balance Returned">Balance Returned</option>
-              <option value="Overdue Collected">Overdue Collected</option>
-              <option value="Settled / Balance Returned">Settled / Balance Returned</option>
-              <option value="Settled / Over Due Collected">Settled / Over Due Collected</option>
-              <option value="Settled/Approved">Settled/Approved</option>
-              <option value="Settled/Rejected">Settled/Rejected</option>
-              <option value="Closed">Closed</option>
-            </select>
-          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
+          >
+            <option value="all">All Statuses</option>
+            <option value="Assigned">Assigned</option>
+            <option value="Settled">Settled</option>
+            <option value="Balance To Be Return">Balance To Be Return</option>
+            <option value="Over Due">Over Due</option>
+            <option value="Pending Approval">Pending Approval</option>
+            <option value="Pending Approval / Balance">Pending Approval / Balance</option>
+            <option value="Pending Approval / Over Due">Pending Approval / Over Due</option>
+            <option value="Balance Returned">Balance Returned</option>
+            <option value="Overdue Collected">Overdue Collected</option>
+            <option value="Settled / Balance Returned">Settled / Balance Returned</option>
+            <option value="Settled / Over Due Collected">Settled / Over Due Collected</option>
+            <option value="Settled/Approved">Settled/Approved</option>
+            <option value="Settled/Rejected">Settled/Rejected</option>
+            <option value="Closed">Closed</option>
+          </select>
         </div>}
         
         {!assignmentsCollapsed && (assignments.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">
-              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-              </svg>
-            </div>
-            <p>{user?.role === 'Waff Clerk' ? 'No petty cash assigned to you yet' : 'No petty cash assignments yet'}</p>
+          <div className="p-12 text-center">
+            <svg className="mx-auto mb-4 text-gray-400" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <p className="text-gray-600">{user?.role === 'Waff Clerk' ? 'No petty cash assigned to you yet' : 'No petty cash assignments yet'}</p>
           </div>
         ) : (
-          <div className="assignments-table-wrapper">
-            <table className="assignments-table-modern">
-              <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th>Assignment ID</th>
-                  <th>Job ID / CUSDEC Number</th>
-                  <th style={{minWidth: '220px'}}>Customer</th>
-                  <th>Assigned To</th>
-                  <th>Status</th>
-                  <th>Total Assigned</th>
-                  <th>Total Settled</th>
-                  <th>Assigned Date</th>
-                  <th>Actions</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Assignment ID</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Job ID / CUSDEC Number</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700 min-w-56">Customer</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Assigned To</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Total Assigned</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Total Settled</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Assigned Date</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {(() => {
                   // Group assignments by groupId
                   console.log('=== GROUPING DEBUG ===');
@@ -2233,39 +2191,39 @@ function PettyCash() {
                     return (
                       <React.Fragment key={groupId}>
                         {/* Group Header Row */}
-                        <tr className={`assignment-row ${isGroupExpanded ? 'expanded' : ''} ${isMulti ? 'group-row' : ''}`}>
-                          <td data-label="Assignment ID">
+                        <tr className="border-b border-gray-200 hover:bg-gray-50 transition">
+                          <td data-label="Assignment ID" className="px-4 py-3">
                             {isMulti ? (
-                              <strong className="assignment-id">#{first.assignmentId}</strong>
+                              <strong className="text-gray-900 font-semibold">#{first.assignmentId}</strong>
                             ) : (
-                              <strong className="assignment-id">#{first.assignmentId}</strong>
+                              <strong className="text-gray-900 font-semibold">#{first.assignmentId}</strong>
                             )}
                           </td>
-                          <td className="job-cusdec-cell" data-label="Job ID / CUSDEC">
+                          <td className="px-4 py-3" data-label="Job ID / CUSDEC">
                             {job && job.cusdecNumber ? (
-                              <span>{first.jobId} / {job.cusdecNumber}</span>
+                              <span className="text-gray-900">{first.jobId} / {job.cusdecNumber}</span>
                             ) : (
-                              <span>{first.jobId}</span>
+                              <span className="text-gray-900">{first.jobId}</span>
                             )}
                           </td>
-                          <td className="customer-name-cell" data-label="Customer">{job ? getCustomerName(job.customerId) : '-'}</td>
-                          <td className="assigned-to-cell" data-label="Assigned To">
-                            <span className="assigned-to-name">{first.assignedToName || first.assignedTo || '-'}</span>
+                          <td className="px-4 py-3" data-label="Customer"><span className="text-gray-900">{job ? getCustomerName(job.customerId) : '-'}</span></td>
+                          <td className="px-4 py-3" data-label="Assigned To">
+                            <span className="text-gray-900">{first.assignedToName || first.assignedTo || '-'}</span>
                           </td>
-                          <td data-label="Status">
+                          <td className="px-4 py-3" data-label="Status">
                             <span className={`status-badge ${getStatusBadgeClass(groupStatus)}`}>
                               {getStatusDisplay(groupStatus)}
                             </span>
                           </td>
-                          <td data-label="Total Assigned"><strong>LKR {formatAmount(totalAssigned)}</strong></td>
-                          <td data-label="Total Settled"><strong>LKR {formatAmount(totalSpent)}</strong></td>
-                          <td data-label="Assigned Date">{new Date(first.assignedDate).toLocaleDateString()}</td>
-                          <td data-label="Actions">
-                            <div className="actions-cell-hybrid">
+                          <td className="px-4 py-3" data-label="Total Assigned"><strong className="text-gray-900">LKR {formatAmount(totalAssigned)}</strong></td>
+                          <td className="px-4 py-3" data-label="Total Settled"><strong className="text-gray-900">LKR {formatAmount(totalSpent)}</strong></td>
+                          <td className="px-4 py-3" data-label="Assigned Date"><span className="text-gray-900">{new Date(first.assignedDate).toLocaleDateString()}</span></td>
+                          <td className="px-4 py-3" data-label="Actions">
+                            <div className="flex items-center gap-2">
                               {/* Unified action logic for both single and grouped assignments */}
                               {/* Show settle button if user is assigned to this petty cash (Waff Clerk or Manager) */}
                               {anyAssigned && (user?.role === 'Waff Clerk' || user?.role === 'Manager') && first.assignedTo === user?.userId && (
-                                <button className="btn-settle-primary" onClick={() => {
+                                <button onClick={() => {
                                   const settlementAssignment = {
                                     ...first,
                                     assignedAmount: totalAssigned,
@@ -2273,34 +2231,34 @@ function PettyCash() {
                                     groupAssignments: groupAssignments
                                   };
                                   openSettleModal(settlementAssignment);
-                                }} title="Settle petty cash">
+                                }} title="Settle petty cash" className="inline-flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
                                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                                   Settle
                                 </button>
                               )}
                               {canReturnBalance && (
-                                <button className="btn-return-balance btn-action" onClick={() => {
+                                <button onClick={() => {
                                   const assignmentForModal = isMulti
                                     ? { ...first, balanceAmount: totalBalance, overAmount: totalOver, groupAssignmentIds: groupAssignments.map(a => a.assignmentId) }
                                     : first;
                                   openSettlementModal(assignmentForModal, 'BALANCE_RETURN');
-                                }}>Return Balance</button>
+                                }} className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Return Balance</button>
                               )}
                               {canCollectOverdue && (
-                                <button className="btn-collect-overdue btn-action" onClick={() => {
+                                <button onClick={() => {
                                   const assignmentForModal = isMulti
                                     ? { ...first, balanceAmount: totalBalance, overAmount: totalOver, groupAssignmentIds: groupAssignments.map(a => a.assignmentId) }
                                     : first;
                                   openSettlementModal(assignmentForModal, 'OVERDUE_COLLECTION');
-                                }}>Collect Overdue</button>
+                                }} className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition">Collect Overdue</button>
                               )}
                               {/* Always show eye icon for viewing details */}
-                              <button className="btn-view-eye" onClick={() => {
+                              <button onClick={() => {
                                 const newExpanded = new Set(expandedRows);
                                 if (newExpanded.has(groupId)) newExpanded.delete(groupId);
                                 else newExpanded.add(groupId);
                                 setExpandedRows(newExpanded);
-                              }} title={isGroupExpanded ? 'Hide Details' : 'View Details'}>
+                              }} title={isGroupExpanded ? 'Hide Details' : 'View Details'} className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-200 transition text-gray-700">
                                 {isGroupExpanded ? (
                                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                                 ) : (
@@ -2313,55 +2271,56 @@ function PettyCash() {
 
                         {/* Expanded: for multi-assignment groups, show sub-assignments in a professional table */}
                         {isGroupExpanded && isMulti && (
-                          <tr className="sub-assignments-container-row">
-                            <td colSpan="8" style={{padding: 0, backgroundColor: '#f8f9fa'}}>
-                              <div className="sub-assignments-wrapper">
+                          <tr className="border-b border-gray-200">
+                            <td colSpan="9" className="p-0">
+                              <div className="bg-gray-50 p-4">
 
                                 {/* Sub-Assignments simple table: ID, Amount, Date only */}
-                                <div className="sub-assignments-header">
-                                  <h4>Sub-Assignments</h4>
-                                  <span className="sub-count">{groupAssignments.length} assignments</span>
-                                </div>
-                                <table className="sub-assignments-table">
-                                  <thead>
-                                    <tr>
-                                      <th style={{width: '30%'}}>Assignment ID</th>
-                                      <th style={{width: '35%'}}>Assigned Amount</th>
-                                      <th style={{width: '35%'}}>Assigned Date</th>
-                                    </tr>
-                                  </thead>
+                                <div className="mb-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <h4 className="text-base font-semibold text-gray-900">Sub-Assignments</h4>
+                                    <span className="text-sm text-gray-600">{groupAssignments.length} assignments</span>
+                                  </div>
+                                  <table className="w-full border-collapse">
+                                    <thead>
+                                      <tr className="bg-gray-100 border-b border-gray-200">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 w-1/3">Assignment ID</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 w-1/3">Assigned Amount</th>
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 w-1/3">Assigned Date</th>
+                                      </tr>
+                                    </thead>
                                   <tbody>
                                     {groupAssignments.map((assignment, index) => {
                                       const subAssignmentId = `#${first.assignmentId}-${index + 1}`;
                                       return (
-                                        <tr key={assignment.assignmentId} className="sub-assignment-row">
-                                          <td><strong className="sub-assignment-id">{subAssignmentId}</strong></td>
-                                          <td className="amount-cell"><strong>LKR {formatAmount(assignment.assignedAmount)}</strong></td>
-                                          <td className="date-cell">{new Date(assignment.assignedDate).toLocaleDateString()}</td>
+                                        <tr key={assignment.assignmentId} className="border-b border-gray-200 hover:bg-gray-100 transition">
+                                          <td className="px-4 py-3"><strong className="text-gray-900 font-semibold">#{subAssignmentId}</strong></td>
+                                          <td className="px-4 py-3"><strong className="text-gray-900 font-semibold">LKR {formatAmount(assignment.assignedAmount)}</strong></td>
+                                          <td className="px-4 py-3 text-gray-900">{new Date(assignment.assignedDate).toLocaleDateString()}</td>
                                         </tr>
                                       );
                                     })}
                                     {/* Totals Row */}
-                                    <tr className="sub-totals-row">
-                                      <td><strong>TOTAL</strong></td>
-                                      <td className="amount-cell"><strong>LKR {formatAmount(totalAssigned)}</strong></td>
+                                    <tr className="bg-gray-100 border-t-2 border-gray-300">
+                                      <td className="px-4 py-3"><strong className="text-gray-900 font-semibold">TOTAL</strong></td>
+                                      <td className="px-4 py-3"><strong className="text-gray-900 font-semibold">LKR {formatAmount(totalAssigned)}</strong></td>
                                       <td></td>
                                     </tr>
                                   </tbody>
                                 </table>
+                                </div>
 
                                 {/* Group Financial Summary — shown after settling */}
                                 {(allSettled || allSettlementItems.length > 0) && (
-                                  <div style={{marginTop: '1.5rem'}}>
-                                    <div className="financial-summary-strip">
-                                      <div className="fin-stat-item">
-                                        <span className="fin-stat-label">Total Assigned</span>
-                                        <span className="fin-stat-value">LKR {formatAmount(totalAssigned)}</span>
+                                  <div className="mt-6">
+                                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 bg-white p-4 rounded-lg border border-gray-200">
+                                      <div>
+                                        <span className="block text-xs font-medium text-gray-600 mb-1">Total Assigned</span>
+                                        <span className="block text-sm font-semibold text-gray-900">LKR {formatAmount(totalAssigned)}</span>
                                       </div>
-                                      <div className="fin-stat-divider" />
-                                      <div className="fin-stat-item">
-                                        <span className="fin-stat-label">Total Spent</span>
-                                        <span className="fin-stat-value">{totalSpent > 0 ? `LKR ${formatAmount(totalSpent)}` : '—'}</span>
+                                      <div>
+                                        <span className="block text-xs font-medium text-gray-600 mb-1">Total Spent</span>
+                                        <span className="block text-sm font-semibold text-gray-900">{totalSpent > 0 ? `LKR ${formatAmount(totalSpent)}` : '—'}</span>
                                       </div>
                                       {/* Balance to Return — only before approval/close */}
                                       {totalBalance > 0 && ![
@@ -2371,13 +2330,10 @@ function PettyCash() {
                                         'Settled/Approved',
                                         'Closed'
                                       ].includes(groupStatus) && (
-                                        <>
-                                          <div className="fin-stat-divider" />
-                                          <div className="fin-stat-item">
-                                            <span className="fin-stat-label">Balance to Return</span>
-                                            <span className="fin-stat-value positive">LKR {formatAmount(totalBalance)}</span>
-                                          </div>
-                                        </>
+                                        <div>
+                                          <span className="block text-xs font-medium text-gray-600 mb-1">Balance to Return</span>
+                                          <span className="block text-sm font-semibold text-green-600">LKR {formatAmount(totalBalance)}</span>
+                                        </div>
                                       )}
                                       {/* Balance Returned — after approval or close */}
                                       {totalBalance > 0 && [
@@ -2386,13 +2342,10 @@ function PettyCash() {
                                         'Settled/Approved',
                                         'Closed'
                                       ].includes(groupStatus) && (
-                                        <>
-                                          <div className="fin-stat-divider" />
-                                          <div className="fin-stat-item">
-                                            <span className="fin-stat-label">Balance Returned</span>
-                                            <span className="fin-stat-value">LKR {formatAmount(totalBalance)}</span>
-                                          </div>
-                                        </>
+                                        <div>
+                                          <span className="block text-xs font-medium text-gray-600 mb-1">Balance Returned</span>
+                                          <span className="block text-sm font-semibold text-gray-900">LKR {formatAmount(totalBalance)}</span>
+                                        </div>
                                       )}
                                       {/* Over Amount — only before collection/close */}
                                       {totalOver > 0 && ![
@@ -2402,13 +2355,10 @@ function PettyCash() {
                                         'Settled/Approved',
                                         'Closed'
                                       ].includes(groupStatus) && (
-                                        <>
-                                          <div className="fin-stat-divider" />
-                                          <div className="fin-stat-item">
-                                            <span className="fin-stat-label">Over Amount</span>
-                                            <span className="fin-stat-value negative">LKR {formatAmount(totalOver)}</span>
-                                          </div>
-                                        </>
+                                        <div>
+                                          <span className="block text-xs font-medium text-gray-600 mb-1">Over Amount</span>
+                                          <span className="block text-sm font-semibold text-red-600">LKR {formatAmount(totalOver)}</span>
+                                        </div>
                                       )}
                                       {/* Overdue Collected — after collection or close */}
                                       {totalOver > 0 && [
@@ -2417,90 +2367,89 @@ function PettyCash() {
                                         'Settled/Approved',
                                         'Closed'
                                       ].includes(groupStatus) && (
-                                        <>
-                                          <div className="fin-stat-divider" />
-                                          <div className="fin-stat-item">
-                                            <span className="fin-stat-label">Overdue Collected</span>
-                                            <span className="fin-stat-value">LKR {formatAmount(totalOver)}</span>
-                                          </div>
-                                        </>
+                                        <div>
+                                          <span className="block text-xs font-medium text-gray-600 mb-1">Overdue Collected</span>
+                                          <span className="block text-sm font-semibold text-gray-900">LKR {formatAmount(totalOver)}</span>
+                                        </div>
                                       )}
                                     </div>
 
                                     {/* Settlement Items across all assignments */}
                                     {allSettlementItems.length > 0 && (
-                                      <div className="settlement-items-section" style={{marginTop: '1rem'}}>
-                                        <div className="settlement-items-header">
-                                          <span className="settlement-items-title">Settlement Items</span>
-                                          <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                                            <span className="settlement-items-count">{allSettlementItems.length} item{allSettlementItems.length !== 1 ? 's' : ''}</span>
-                                            {(user?.role === 'Waff Clerk' || user?.role === 'Manager') && first.assignedTo === user?.userId && !invoicedJobIds.has(first.jobId) && (
-                                              <button className="btn-add-inline-item" onClick={() => {
-                                                setInlineAddingRow(first.assignmentId);
-                                                setInlineNewItem({ itemName: '', actualCost: '', hasBill: false });
-                                              }}>
-                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                                Add New Pay Item
-                                              </button>
-                                            )}
-                                          </div>
+                                      <div className="mt-4">
+                                      <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-gray-900">Settlement Items</h3>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-sm text-gray-600">{allSettlementItems.length} item{allSettlementItems.length !== 1 ? 's' : ''}</span>
+                                          {(user?.role === 'Waff Clerk' || user?.role === 'Manager') && first.assignedTo === user?.userId && !invoicedJobIds.has(first.jobId) && (
+                                            <button onClick={() => {
+                                              setInlineAddingRow(first.assignmentId);
+                                              setInlineNewItem({ itemName: '', actualCost: '', hasBill: false });
+                                            }} className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">
+                                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                              Add New Pay Item
+                                            </button>
+                                          )}
                                         </div>
-                                        <div className="settlement-review-table">
+                                      </div>
+                                      <div className="border border-gray-200 rounded-lg overflow-hidden">
                                           {(() => {
                                             const canEdit = (user?.role === 'Waff Clerk' || user?.role === 'Manager') && first.assignedTo === user?.userId && !invoicedJobIds.has(first.jobId);
                                             return (
                                               <>
-                                                <div className={`settlement-table-header ${canEdit ? 'with-actions' : ''}`}>
-                                                  <div className="settlement-header-cell settlement-num-col">#</div>
-                                                  <div className="settlement-header-cell settlement-name-col">Item Name</div>
-                                                  <div className="settlement-header-cell settlement-type-col">Type</div>
-                                                  <div className="settlement-header-cell settlement-bill-col">Bill</div>
-                                                  <div className="settlement-header-cell settlement-amount-col">Actual Cost</div>
-                                                  {canEdit && <div className="settlement-header-cell settlement-actions-col">Actions</div>}
+                                                <div className="bg-gray-100 border-b border-gray-200 grid gap-0" style={{gridTemplateColumns: canEdit ? '2rem 1fr 6rem 5rem 8rem 5rem' : '2rem 1fr 6rem 5rem 8rem'}}>
+                                                  <div className="px-3 py-3 text-xs font-semibold text-gray-700 text-center">#</div>
+                                                  <div className="px-3 py-3 text-xs font-semibold text-gray-700">Item Name</div>
+                                                  <div className="px-3 py-3 text-xs font-semibold text-gray-700">Type</div>
+                                                  <div className="px-3 py-3 text-xs font-semibold text-gray-700">Bill</div>
+                                                  <div className="px-3 py-3 text-xs font-semibold text-gray-700 text-right">Actual Cost</div>
+                                                  {canEdit && <div className="px-3 py-3 text-xs font-semibold text-gray-700">Actions</div>}
                                                 </div>
-                                                <div className="settlement-table-body">
+                                                <div>
                                                   {allSettlementItems.map((item, idx) => {
                                                     const isEditing = inlineEditingItem?.assignmentId === item.assignmentId && inlineEditingItem?.itemId === item.settlementItemId;
                                                     return (
-                                                      <div key={idx} className={`settlement-table-row ${isEditing ? 'editing-row' : ''} ${canEdit ? 'with-actions' : ''}`}>
-                                                        <div className="settlement-table-cell settlement-num-col settlement-num">{idx + 1}</div>
-                                                        <div className="settlement-table-cell settlement-name-col">
-                                                          {isEditing ? <input className="inline-edit-field" value={inlineEditName} onChange={e => setInlineEditName(e.target.value)} autoFocus /> : item.itemName}
+                                                      <div key={idx} className="grid gap-0 border-b border-gray-200 hover:bg-blue-50 transition" style={{gridTemplateColumns: canEdit ? '2rem 1fr 6rem 5rem 8rem 5rem' : '2rem 1fr 6rem 5rem 8rem'}}>
+                                                        <div className="px-3 py-3 flex items-center justify-center text-sm text-gray-600">{idx + 1}</div>
+                                                        <div className="px-3 py-3 flex items-center">
+                                                          {isEditing ? <input className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" value={inlineEditName} onChange={e => setInlineEditName(e.target.value)} autoFocus /> : <span className="text-sm text-gray-900">{item.itemName}</span>}
                                                         </div>
-                                                        <div className="settlement-table-cell settlement-type-col">
-                                                          <span className={`type-badge ${item.isCustomItem ? 'custom' : 'template'}`}>{item.isCustomItem ? 'Custom' : 'Template'}</span>
+                                                        <div className="px-3 py-3 flex items-center">
+                                                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${item.isCustomItem ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{item.isCustomItem ? 'Custom' : 'Template'}</span>
                                                         </div>
-                                                        <div className="settlement-table-cell settlement-bill-col">
-                                                          {item.hasBill
-                                                            ? <span className="bill-badge-small has-bill"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>Bill</span>
-                                                            : <span className="bill-badge-small no-bill">No Bill</span>}
+                                                        <div className="px-3 py-3 flex items-center">
+                                                          {item.hasBill ? (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-medium"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>Bill</span>
+                                                          ) : (
+                                                            <span className="text-xs text-gray-500">No Bill</span>
+                                                          )}
                                                         </div>
-                                                        <div className="settlement-table-cell settlement-amount-col settlement-amount-value">
+                                                        <div className="px-3 py-3 flex items-center justify-end">
                                                           {isEditing
-                                                            ? <input className="inline-edit-field inline-edit-amount" type="number" step="0.01" value={inlineEditCost} onChange={e => setInlineEditCost(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveInlineEdit(item.assignmentId); if (e.key === 'Escape') cancelInlineEdit(); }} />
-                                                            : `LKR ${formatAmount(item.actualCost)}`}
+                                                            ? <input className="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm text-right" type="number" step="0.01" value={inlineEditCost} onChange={e => setInlineEditCost(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') saveInlineEdit(item.assignmentId); if (e.key === 'Escape') cancelInlineEdit(); }} />
+                                                            : <span className="text-sm font-medium text-gray-900">LKR {formatAmount(item.actualCost)}</span>}
                                                         </div>
                                                         {canEdit && (
-                                                          <div className="settlement-table-cell settlement-actions-col">
+                                                          <div className="px-3 py-3 flex items-center justify-center">
                                                             {isEditing ? (
-                                                              <div className="inline-action-btns">
-                                                                <button className="inline-btn-save" onClick={() => saveInlineEdit(item.assignmentId)} title="Save"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
-                                                                <button className="inline-btn-cancel" onClick={cancelInlineEdit} title="Cancel"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                                              <div className="flex gap-2">
+                                                                <button onClick={() => saveInlineEdit(item.assignmentId)} title="Save" className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-green-700 hover:bg-green-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
+                                                                <button onClick={cancelInlineEdit} title="Cancel" className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                                                               </div>
                                                             ) : (
-                                                              <div className="inline-action-btns">
-                                                                <button className="inline-btn-edit" onClick={() => {
+                                                              <div className="flex gap-2">
+                                                                <button onClick={() => {
                                                                   if (invoicedJobIds.has(first.jobId)) {
                                                                     setMessage('❌ Invoice already generated');
                                                                     setTimeout(() => setMessage(''), 3000);
                                                                     return;
                                                                   }
                                                                   startInlineEdit(item.assignmentId, item);
-                                                                }} title="Edit item">
+                                                                }} title="Edit item" className="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition">
                                                                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                                                 </button>
                                                                 {item.isCustomItem && (
-                                                                  <button className="inline-btn-delete" onClick={() => deleteInlineItem(item.assignmentId, item)} title="Delete item">
+                                                                  <button onClick={() => deleteInlineItem(item.assignmentId, item)} title="Delete item" className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition">
                                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                                                   </button>
                                                                 )}
@@ -2513,30 +2462,28 @@ function PettyCash() {
                                                   })}
                                                   {/* Inline add new item row */}
                                                   {inlineAddingRow === first.assignmentId && (
-                                                    <div className="settlement-table-row new-item-row with-actions">
-                                                      <div className="settlement-table-cell settlement-num-col settlement-num"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-                                                      <div className="settlement-table-cell settlement-name-col"><input className="inline-edit-field" placeholder="Item name" value={inlineNewItem.itemName} onChange={e => setInlineNewItem({...inlineNewItem, itemName: e.target.value})} autoFocus /></div>
-                                                      <div className="settlement-table-cell settlement-type-col"><span className="type-badge custom">Custom</span></div>
-                                                      <div className="settlement-table-cell settlement-bill-col"><label className="inline-bill-check"><input type="checkbox" checked={inlineNewItem.hasBill} onChange={e => setInlineNewItem({...inlineNewItem, hasBill: e.target.checked})} />Bill</label></div>
-                                                      <div className="settlement-table-cell settlement-amount-col"><input className="inline-edit-field inline-edit-amount" type="number" step="0.01" placeholder="0.00" value={inlineNewItem.actualCost} onChange={e => setInlineNewItem({...inlineNewItem, actualCost: e.target.value})} onKeyDown={e => { if (e.key === 'Enter') saveInlineNewItem(first.assignmentId); if (e.key === 'Escape') { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); } }} /></div>
-                                                      <div className="settlement-table-cell settlement-actions-col">
-                                                        <div className="inline-action-btns">
-                                                          <button className="inline-btn-save" onClick={() => saveInlineNewItem(first.assignmentId)} title="Save"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
-                                                          <button className="inline-btn-cancel" onClick={() => { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); }} title="Cancel"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                                    <div className="grid gap-0 border-b border-gray-200 bg-green-50" style={{gridTemplateColumns: '2rem 1fr 6rem 5rem 8rem 5rem'}}>
+                                                      <div className="px-3 py-3 flex items-center justify-center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                                                      <div className="px-3 py-3"><input className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm" placeholder="Item name" value={inlineNewItem.itemName} onChange={e => setInlineNewItem({...inlineNewItem, itemName: e.target.value})} autoFocus /></div>
+                                                      <div className="px-3 py-3 flex items-center"><span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">Custom</span></div>
+                                                      <div className="px-3 py-3 flex items-center"><label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={inlineNewItem.hasBill} onChange={e => setInlineNewItem({...inlineNewItem, hasBill: e.target.checked})} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" /><span className="text-xs font-medium text-gray-700">Bill</span></label></div>
+                                                      <div className="px-3 py-3"><input className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm text-right" type="number" step="0.01" placeholder="0.00" value={inlineNewItem.actualCost} onChange={e => setInlineNewItem({...inlineNewItem, actualCost: e.target.value})} onKeyDown={e => { if (e.key === 'Enter') saveInlineNewItem(first.assignmentId); if (e.key === 'Escape') { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); } }} /></div>
+                                                      <div className="px-3 py-3 flex items-center justify-center">
+                                                        <div className="flex gap-2">
+                                                          <button onClick={() => saveInlineNewItem(first.assignmentId)} title="Save" className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-green-700 hover:bg-green-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
+                                                          <button onClick={() => { setInlineAddingRow(null); setInlineNewItem({ itemName: '', actualCost: '', hasBill: false }); }} title="Cancel" className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                                                         </div>
                                                       </div>
                                                     </div>
                                                   )}
                                                   {/* Total row */}
-                                                  <div className={`settlement-table-row settlement-total-row ${canEdit ? 'with-actions' : ''}`}>
-                                                    <div className="settlement-table-cell settlement-num-col"></div>
-                                                    <div className="settlement-table-cell settlement-name-col"><strong>Total</strong></div>
-                                                    <div className="settlement-table-cell settlement-type-col"></div>
-                                                    <div className="settlement-table-cell settlement-bill-col"></div>
-                                                    <div className="settlement-table-cell settlement-amount-col settlement-amount-value">
-                                                      <strong>LKR {formatAmount(allSettlementItems.reduce((sum, i) => sum + parseFloat(i.actualCost || 0), 0))}</strong>
-                                                    </div>
-                                                    {canEdit && <div className="settlement-table-cell settlement-actions-col"></div>}
+                                                  <div className="grid gap-0 border-t-2 border-gray-300 bg-gray-100" style={{gridTemplateColumns: canEdit ? '2rem 1fr 6rem 5rem 8rem 5rem' : '2rem 1fr 6rem 5rem 8rem'}}>
+                                                    <div className="px-3 py-3"></div>
+                                                    <div className="px-3 py-3"><strong className="text-sm text-gray-900">Total</strong></div>
+                                                    <div className="px-3 py-3"></div>
+                                                    <div className="px-3 py-3"></div>
+                                                    <div className="px-3 py-3 text-right"><strong className="text-sm text-gray-900">LKR {formatAmount(allSettlementItems.reduce((sum, i) => sum + parseFloat(i.actualCost || 0), 0))}</strong></div>
+                                                    {canEdit && <div className="px-3 py-3"></div>}
                                                   </div>
                                                 </div>
                                               </>
@@ -2621,16 +2568,16 @@ function PettyCash() {
       </div>
       {/* Assign Petty Cash Modal */}
       {showAssignModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-medium">
-            <div className="modal-header">
-              <h2>Assign Petty Cash</h2>
-              <button className="btn-close" onClick={() => setShowAssignModal(false)}>×</button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-2xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900">Assign Petty Cash</h2>
+              <button onClick={() => setShowAssignModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
             </div>
 
-            <form onSubmit={handleAssignSubmit} className="petty-cash-form">
-              <div className="form-group">
-                <label>Select Job <span className="required">*</span></label>
+            <form onSubmit={handleAssignSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Select Job <span className="text-red-600">*</span></label>
                 <select
                   value={assignFormData.jobId}
                   onChange={(e) => setAssignFormData({ 
@@ -2639,6 +2586,7 @@ function PettyCash() {
                     assignedTo: '' // Reset user selection when job changes
                   })}
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 >
                   <option value="">-- Select Job --</option>
                   {getAvailableJobs().map(job => (
@@ -2649,12 +2597,13 @@ function PettyCash() {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label>Assign To <span className="required">*</span></label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Assign To <span className="text-red-600">*</span></label>
                 <select
                   value={assignFormData.assignedTo}
                   onChange={(e) => setAssignFormData({ ...assignFormData, assignedTo: e.target.value })}
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 >
                   <option value="">-- Select User --</option>
                   {getAvailableUsersForJob(assignFormData.jobId).map(u => (
@@ -2664,12 +2613,12 @@ function PettyCash() {
                   ))}
                 </select>
                 {assignFormData.jobId && getAvailableUsersForJob(assignFormData.jobId).length === 0 && (
-                  <p className="helper-text warning">No users are assigned to this job.</p>
+                  <p className="text-yellow-600 text-sm mt-1">No users are assigned to this job.</p>
                 )}
               </div>
 
-              <div className="form-group">
-                <label>Amount (LKR) <span className="required">*</span></label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (LKR) <span className="text-red-600">*</span></label>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -2684,26 +2633,28 @@ function PettyCash() {
                   }}
                   placeholder="0.00"
                   required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 
-              <div className="form-group">
-                <label>Notes</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                 <textarea
                   value={assignFormData.notes}
                   onChange={(e) => setAssignFormData({ ...assignFormData, notes: e.target.value })}
                   placeholder="Optional notes..."
                   rows="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowAssignModal(false)} className="btn btn-secondary">
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                <button type="button" onClick={() => setShowAssignModal(false)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition font-medium">
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="btn btn-primary"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
                 >
                   Assign Petty Cash
                 </button>
@@ -2715,48 +2666,46 @@ function PettyCash() {
 
       {/* Settlement Modal */}
       {showSettleModal && selectedAssignment && (
-        <div className="modal-overlay">
-          <div className="modal modal-large modal-scrollable">
-            <div className="modal-header">
-              <h2>{(selectedAssignment.status === 'Settled' || selectedAssignment.status === 'Pending Approval' || selectedAssignment.status === 'Settled/Approved' || selectedAssignment.status === 'Settled/Rejected' || selectedAssignment.status === 'Balance Returned' || selectedAssignment.status === 'Overdue Collected' || selectedAssignment.status === 'Full Petty Cash Returned') ? 'Settlement Details' : 'Settle Petty Cash'}</h2>
-              <button className="btn-close" onClick={() => {
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-4xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900">{(selectedAssignment.status === 'Settled' || selectedAssignment.status === 'Pending Approval' || selectedAssignment.status === 'Settled/Approved' || selectedAssignment.status === 'Settled/Rejected' || selectedAssignment.status === 'Balance Returned' || selectedAssignment.status === 'Overdue Collected' || selectedAssignment.status === 'Full Petty Cash Returned') ? 'Settlement Details' : 'Settle Petty Cash'}</h2>
+              <button className="text-gray-500 hover:text-gray-700 text-2xl font-bold" onClick={() => {
                 setShowSettleModal(false);
                 setSelectedAssignment(null);
                 setSettlementItems([]);
               }}>×</button>
             </div>
 
-            <div className="modal-body-scrollable">
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-6">
 
-            <div className="settlement-info">
-              <div className="settlement-info-grid">
-                <div className="settlement-info-item">
-                  <span className="info-label">Job ID:</span>
-                  <span className="info-value">{selectedAssignment.jobId}</span>
-                </div>
-                <div className="settlement-info-item">
-                  <span className="info-label">Assigned Amount:</span>
-                  <span className="info-value">LKR {formatAmount(selectedAssignment.assignedAmount)}</span>
-                </div>
-                {(selectedAssignment.status === 'Settled' || selectedAssignment.status === 'Pending Approval' || selectedAssignment.status === 'Balance Returned' || selectedAssignment.status === 'Overdue Collected') && (
-                  <div className="settlement-info-item">
-                    <span className="info-label">Actual Spent:</span>
-                    <span className="info-value">LKR {formatAmount(selectedAssignment.actualSpent)}</span>
-                  </div>
-                )}
-                {selectedAssignment.balanceAmount > 0 && (
-                  <div className="settlement-info-item">
-                    <span className="info-label">Balance to Return:</span>
-                    <span className="info-value balance-positive">LKR {formatAmount(selectedAssignment.balanceAmount)}</span>
-                  </div>
-                )}
-                {selectedAssignment.overAmount > 0 && (
-                  <div className="settlement-info-item">
-                    <span className="info-label">Over Amount:</span>
-                    <span className="info-value balance-negative">LKR {formatAmount(selectedAssignment.overAmount)}</span>
-                  </div>
-                )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <span className="block text-xs font-medium text-gray-600 mb-1">Job ID:</span>
+                <span className="text-sm font-semibold text-gray-900">{selectedAssignment.jobId}</span>
               </div>
+              <div>
+                <span className="block text-xs font-medium text-gray-600 mb-1">Assigned Amount:</span>
+                <span className="text-sm font-semibold text-gray-900">LKR {formatAmount(selectedAssignment.assignedAmount)}</span>
+              </div>
+              {(selectedAssignment.status === 'Settled' || selectedAssignment.status === 'Pending Approval' || selectedAssignment.status === 'Balance Returned' || selectedAssignment.status === 'Overdue Collected') && (
+                <div>
+                  <span className="block text-xs font-medium text-gray-600 mb-1">Actual Spent:</span>
+                  <span className="text-sm font-semibold text-gray-900">LKR {formatAmount(selectedAssignment.actualSpent)}</span>
+                </div>
+              )}
+              {selectedAssignment.balanceAmount > 0 && (
+                <div>
+                  <span className="block text-xs font-medium text-gray-600 mb-1">Balance to Return:</span>
+                  <span className="text-sm font-semibold text-green-600">LKR {formatAmount(selectedAssignment.balanceAmount)}</span>
+                </div>
+              )}
+              {selectedAssignment.overAmount > 0 && (
+                <div>
+                  <span className="block text-xs font-medium text-gray-600 mb-1">Over Amount:</span>
+                  <span className="text-sm font-semibold text-red-600">LKR {formatAmount(selectedAssignment.overAmount)}</span>
+                </div>
+              )}
             </div>
 
             {(selectedAssignment.status === 'Settled' || 
@@ -2772,267 +2721,256 @@ function PettyCash() {
               selectedAssignment.status === 'Balance Returned' || 
               selectedAssignment.status === 'Overdue Collected' ||
               selectedAssignment.status === 'Closed') ? (
-              <div className="settlement-items-view">
-                <h3>Settlement Items {!canEditSettlement && '(Read-Only)'}</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Settlement Items {!canEditSettlement && '(Read-Only)'}</h3>
                 {canEditSettlement && (
-                  <p className="edit-notice">✏️ You can edit or delete items below (invoice not yet generated)</p>
+                  <p className="text-sm text-blue-700 mb-4 p-3 bg-blue-50 rounded-lg">✏️ You can edit or delete items below (invoice not yet generated)</p>
                 )}
-                <table className="settlement-items-table">
-                  <thead>
-                    <tr>
-                      <th>Item Name</th>
-                      <th>Actual Cost (LKR)</th>
-                      <th>Type</th>
-                      <th>Bill</th>
-                      <th>Paid By</th>
-                      {canEditSettlement && <th>Actions</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {settlementItems.map((item, index) => (
-                      <tr key={index} className={item.hasBill ? 'has-bill-row-view' : ''}>
-                        {editingSettlementItem === item.settlementItemId ? (
-                          <>
-                            <td>
-                              <input
-                                type="text"
-                                value={editItemName}
-                                onChange={(e) => setEditItemName(e.target.value)}
-                                className="edit-input"
-                                placeholder="Item name"
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={editActualCost}
-                                onChange={(e) => setEditActualCost(e.target.value)}
-                                className="edit-input"
-                                placeholder="0.00"
-                              />
-                            </td>
-                            <td>
-                              <span className={`item-type-badge ${item.isCustomItem ? 'custom' : 'template'}`}>
-                                {item.isCustomItem ? 'Custom' : 'Template'}
-                              </span>
-                            </td>
-                            <td className="bill-cell">
-                              {item.hasBill ? (
-                                <span className="bill-badge">
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                  </svg>
-                                  Bill
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-100 border-b border-gray-200">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-700">Item Name</th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-700">Actual Cost (LKR)</th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-700">Type</th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-700">Bill</th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-700">Paid By</th>
+                        {canEditSettlement && <th className="px-3 py-2 text-left font-semibold text-gray-700">Actions</th>}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {settlementItems.map((item, index) => (
+                        <tr key={index} className={`hover:bg-gray-50 transition ${item.hasBill ? 'bg-amber-50' : ''}`}>
+                          {editingSettlementItem === item.settlementItemId ? (
+                            <>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={editItemName}
+                                  onChange={(e) => setEditItemName(e.target.value)}
+                                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                  placeholder="Item name"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editActualCost}
+                                  onChange={(e) => setEditActualCost(e.target.value)}
+                                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                  placeholder="0.00"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${item.isCustomItem ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                                  {item.isCustomItem ? 'Custom' : 'Template'}
                                 </span>
-                              ) : (
-                                <span className="no-bill-badge">No Bill</span>
-                              )}
-                            </td>
-                            <td>
-                              <span className="paid-by-badge">
-                                {item.paidByName || 'Unknown'}
-                              </span>
-                            </td>
-                            <td className="actions-cell">
-                              <button onClick={saveEditedSettlementItem} className="btn-save-edit" title="Save changes">
-                                ✓
-                              </button>
-                              <button onClick={cancelEditSettlementItem} className="btn-cancel-edit" title="Cancel">
-                                ✗
-                              </button>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td>{item.itemName}</td>
-                            <td className="amount">LKR {formatAmount(item.actualCost)}</td>
-                            <td>
-                              <span className={`item-type-badge ${item.isCustomItem ? 'custom' : 'template'}`}>
-                                {item.isCustomItem ? 'Custom' : 'Template'}
-                              </span>
-                            </td>
-                            <td className="bill-cell">
-                              {item.hasBill ? (
-                                <span className="bill-badge">
-                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                  </svg>
-                                  Bill
-                                </span>
-                              ) : (
-                                <span className="no-bill-badge">No Bill</span>
-                              )}
-                            </td>
-                            <td>
-                              <span className="paid-by-badge">
-                                {item.paidByName || 'Unknown'}
-                              </span>
-                            </td>
-                            {canEditSettlement && (
-                              <td className="actions-cell">
-                                <button onClick={() => startEditSettlementItem(item)} className="btn-edit-item" title="Edit item">
-                                  ✏️
+                              </td>
+                              <td className="px-3 py-2">
+                                {item.hasBill ? (
+                                  <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 flex items-center gap-1">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                      <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    Bill
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-500 text-xs">No Bill</span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2 text-xs text-gray-700">{item.paidByName || 'Unknown'}</td>
+                              <td className="px-3 py-2 flex gap-2">
+                                <button onClick={saveEditedSettlementItem} className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-green-700 hover:bg-green-200 transition" title="Save">
+                                  ✓
                                 </button>
-                                <button onClick={() => deleteSettlementItem(item)} className="btn-delete-item" title="Delete item">
-                                  🗑️
+                                <button onClick={cancelEditSettlementItem} className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition" title="Cancel">
+                                  ✗
                                 </button>
                               </td>
-                            )}
-                          </>
-                        )}
+                            </>
+                          ) : (
+                            <>
+                              <td className="px-3 py-2 text-gray-900">{item.itemName}</td>
+                              <td className="px-3 py-2 font-semibold text-gray-900">LKR {formatAmount(item.actualCost)}</td>
+                              <td className="px-3 py-2">
+                                <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${item.isCustomItem ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                                  {item.isCustomItem ? 'Custom' : 'Template'}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2">
+                                {item.hasBill ? (
+                                  <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 flex items-center gap-1">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                      <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                    Bill
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-500 text-xs">No Bill</span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2 text-xs text-gray-700">{item.paidByName || 'Unknown'}</td>
+                              {canEditSettlement && (
+                                <td className="px-3 py-2 flex gap-2">
+                                  <button onClick={() => startEditSettlementItem(item)} className="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition text-sm" title="Edit">
+                                    ✏️
+                                  </button>
+                                  <button onClick={() => deleteSettlementItem(item)} className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-red-700 hover:bg-red-200 transition text-sm" title="Delete">
+                                    🗑️
+                                  </button>
+                                </td>
+                              )}
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                      <tr className="bg-gray-100 border-t-2 border-gray-300">
+                        <td className="px-3 py-2 font-semibold text-gray-900">Total</td>
+                        <td className="px-3 py-2 font-semibold text-gray-900">LKR {formatAmount(selectedAssignment.actualSpent)}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        {canEditSettlement && <td></td>}
                       </tr>
-                    ))}
-                    <tr className="total-row">
-                      <td><strong>Total</strong></td>
-                      <td className="amount"><strong>LKR {formatAmount(selectedAssignment.actualSpent)}</strong></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      {canEditSettlement && <td></td>}
-                    </tr>
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
-              <form onSubmit={handleSettleSubmit} className="settlement-form">
-                <h3>Settlement Items</h3>
-                <p className="helper-text info">Fill in only the items you paid for. Tick the "Bill" checkbox if you have a proof receipt for that item. Items already paid in other assignments are shown as read-only. You can also submit <strong>without entering any amounts</strong> to return the full petty cash allocation.</p>
-                <div className="settlement-items-list">
-                  {settlementItems.map((item, index) => (
-                    <div key={index} className={`settlement-item-row ${item.alreadyPaid ? 'paid-item-row' : ''} ${item.hasBill ? 'has-bill-row' : ''}`}>
-                      <div className="item-number">{index + 1}</div>
-                      <div className="form-group">
-                        <input
-                          type="text"
-                          value={item.itemName}
-                          onChange={(e) => handleSettlementItemChange(index, 'itemName', e.target.value)}
-                          placeholder="Item name"
-                          disabled={item.alreadyPaid}
-                          className={item.alreadyPaid ? 'paid-input' : ''}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={item.actualCost}
-                          onChange={(e) => handleSettlementItemChange(index, 'actualCost', e.target.value)}
-                          placeholder={item.alreadyPaid ? `Paid: ${item.actualCost}` : '0.00'}
-                          disabled={item.alreadyPaid}
-                          className={item.alreadyPaid ? 'paid-input' : ''}
-                        />
-                      </div>
-                      {/* Has Bill Checkbox */}
-                      {!item.alreadyPaid && (
-                        <div className="has-bill-check">
+              <form onSubmit={handleSettleSubmit} className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Settlement Items</h3>
+                  <p className="text-sm text-gray-600 mb-4">Fill in only the items you paid for. Tick the "Bill" checkbox if you have a proof receipt for that item. Items already paid in other assignments are shown as read-only. You can also submit <strong>without entering any amounts</strong> to return the full petty cash allocation.</p>
+                  <div className="space-y-3 mb-6">
+                    {settlementItems.map((item, index) => (
+                      <div key={index} className={`border rounded-lg p-4 ${item.alreadyPaid ? 'bg-gray-50 border-gray-300' : 'bg-white border-gray-200'} ${item.hasBill ? 'border-l-4 border-l-amber-400' : ''}`}>
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="text-sm font-medium text-gray-700">Item {index + 1}</div>
+                          {item.alreadyPaid && (
+                            <span className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded">Read-Only (Already Paid)</span>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <input
-                            type="checkbox"
-                            id={`hasBill-${index}`}
-                            checked={!!item.hasBill}
-                            onChange={(e) => handleSettlementItemChange(index, 'hasBill', e.target.checked)}
-                            title="Check if you have a proof bill/receipt for this item"
+                            type="text"
+                            value={item.itemName}
+                            onChange={(e) => handleSettlementItemChange(index, 'itemName', e.target.value)}
+                            placeholder="Item name"
+                            disabled={item.alreadyPaid}
+                            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm ${item.alreadyPaid ? 'bg-gray-100 text-gray-600 border-gray-300 cursor-not-allowed' : 'border-gray-300'}`}
                           />
-                          <label htmlFor={`hasBill-${index}`} title="Has proof bill/receipt">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                              <polyline points="14 2 14 8 20 8"></polyline>
-                              <line x1="16" y1="13" x2="8" y2="13"></line>
-                              <line x1="16" y1="17" x2="8" y2="17"></line>
-                              <polyline points="10 9 9 9 8 9"></polyline>
-                            </svg>
-                            Bill
-                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={item.actualCost}
+                            onChange={(e) => handleSettlementItemChange(index, 'actualCost', e.target.value)}
+                            placeholder={item.alreadyPaid ? `Paid: ${item.actualCost}` : '0.00'}
+                            disabled={item.alreadyPaid}
+                            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm ${item.alreadyPaid ? 'bg-gray-100 text-gray-600 border-gray-300 cursor-not-allowed' : 'border-gray-300'}`}
+                          />
                         </div>
-                      )}
-                      {item.alreadyPaid && item.hasBill && (
-                        <div className="bill-indicator" title="This item has a proof bill">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          Bill
+                        <div className="flex items-center gap-4 mt-3">
+                          {/* Has Bill Checkbox */}
+                          {!item.alreadyPaid && (
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={!!item.hasBill}
+                                onChange={(e) => handleSettlementItemChange(index, 'hasBill', e.target.checked)}
+                                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                title="Check if you have a proof bill/receipt for this item"
+                              />
+                              <span className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                  <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                                Bill
+                              </span>
+                            </label>
+                          )}
+                          {item.alreadyPaid && item.hasBill && (
+                            <span className="inline-flex items-center gap-1 text-sm text-amber-700 bg-amber-50 px-2 py-1 rounded" title="This item has a proof bill">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                              </svg>
+                              Bill
+                            </span>
+                          )}
+                          {item.alreadyPaid && (
+                            <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                              Paid by {item.paidByName || 'Unknown'}
+                            </span>
+                          )}
+                          {!item.alreadyPaid && settlementItems.filter(i => !i.alreadyPaid).length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeSettlementItem(index)}
+                              className="ml-auto inline-flex items-center justify-center w-7 h-7 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition"
+                              title="Remove item"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </button>
+                          )}
                         </div>
-                      )}
-                      {item.alreadyPaid && (
-                        <div className="paid-by-indicator">
-                          <span className="paid-by-badge">
-                            {item.assignmentId ? `Paid in Assignment #${item.assignmentId}` : 'Paid'}
-                            {item.paidByName ? ` by ${item.paidByName}` : ''}
-                          </span>
-                        </div>
-                      )}
-                      {!item.alreadyPaid && settlementItems.filter(i => !i.alreadyPaid).length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeSettlementItem(index)}
-                          className="btn-remove-item"
-                          title="Remove item"
-                        >
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                      )}
                     </div>
                   ))}
                 </div>
 
-                <button type="button" onClick={addSettlementItem} className="btn btn-secondary btn-add-item">
-                  + Add Custom Item
-                </button>
+                    <button type="button" onClick={addSettlementItem} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium text-sm">
+                      + Add Custom Item
+                    </button>
+                </div>
 
-                <div className="settlement-summary">
-                  <div className="summary-row">
-                    <span>Assigned Amount:</span>
-                    <span>LKR {formatAmount(selectedAssignment.assignedAmount)}</span>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Assigned Amount:</span>
+                    <span className="text-sm font-semibold text-gray-900">LKR {formatAmount(selectedAssignment.assignedAmount)}</span>
                   </div>
-                  <div className="summary-row">
-                    <span>Total Spent:</span>
-                    <span>LKR {formatAmount(calculateTotalSpent())}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">Total Spent:</span>
+                    <span className="text-sm font-semibold text-gray-900">LKR {formatAmount(calculateTotalSpent())}</span>
                   </div>
-                  <div className="summary-row total">
+                  <div className="border-t border-gray-200 pt-3 flex justify-between items-center">
                     {calculateTotalSpent() < selectedAssignment.assignedAmount ? (
                       <>
-                        <span>Balance to Return:</span>
-                        <span className="balance-positive">
+                        <span className="text-sm font-medium text-gray-700">Balance to Return:</span>
+                        <span className="text-sm font-semibold text-green-600">
                           LKR {formatAmount(selectedAssignment.assignedAmount - calculateTotalSpent())}
                         </span>
                       </>
                     ) : calculateTotalSpent() > selectedAssignment.assignedAmount ? (
                       <>
-                        <span>Over Amount:</span>
-                        <span className="balance-negative">
+                        <span className="text-sm font-medium text-gray-700">Over Amount:</span>
+                        <span className="text-sm font-semibold text-red-600">
                           LKR {formatAmount(calculateTotalSpent() - selectedAssignment.assignedAmount)}
                         </span>
                       </>
                     ) : (
                       <>
-                        <span>Exact Match:</span>
-                        <span>LKR 0.00</span>
+                        <span className="text-sm font-medium text-gray-700">Exact Match:</span>
+                        <span className="text-sm font-semibold text-gray-900">LKR 0.00</span>
                       </>
                     )}
                   </div>
                   {settlementItems.filter(i => !i.alreadyPaid).length === 0 && (
-                    <div className="full-return-notice">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '8px'}}>
+                    <div className="bg-blue-50 border border-blue-200 rounded p-3 flex gap-2 mt-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0 text-blue-700 mt-0.5">
                         <circle cx="12" cy="12" r="10"/>
                         <line x1="12" y1="16" x2="12" y2="12"/>
                         <line x1="12" y1="8" x2="12.01" y2="8"/>
                       </svg>
-                      <span><strong>Full Return:</strong> Submitting without item amounts will return the entire LKR {formatAmount(selectedAssignment.assignedAmount)} and require approval.</span>
+                      <span className="text-xs text-blue-700"><strong>Full Return:</strong> Submitting without item amounts will return the entire LKR {formatAmount(selectedAssignment.assignedAmount)} and require approval.</span>
                     </div>
                   )}
                 </div>
 
-                <div className="modal-actions">
+                <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => {
@@ -3040,11 +2978,11 @@ function PettyCash() {
                       setSelectedAssignment(null);
                       setSettlementItems([]);
                     }}
-                    className="btn btn-secondary"
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition font-medium"
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-success">Settle Petty Cash</button>
+                  <button type="submit" className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-medium">Settle Petty Cash</button>
                 </div>
               </form>
             )}
@@ -3055,14 +2993,14 @@ function PettyCash() {
 
       {/* Cash Balance Settlement Modal */}
       {showSettlementModal && selectedAssignment && (
-        <div className="modal-overlay">
-          <div className="modal-content settlement-modal">
-            <div className="modal-header">
-              <h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-2xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">
                 {settlementFormData.settlementType === 'BALANCE_RETURN' ? 'Return Balance Cash' : 'Collect Overdue Cash'}
-              </h3>
+              </h2>
               <button
-                className="modal-close"
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
                 onClick={() => {
                   setShowSettlementModal(false);
                   setSelectedAssignment(null);
@@ -3073,62 +3011,62 @@ function PettyCash() {
               </button>
             </div>
             
-            <div className="modal-body">
-              <div className="assignment-info">
-                <div className="info-row">
-                  <span className="info-label">Assignment:</span>
-                  <span className="info-value">#{selectedAssignment.assignmentId}</span>
+            <div className="p-6 space-y-6">
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Assignment:</span>
+                  <span className="text-sm text-gray-900">#{selectedAssignment.assignmentId}</span>
                 </div>
-                <div className="info-row">
-                  <span className="info-label">Job ID:</span>
-                  <span className="info-value">{selectedAssignment.jobId}</span>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">Job ID:</span>
+                  <span className="text-sm text-gray-900">{selectedAssignment.jobId}</span>
                 </div>
-                <div className="info-row">
-                  <span className="info-label">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium text-gray-700">
                     {settlementFormData.settlementType === 'BALANCE_RETURN' ? 'Balance Amount:' : 'Overdue Amount:'}
                   </span>
-                  <span className={`info-value ${settlementFormData.settlementType === 'BALANCE_RETURN' ? 'balance-positive' : 'balance-negative'}`}>
+                  <span className={`text-sm font-semibold ${settlementFormData.settlementType === 'BALANCE_RETURN' ? 'text-green-600' : 'text-red-600'}`}>
                     LKR {formatAmount(settlementFormData.amount)}
                   </span>
                 </div>
               </div>
 
-              <form onSubmit={handleSettlementSubmit} className="settlement-form">
-                <div className="form-group">
-                  <label>Settlement Type</label>
+              <form onSubmit={handleSettlementSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Settlement Type</label>
                   <input
                     type="text"
                     value={settlementFormData.settlementType === 'BALANCE_RETURN' ? 'Return Balance to Management' : 'Collect Overdue from Management'}
                     disabled
-                    className="form-control disabled"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
                   />
                 </div>
 
-                <div className="form-group">
-                  <label>Amount (LKR)</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Amount (LKR)</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0.01"
                     value={settlementFormData.amount}
                     onChange={(e) => setSettlementFormData({...settlementFormData, amount: e.target.value})}
-                    className="form-control"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     required
                   />
                 </div>
 
-                <div className="form-group">
-                  <label>Notes</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                   <textarea
                     value={settlementFormData.notes}
                     onChange={(e) => setSettlementFormData({...settlementFormData, notes: e.target.value})}
-                    className="form-control"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     rows="3"
                     placeholder="Add any additional notes or details"
                   />
                 </div>
 
-                <div className="modal-actions">
+                <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => {
@@ -3136,11 +3074,11 @@ function PettyCash() {
                       setSelectedAssignment(null);
                       setSettlementFormData({ settlementType: '', amount: '', notes: '' });
                     }}
-                    className="btn btn-secondary"
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition font-medium"
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
+                  <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">
                     {settlementFormData.settlementType === 'BALANCE_RETURN' ? 'Request Balance Return' : 'Request Overdue Collection'}
                   </button>
                 </div>
@@ -3152,24 +3090,24 @@ function PettyCash() {
 
       {/* Edit Settlement Modal (from main table) */}
       {showEditSettlementModal && selectedAssignment && (
-        <div className="modal-overlay">
-          <div className="modal modal-large modal-scrollable">
-            <div className="modal-header">
-              <h2>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '8px', verticalAlign: 'middle'}}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-4xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
                 Edit Settlement Items
               </h2>
-              <button className="btn-close" onClick={() => {
+              <button className="text-gray-500 hover:text-gray-700 text-2xl font-bold" onClick={() => {
                 setShowEditSettlementModal(false);
                 setEditSettlementItems([]);
                 setSelectedAssignment(null);
               }}>×</button>
             </div>
 
-            <div className="modal-body-scrollable">
+            <div className="p-6 max-h-[70vh] overflow-y-auto space-y-6">
               <div className="settlement-info">
                 <div className="settlement-info-grid">
                   <div className="settlement-info-item">
@@ -3488,14 +3426,14 @@ const ManagementSettlementSection = ({ user }) => {
   };
 
   return (
-    <div className="card management-settlements">
-      <div className="card-header collapsible-header" onClick={() => setCollapsed(c => !c)}>
-        <h2>
+    <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm overflow-hidden mb-6">
+      <div className="p-6 border-b border-gray-200 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition" onClick={() => setCollapsed(c => !c)}>
+        <h2 className="text-xl font-bold text-gray-900">
           Cash Balance Settlement Management
         </h2>
         <svg
-          className={`collapse-arrow ${collapsed ? 'collapsed' : ''}`}
-          width="20" height="20" viewBox="0 0 24 24"
+          className={`w-5 h-5 text-gray-600 transition transform ${collapsed ? '-rotate-180' : ''}`}
+          viewBox="0 0 24 24"
           fill="none" stroke="currentColor" strokeWidth="2.5"
         >
           <polyline points="6 9 12 15 18 9"></polyline>
@@ -3505,14 +3443,14 @@ const ManagementSettlementSection = ({ user }) => {
       {!collapsed && (<>
 
       {message && (
-        <div className={`alert ${message.includes('Error') || message.includes('Failed') ? 'alert-error' : 'alert-success'}`}>
+        <div className={`mb-4 p-4 rounded-lg border-l-4 mx-6 mt-6 ${message.includes('Error') || message.includes('Failed') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>
           {message}
         </div>
       )}
 
-      <div className="settlement-tabs">
+      <div className="flex gap-2 p-4 bg-gray-50 border-b border-gray-200 overflow-x-auto">
         <button 
-          className={`tab-button ${activeTab === 'pending' ? 'active' : ''}`}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium text-sm whitespace-nowrap ${activeTab === 'pending' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
           onClick={() => { setActiveTab('pending'); setCurrentPage(1); }}
           title="View pending settlements"
         >
@@ -3523,7 +3461,7 @@ const ManagementSettlementSection = ({ user }) => {
           Pending ({pendingCount})
         </button>
         <button 
-          className={`tab-button ${activeTab === 'approved' ? 'active' : ''}`}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium text-sm whitespace-nowrap ${activeTab === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
           onClick={() => { setActiveTab('approved'); setCurrentPage(1); }}
           title="View approved settlements"
         >
@@ -3533,7 +3471,7 @@ const ManagementSettlementSection = ({ user }) => {
           Approved ({approvedCount})
         </button>
         <button 
-          className={`tab-button ${activeTab === 'rejected' ? 'active' : ''}`}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium text-sm whitespace-nowrap ${activeTab === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
           onClick={() => { setActiveTab('rejected'); setCurrentPage(1); }}
           title="View rejected settlements"
         >
@@ -3545,7 +3483,7 @@ const ManagementSettlementSection = ({ user }) => {
           Rejected ({rejectedCount})
         </button>
         <button 
-          className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium text-sm whitespace-nowrap ${activeTab === 'all' ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
           onClick={() => { setActiveTab('all'); setCurrentPage(1); }}
           title="View all settlements"
         >
@@ -3557,77 +3495,87 @@ const ManagementSettlementSection = ({ user }) => {
         </button>
       </div>
 
-      <div className="settlements-content">
-        {loading && <div className="loading">Loading settlements...</div>}
+      <div className="p-6">
+        {loading && <div className="text-center py-8 text-gray-600">Loading settlements...</div>}
         
         {!loading && filteredSettlements.length === 0 && (
-          <div className="empty-state">
-            <p>No {activeTab} settlements found.</p>
+          <div className="text-center py-12">
+            <svg className="mx-auto mb-4 text-gray-400" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <p className="text-gray-600">No {activeTab} settlements found.</p>
           </div>
         )}
 
         {!loading && filteredSettlements.length > 0 && (
           <>
-            <div className="settlements-table-wrapper">
-              <table className="settlements-table">
-                <thead>
+            <div className="overflow-x-auto mb-6">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th>Settlement ID</th>
-                    <th>Waff Clerk</th>
-                    <th>Job ID / Cusdec ID</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Request Date</th>
-                    <th>Actions</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Settlement ID</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Waff Clerk</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Job ID / Cusdec ID</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Type</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Amount</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Request Date</th>
+                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-gray-200">
                   {paginatedSettlements.map(settlement => (
-                    <tr key={settlement.settlementId}>
-                      <td data-label="Settlement ID">
-                        <strong>{settlement.settlementId}</strong>
+                    <tr key={settlement.settlementId} className="hover:bg-gray-50 transition">
+                      <td className="px-4 py-3 text-gray-900 font-semibold">
+                        {settlement.settlementId}
                       </td>
-                      <td data-label="Waff Clerk">{settlement.userName}</td>
-                      <td data-label="Job ID / Cusdec ID">
+                      <td className="px-4 py-3 text-gray-700">{settlement.userName}</td>
+                      <td className="px-4 py-3 text-gray-700">
                         {settlement.jobId
                           ? `${settlement.jobId}${settlement.cusdecNumber ? ' / ' + settlement.cusdecNumber : ''}`
                           : '-'}
                       </td>
-                      <td data-label="Type">
-                        <span className={`type-badge ${settlement.settlementType === 'BALANCE_RETURN' ? 'type-return' : 'type-collect'}`}>
+                      <td className="px-4 py-3">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${settlement.settlementType === 'BALANCE_RETURN' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
                           {settlement.settlementType === 'BALANCE_RETURN' ? 'Balance Return' : 'Overdue Collection'}
                         </span>
                       </td>
-                      <td data-label="Amount">
-                        <strong>LKR {settlement.amount.toLocaleString()}</strong>
+                      <td className="px-4 py-3 text-gray-900 font-semibold">
+                        LKR {settlement.amount.toLocaleString()}
                       </td>
-                      <td data-label="Status">
-                        <span className={`status-badge ${getStatusBadgeClass(settlement.status)}`}>
+                      <td className="px-4 py-3">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          settlement.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          settlement.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
                           {settlement.statusDisplay}
                         </span>
                       </td>
-                      <td data-label="Request Date">
+                      <td className="px-4 py-3 text-gray-700">
                         {new Date(settlement.requestDate).toLocaleDateString()}
                       </td>
-                      <td data-label="Actions">
-                        <div className="settlement-actions">
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
                           {settlement.status === 'PENDING' && (
                             <>
                               <button
-                                className="btn-action btn-approve"
+                                className="inline-flex items-center px-3 py-1 rounded-lg bg-green-600 hover:bg-green-700 text-white transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={() => handleApprove(settlement.settlementId)}
                                 disabled={actionLoading[settlement.settlementId]}
+                                title="Approve this settlement"
                               >
                                 {actionLoading[settlement.settlementId] === 'approving' ? 'Approving...' : 'Approve'}
                               </button>
                               <button
-                                className="btn-action btn-reject"
+                                className="inline-flex items-center px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                 onClick={() => {
                                   const notes = prompt('Please provide a reason for rejection:');
                                   if (notes) handleReject(settlement.settlementId, notes);
                                 }}
                                 disabled={actionLoading[settlement.settlementId]}
+                                title="Reject this settlement"
                               >
                                 {actionLoading[settlement.settlementId] === 'rejecting' ? 'Rejecting...' : 'Reject'}
                               </button>

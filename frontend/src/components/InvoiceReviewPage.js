@@ -4,7 +4,6 @@ import { invoiceReviewService } from '../api/services/invoiceReviewService';
 import { jobService } from '../api/services/jobService';
 import Pagination from './Pagination';
 import RejectionReasonModal from './RejectionReasonModal';
-import '../styles/InvoiceReviewPage.css';
 
 function InvoiceReviewPage() {
   const { user } = useAuth();
@@ -136,8 +135,8 @@ function InvoiceReviewPage() {
 
   if (user?.role !== 'Waff Clerk') {
     return (
-      <div className="invoice-review-page">
-        <div className="alert alert-error">
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
           Access Denied: This page is for Waff Clerks only
         </div>
       </div>
@@ -148,132 +147,142 @@ function InvoiceReviewPage() {
   const totalPages = getTotalPages();
 
   return (
-    <div className="invoice-review-page">
-      <div className="page-header">
-        <h1>📋 Invoice Reviews</h1>
-        <p>Review invoices sent by Admin/Manager and approve or reject them</p>
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">📋 Invoice Reviews</h1>
+          <p className="text-gray-600 mt-1">Review invoices sent by Admin/Manager and approve or reject them</p>
+        </div>
       </div>
 
       {message && (
-        <div className="alert alert-info">
+        <div className={`mb-6 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>
           {message}
         </div>
       )}
 
-      <div className="card">
-        <div className="card-header">
-          <h2>Pending & Completed Reviews ({getFilteredReviews().length})</h2>
-          <div className="filter-section">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="status-filter"
-            >
-              <option value="All">All Reviews</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
+      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">Pending & Completed Reviews ({getFilteredReviews().length})</h2>
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="All">All Reviews</option>
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
         </div>
 
-        <div className="card-body">
+          <div className="p-6">
           {loading ? (
-            <div className="loading-state">
-              <p>Loading reviews...</p>
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">Loading reviews...</p>
             </div>
           ) : paginatedReviews.length === 0 ? (
-            <div className="empty-state">
-              <p>No invoice reviews found</p>
+            <div className="text-center py-12">
+              <svg className="mx-auto mb-4 text-gray-400" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9 12h6m-6 4h6M7 20h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"></path>
+              </svg>
+              <p className="text-gray-600">No invoice reviews found</p>
             </div>
           ) : (
             <>
-              <div className="reviews-list">
+              <div className="space-y-4">
                 {paginatedReviews.map((review) => (
-                  <div key={review.reviewId} className="review-card">
-                    <div className="review-header">
-                      <div className="review-title-section">
-                        <h3>Job ID: {review.jobId}</h3>
-                        <span className={`status-badge ${getStatusBadgeClass(review.status)}`}>
+                  <div key={review.reviewId} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                    {/* Review Header */}
+                    <div 
+                      className="bg-gray-50 p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100" 
+                      onClick={() => setExpandedReviewId(expandedReviewId === review.reviewId ? null : review.reviewId)}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900">Job ID: {review.jobId}</h3>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          review.status === 'Pending' ? 'bg-yellow-100 text-yellow-700' :
+                          review.status === 'Approved' ? 'bg-green-100 text-green-700' :
+                          review.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
                           {review.status}
                         </span>
                       </div>
-                      <button
-                        className="expand-btn"
-                        onClick={() => setExpandedReviewId(expandedReviewId === review.reviewId ? null : review.reviewId)}
-                      >
+                      <button className="text-xl text-gray-600 hover:text-gray-900">
                         {expandedReviewId === review.reviewId ? '▼' : '▶'}
                       </button>
                     </div>
 
-                    <div className="review-summary">
-                      <div className="summary-item">
-                        <label>Shipment Category:</label>
-                        <span>{review.invoiceDetails?.shipmentCategory || '-'}</span>
+                    {/* Review Summary */}
+                    <div className="p-4 grid grid-cols-4 gap-4 border-b border-gray-200 bg-white">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Shipment Category</label>
+                        <span className="text-sm text-gray-900">{review.invoiceDetails?.shipmentCategory || '-'}</span>
                       </div>
-                      <div className="summary-item">
-                        <label>Total Amount:</label>
-                        <span className="amount">LKR {formatAmount(review.invoiceDetails?.totalAmount)}</span>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Total Amount</label>
+                        <span className="text-lg font-semibold text-blue-600">LKR {formatAmount(review.invoiceDetails?.totalAmount)}</span>
                       </div>
-                      <div className="summary-item">
-                        <label>Sent By:</label>
-                        <span>{review.sentByName || review.sentBy || '-'}</span>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Sent By</label>
+                        <span className="text-sm text-gray-900">{review.sentByName || review.sentBy || '-'}</span>
                       </div>
-                      <div className="summary-item">
-                        <label>Sent Date:</label>
-                        <span>{new Date(review.createdDate).toLocaleDateString()}</span>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Sent Date</label>
+                        <span className="text-sm text-gray-900">{new Date(review.createdDate).toLocaleDateString()}</span>
                       </div>
                     </div>
 
                     {expandedReviewId === review.reviewId && (
-                      <div className="review-details">
-                        <div className="review-notes-section">
-                          <h4>Review Notes from Admin/Manager:</h4>
-                          <div className="review-notes">
+                      <div className="p-6 bg-white space-y-6">
+                        {/* Review Notes Section */}
+                        <div>
+                          <h4 className="text-xs font-extrabold text-gray-900 mb-3 uppercase tracking-wide">Review Notes from Admin/Manager</h4>
+                          <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 border-l-4 border-blue-500">
                             {review.reviewNotes || 'No notes provided'}
                           </div>
                         </div>
 
-                        <div className="pay-items-section">
-                          <h4>Pay Items Details:</h4>
-                          <div className="pay-items-table-wrapper">
-                            <table className="pay-items-table">
+                        {/* Pay Items Section */}
+                        <div>
+                          <h4 className="text-xs font-extrabold text-gray-900 mb-3 uppercase tracking-wide">Pay Items Details</h4>
+                          <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table className="w-full border-collapse">
                               <thead>
-                                <tr>
-                                  <th>Description</th>
-                                  <th>Actual Cost</th>
-                                  <th>Paid By</th>
+                                <tr className="bg-gray-100 border-b-2 border-gray-300">
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Description</th>
+                                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wide">Actual Cost</th>
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide">Paid By</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {review.payItems && review.payItems.length > 0 ? (
                                   review.payItems.map((item, idx) => (
-                                    <tr key={idx}>
-                                      <td>{item.description || item.name || '-'}</td>
-                                      <td className="amount">LKR {formatAmount(item.actualCost || item.amount)}</td>
-                                      <td>{item.paidBy || '-'}</td>
+                                    <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
+                                      <td className="px-4 py-3 text-sm text-gray-900">{item.description || item.name || '-'}</td>
+                                      <td className="px-4 py-3 text-right text-sm text-blue-600 font-medium">LKR {formatAmount(item.actualCost || item.amount)}</td>
+                                      <td className="px-4 py-3 text-sm text-gray-900">{item.paidBy || '-'}</td>
                                     </tr>
                                   ))
                                 ) : (
                                   <tr>
-                                    <td colSpan="3" style={{ textAlign: 'center', color: '#999' }}>
+                                    <td colSpan="3" className="px-4 py-3 text-center text-sm text-gray-400">
                                       No pay items available
                                     </td>
                                   </tr>
                                 )}
                               </tbody>
                               <tfoot>
-                                <tr className="totals-row">
-                                  <td><strong>TOTAL</strong></td>
-                                  <td className="amount">
-                                    <strong>
-                                      LKR {formatAmount(
-                                        review.payItems?.reduce((sum, item) => sum + (parseFloat(item.actualCost || item.amount) || 0), 0) || 0
-                                      )}
-                                    </strong>
+                                <tr className="bg-blue-50 border-t-2 border-gray-300">
+                                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">TOTAL</td>
+                                  <td className="px-4 py-3 text-right text-sm font-semibold text-blue-700">
+                                    LKR {formatAmount(
+                                      review.payItems?.reduce((sum, item) => sum + (parseFloat(item.actualCost || item.amount) || 0), 0) || 0
+                                    )}
                                   </td>
                                   <td></td>
                                 </tr>
@@ -283,17 +292,17 @@ function InvoiceReviewPage() {
                         </div>
 
                         {review.status === 'Pending' && (
-                          <div className="action-buttons">
+                          <div className="flex gap-3 pt-4 border-t border-gray-200">
                             <button
                               onClick={() => handleApprove(review.reviewId)}
-                              className="btn btn-approve"
+                              className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               disabled={processingReviewId === review.reviewId}
                             >
                               {processingReviewId === review.reviewId ? '⏳ Processing...' : '✓ Approve'}
                             </button>
                             <button
                               onClick={() => handleRejectClick(review)}
-                              className="btn btn-reject"
+                              className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                               disabled={processingReviewId === review.reviewId}
                             >
                               {processingReviewId === review.reviewId ? '⏳ Processing...' : '✗ Reject'}
@@ -302,17 +311,17 @@ function InvoiceReviewPage() {
                         )}
 
                         {review.status === 'Rejected' && review.rejectionReason && (
-                          <div className="rejection-info">
-                            <h4>Your Rejection Reason:</h4>
-                            <div className="rejection-reason">
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 className="font-semibold text-red-900 mb-2">Your Rejection Reason:</h4>
+                            <div className="text-sm text-red-700">
                               {review.rejectionReason}
                             </div>
                           </div>
                         )}
 
                         {review.status === 'Approved' && (
-                          <div className="approval-info">
-                            <p>✓ This review has been approved and sent to Admin/Manager</p>
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700">
+                            <p className="text-sm">✓ This review has been approved and sent to Admin/Manager</p>
                           </div>
                         )}
                       </div>
@@ -322,11 +331,13 @@ function InvoiceReviewPage() {
               </div>
 
               {totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
+                <div className="mt-6 border-t border-gray-200 pt-6">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
               )}
             </>
           )}

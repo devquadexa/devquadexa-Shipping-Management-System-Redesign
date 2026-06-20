@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../api/services/authService';
-import '../styles/UserManagement.css';
 
 function UserManagement() {
   const { user } = useAuth();
@@ -115,80 +114,107 @@ function UserManagement() {
 
   if (user?.role !== 'Super Admin') {
     return (
-      <div className="container">
-        <div className="alert alert-error">Access Denied: Super Admin only</div>
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md text-center border border-red-200">
+          <div className="flex justify-center mb-4">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">Super Admin only</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container users-page">
-      <div className="page-header">
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1>User Management</h1>
-          <p>Manage system users and their roles</p>
+          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+          <p className="text-gray-600 mt-1">Manage system users and their roles</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn btn-primary">
+        <button onClick={() => setShowModal(true)} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">
           + New User
         </button>
       </div>
 
       {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+        <div className={`mb-6 p-4 rounded-lg font-medium flex items-center gap-3 ${
+          message.includes('Error') 
+            ? 'bg-red-50 text-red-800 border border-red-200' 
+            : 'bg-green-50 text-green-800 border border-green-200'
+        }`}>
+          <span className="text-lg">
+            {message.includes('Error') ? '✕' : '✓'}
+          </span>
           {message}
         </div>
       )}
 
-      <div className="card">
-        <div className="card-header">
-          <h2>All Users ({filteredUsers.length})</h2>
-          <div className="search-box">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900">All Users ({filteredUsers.length})</h2>
+          <div className="relative">
+            <svg className="absolute left-3 top-3 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
             <input
               type="text"
               placeholder="Search by username, name, or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none w-64"
             />
           </div>
         </div>
 
         {filteredUsers.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">
-              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <div className="p-12 text-center">
+            <div className="flex justify-center mb-4">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
             </div>
-            <p>{searchTerm ? 'No users found matching your search' : 'No users found'}</p>
+            <p className="text-gray-600">{searchTerm ? 'No users found matching your search' : 'No users found'}</p>
           </div>
         ) : (
-          <div className="users-table-wrapper">
-            <table className="users-table">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
               <thead>
-                <tr>
-                  <th>User ID</th>
-                  <th>Username</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Created Date</th>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="px-6 py-3 text-left font-medium text-gray-700">User ID</th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-700">Username</th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-700">Full Name</th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-700">Email</th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-700">Role</th>
+                  <th className="px-6 py-3 text-left font-medium text-gray-700">Created Date</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredUsers.map(u => (
-                  <tr key={u.userId}>
-                    <td data-label="User ID"><strong className="user-id">{u.userId}</strong></td>
-                    <td data-label="Username"><strong>{u.username}</strong></td>
-                    <td data-label="Full Name">{u.fullName}</td>
-                    <td data-label="Email" className="email-cell">{u.email}</td>
-                    <td data-label="Role">
-                      <span className={`role-badge role-${u.role.toLowerCase().replace(' ', '-')}`}>
+                  <tr key={u.userId} className="border-b border-gray-200 hover:bg-gray-50">
+                    <td className="px-6 py-4 font-mono text-xs bg-gray-50 rounded">{u.userId}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{u.username}</td>
+                    <td className="px-6 py-4 text-gray-700">{u.fullName}</td>
+                    <td className="px-6 py-4 text-gray-700">{u.email}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                        u.role === 'Super Admin' ? 'bg-purple-50 text-purple-700' :
+                        u.role === 'Admin' ? 'bg-blue-50 text-blue-700' :
+                        u.role === 'Manager' ? 'bg-green-50 text-green-700' :
+                        u.role === 'Office Executive' ? 'bg-amber-50 text-amber-700' :
+                        'bg-gray-50 text-gray-700'
+                      }`}>
                         {u.role}
                       </span>
                     </td>
-                    <td data-label="Created Date">{new Date(u.createdDate).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 text-gray-700">{new Date(u.createdDate).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -198,18 +224,18 @@ function UserManagement() {
       </div>
 
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
-            <div className="modal-header">
-              <h2>Create New User</h2>
-              <button className="btn-close" onClick={() => setShowModal(false)}>×</button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">Create New User</h2>
+              <button className="text-gray-400 hover:text-gray-600 text-2xl leading-none" onClick={() => setShowModal(false)}>×</button>
             </div>
-            <form onSubmit={handleSubmit} className="user-form">
-              <div className="form-section">
-                <h3 className="section-heading">User Information</h3>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Username *</label>
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">User Information</h3>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Username *</label>
                     <input 
                       type="text" 
                       name="username" 
@@ -218,11 +244,12 @@ function UserManagement() {
                       onKeyDown={handleUsernameKeyDown}
                       onPaste={handleUsernamePaste}
                       placeholder="Enter username"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       required 
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Full Name *</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                     <input 
                       type="text" 
                       name="fullName" 
@@ -231,36 +258,39 @@ function UserManagement() {
                       onKeyDown={handleNameKeyDown}
                       onPaste={handleNamePaste}
                       placeholder="Enter full name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       required 
                     />
                   </div>
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Email *</label>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                     <input 
                       type="email" 
                       name="email" 
                       value={formData.email} 
                       onChange={handleChange} 
                       placeholder="email@example.com"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       required 
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Password *</label>
-                    <div className="password-input-wrapper">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                    <div className="relative">
                       <input 
                         type={showPassword ? "text" : "password"}
                         name="password" 
                         value={formData.password} 
                         onChange={handleChange} 
                         placeholder="Enter password"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none pr-10"
                         required 
                       />
                       <button
                         type="button"
-                        className="password-toggle-btn"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         onClick={() => setShowPassword(!showPassword)}
                         title={showPassword ? "Hide password" : "Show password"}
                       >
@@ -279,10 +309,16 @@ function UserManagement() {
                     </div>
                   </div>
                 </div>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Role *</label>
-                    <select name="role" value={formData.role} onChange={handleChange} required>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Role *</label>
+                    <select 
+                      name="role" 
+                      value={formData.role} 
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      required
+                    >
                       <option value="Waff Clerk">Waff Clerk</option>
                       <option value="Office Executive">Office Executive</option>
                       <option value="Manager">Manager</option>
@@ -293,9 +329,20 @@ function UserManagement() {
                 </div>
               </div>
               
-              <div className="form-actions">
-                <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">Create User</button>
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                <button 
+                  type="button" 
+                  onClick={() => setShowModal(false)} 
+                  className="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition"
+                >
+                  Create User
+                </button>
               </div>
             </form>
           </div>

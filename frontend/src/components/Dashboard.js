@@ -5,7 +5,6 @@ import { jobService } from '../api/services/jobService';
 import { billingService } from '../api/services/billingService';
 import { pettyCashService } from '../api/services/pettyCashService';
 import { accountingService } from '../api/services/accountingService';
-import '../styles/Dashboard.css';
 
 function Dashboard() {
   const { user } = useAuth();
@@ -237,187 +236,197 @@ function Dashboard() {
   /* ── SUPER ADMIN / ADMIN ── */
   if (user?.role === 'Super Admin' || user?.role === 'Admin') {
     return (
-      <div className="db-page">
+      <div className="p-6 md:p-8 max-w-full min-h-screen bg-gray-100">
 
         {/* ── Page Header ── */}
-        <div className="db-header">
-          <h1 className="db-title">Dashboard</h1>
-          <span className="db-welcome">Welcome back, {user?.fullName} — Super Shine Cargo Service</span>
+        <div className="flex justify-between items-baseline mb-5 pb-4 border-b-2 border-gray-200">
+          <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
+          <span className="text-sm text-gray-500">Welcome back, {user?.fullName} — Super Shine Cargo Service</span>
         </div>
 
         {/* ── Period Filter ── */}
-        <div className="db-filter-card">
-          <span className="db-filter-label">FILTER BY PERIOD</span>
-          <div className="db-filter-pills">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 flex flex-wrap items-center gap-5 mb-5">
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Filter by Period</span>
+          <div className="flex flex-wrap gap-1">
             {periods.map(p => (
               <button
                 key={p.key}
                 onClick={() => handlePeriodChange(p.key)}
-                className={timePeriod === p.key ? 'db-pill db-pill--active' : 'db-pill'}
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                  timePeriod === p.key
+                    ? 'bg-gray-900 border-gray-900 text-white'
+                    : 'bg-white border-gray-300 text-gray-700 hover:border-gray-900 hover:text-gray-900'
+                }`}
               >
                 {p.label}
               </button>
             ))}
           </div>
           {timePeriod === 'custom' && (
-            <div className="db-custom-dates">
+            <div className="w-full flex gap-4 items-end flex-wrap pt-3 border-t border-gray-200 mt-3">
               <div>
-                <label>Start Date</label>
-                <input type="date" value={customDateRange.startDate}
-                  onChange={e => setCustomDateRange(p => ({ ...p, startDate: e.target.value }))} />
+                <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Start Date</label>
+                <input 
+                  type="date" 
+                  value={customDateRange.startDate}
+                  onChange={e => setCustomDateRange(p => ({ ...p, startDate: e.target.value }))}
+                  className="px-3 py-2 border border-gray-300 rounded text-sm text-gray-700"
+                />
               </div>
               <div>
-                <label>End Date</label>
-                <input type="date" value={customDateRange.endDate}
-                  onChange={e => setCustomDateRange(p => ({ ...p, endDate: e.target.value }))} />
+                <label className="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">End Date</label>
+                <input 
+                  type="date" 
+                  value={customDateRange.endDate}
+                  onChange={e => setCustomDateRange(p => ({ ...p, endDate: e.target.value }))}
+                  className="px-3 py-2 border border-gray-300 rounded text-sm text-gray-700"
+                />
               </div>
             </div>
           )}
         </div>
 
         {/* ── Main Two-Column Grid ── */}
-        <div className="db-main-grid">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
 
           {/* ── LEFT: Revenue Performance ── */}
-          <div className="db-card">
-            <h2 className="db-card-title">
-              REVENUE PERFORMANCE
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <h2 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider mb-5 pb-3 border-b-2 border-gray-200">
+              Revenue Performance
               {timePeriod !== 'all' && (
-                <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#6b7280', marginLeft: '0.75rem', textTransform: 'none', letterSpacing: 0 }}>
+                <span className="text-xs font-medium text-gray-500 ml-3 normal-case tracking-normal">
                   — {periods.find(p => p.key === timePeriod)?.label}
                 </span>
               )}
             </h2>
 
             {/* Top 3 revenue tiles */}
-            <div className="db-rev-top">
-              <div className="db-rev-tile">
-                <div className="db-rev-tile-header">
-                  <span className="db-badge db-badge--blue">LKR</span>
-                  <span className="db-rev-tile-label">Total Revenue ({timePeriod === 'all' ? 'All-Time' : periods.find(p => p.key === timePeriod)?.label})</span>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="flex items-center gap-1 mb-2">
+                  <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-blue-100 text-blue-700">LKR</span>
+                  <span className="text-xs text-gray-600 font-medium leading-tight">Total Revenue ({timePeriod === 'all' ? 'All-Time' : periods.find(p => p.key === timePeriod)?.label})</span>
                 </div>
-                <div className="db-rev-tile-value">{fmtShort(totalRevenue)}</div>
-                <div className="db-rev-tile-sub">{totalJobsAcc} jobs</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">{fmtShort(totalRevenue)}</div>
+                <div className="text-xs text-gray-400">{totalJobsAcc} jobs</div>
               </div>
-              <div className="db-rev-tile">
-                <div className="db-rev-tile-header">
-                  <span className="db-badge db-badge--green">PAID</span>
-                  <span className="db-rev-tile-label">Collected Revenue</span>
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="flex items-center gap-1 mb-2">
+                  <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-700">PAID</span>
+                  <span className="text-xs text-gray-600 font-medium leading-tight">Collected Revenue</span>
                 </div>
-                <div className="db-rev-tile-value">{fmtShort(collectedRev)}</div>
-                <div className="db-rev-tile-sub">{paidJobsCount} jobs paid</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">{fmtShort(collectedRev)}</div>
+                <div className="text-xs text-gray-400">{paidJobsCount} jobs paid</div>
               </div>
-              <div className="db-rev-tile">
-                <div className="db-rev-tile-header">
-                  <span className="db-badge db-badge--red">LATE</span>
-                  <span className="db-rev-tile-label">Pending Collected Revenue</span>
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="flex items-center gap-1 mb-2">
+                  <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-red-100 text-red-700">LATE</span>
+                  <span className="text-xs text-gray-600 font-medium leading-tight">Pending Collected Revenue</span>
                 </div>
-                <div className="db-rev-tile-value">{fmtShort(outstandingRev + overdueRev)}</div>
-                <div className="db-rev-tile-sub">Sum of Unpaid &amp; Overdue</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">{fmtShort(outstandingRev + overdueRev)}</div>
+                <div className="text-xs text-gray-400">Sum of Unpaid & Overdue</div>
               </div>
             </div>
 
             {/* Revenue Contribution summary */}
-            <div className="db-rev-contribution">
-              <div className="db-rev-contrib-label">Revenue Contribution (Overall)</div>
-              <div className="db-rev-contrib-value">{fmtShort(totalRevenue)} (Total)</div>
-              <div className="db-rev-contrib-bars">
-                <div className="db-bar-row">
-                  <span className="db-bar-label">Total Jobs: {totalJobsAcc}</span>
-                  <div className="db-bar-track">
-                    <div className="db-bar-fill db-bar--blue" style={{ width: '100%' }}></div>
+            <div className="bg-gray-50 border border-gray-200 rounded p-4 mb-4">
+              <div className="text-xs text-gray-600 font-medium mb-1">Revenue Contribution (Overall)</div>
+              <div className="text-xl font-bold text-gray-900 mb-3">{fmtShort(totalRevenue)} (Total)</div>
+              <div className="space-y-2">
+                <div className="mb-2">
+                  <span className="text-xs text-gray-600 block mb-1">Total Jobs: {totalJobsAcc}</span>
+                  <div className="h-2.5 bg-gray-300 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: '100%' }}></div>
                   </div>
                 </div>
-                <div className="db-bar-row">
-                  <span className="db-bar-label">Avg. Value per Job</span>
-                  <div className="db-bar-track">
-                    <div className="db-bar-fill db-bar--orange"
-                      style={{ width: totalJobsAcc > 0 ? `${Math.min((collectedRev / totalRevenue) * 100, 100)}%` : '0%' }}>
-                    </div>
+                <div className="mb-2">
+                  <span className="text-xs text-gray-600 block mb-1">Avg. Value per Job</span>
+                  <div className="h-2.5 bg-gray-300 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-500 rounded-full" style={{ width: totalJobsAcc > 0 ? `${Math.min((collectedRev / totalRevenue) * 100, 100)}%` : '0%' }}></div>
                   </div>
                 </div>
-                <div className="db-bar-row">
-                  <span className="db-bar-label">Collected</span>
-                  <div className="db-bar-track">
-                    <div className="db-bar-fill db-bar--green"
-                      style={{ width: totalRevenue > 0 ? `${Math.min((collectedRev / totalRevenue) * 100, 100)}%` : '0%' }}>
-                    </div>
+                <div className="mb-2">
+                  <span className="text-xs text-gray-600 block mb-1">Collected</span>
+                  <div className="h-2.5 bg-gray-300 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 rounded-full" style={{ width: totalRevenue > 0 ? `${Math.min((collectedRev / totalRevenue) * 100, 100)}%` : '0%' }}></div>
                   </div>
                 </div>
               </div>
-              <div className="db-rev-contrib-note">
+              <div className="text-xs text-gray-500 mt-2 text-center">
                 Revenue Source: Billing Data — approx. {fmtShort(totalJobsAcc > 0 ? totalRevenue / totalJobsAcc : 0)} avg/job
               </div>
             </div>
 
             {/* Bottom 3 tiles */}
-            <div className="db-rev-bottom">
-              <div className="db-rev-tile">
-                <div className="db-rev-tile-header">
-                  <span className="db-badge db-badge--yellow">DUE</span>
-                  <span className="db-rev-tile-label">Total Outstanding (Unpaid)</span>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="flex items-center gap-1 mb-2">
+                  <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-yellow-100 text-yellow-700">DUE</span>
+                  <span className="text-xs text-gray-600 font-medium leading-tight">Total Outstanding (Unpaid)</span>
                 </div>
-                <div className="db-rev-tile-value">{fmtShort(outstandingRev)}</div>
-                <div className="db-rev-tile-sub">{unpaidJobsCount} unpaid</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">{fmtShort(outstandingRev)}</div>
+                <div className="text-xs text-gray-400">{unpaidJobsCount} unpaid</div>
               </div>
-              <div className="db-rev-tile">
-                <div className="db-rev-tile-header">
-                  <span className="db-badge db-badge--red">LATE</span>
-                  <span className="db-rev-tile-label">Total Overdue (Late)</span>
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="flex items-center gap-1 mb-2">
+                  <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-red-100 text-red-700">LATE</span>
+                  <span className="text-xs text-gray-600 font-medium leading-tight">Total Overdue (Late)</span>
                 </div>
-                <div className="db-rev-tile-value">{fmtShort(overdueRev)}</div>
-                <div className="db-rev-tile-sub">{overdueCount} overdue</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">{fmtShort(overdueRev)}</div>
+                <div className="text-xs text-gray-400">{overdueCount} overdue</div>
               </div>
-              <div className="db-rev-tile">
-                <div className="db-rev-tile-header">
-                  <span className="db-badge db-badge--green">NET</span>
-                  <span className="db-rev-tile-label">Total Net Profit</span>
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="flex items-center gap-1 mb-2">
+                  <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-700">NET</span>
+                  <span className="text-xs text-gray-600 font-medium leading-tight">Total Net Profit</span>
                 </div>
-                <div className="db-rev-tile-value">{fmtShort(netProfit)}</div>
-                <div className="db-rev-tile-sub">{profitMargin}% margin</div>
+                <div className="text-lg font-bold text-gray-900 mb-1">{fmtShort(netProfit)}</div>
+                <div className="text-xs text-gray-400">{profitMargin}% margin</div>
               </div>
             </div>
           </div>
 
           {/* ── RIGHT: Operational Overview ── */}
-          <div className="db-card">
-            <h2 className="db-card-title">OPERATIONAL OVERVIEW</h2>
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <h2 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider mb-5 pb-3 border-b-2 border-gray-200">
+              Operational Overview
+            </h2>
 
             {/* Total workload */}
-            <div className="db-ops-total">
-              <div className="db-ops-total-label">Total Operational Workload</div>
-              <div className="db-ops-total-value">{stats.totalJobs} jobs</div>
-              <div className="db-ops-total-sub">Total under processing</div>
+            <div className="bg-gray-50 border border-gray-200 rounded p-4 mb-3">
+              <div className="text-xs text-gray-600 font-medium mb-1">Total Operational Workload</div>
+              <div className="text-3xl font-bold text-gray-900 leading-tight">{stats.totalJobs} jobs</div>
+              <div className="text-xs text-gray-500 mt-1">Total under processing</div>
             </div>
 
             {/* Job status row */}
-            <div className="db-ops-status-row">
-              <div className="db-ops-status-tile">
-                <div className="db-ops-status-label">Open Jobs</div>
-                <div className="db-ops-status-value db-ops--orange">{stats.openJobs}</div>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
+                <div className="text-xs text-gray-600 font-semibold mb-2">Open Jobs</div>
+                <div className="text-3xl font-bold text-amber-500">{stats.openJobs}</div>
               </div>
-              <div className="db-ops-status-tile">
-                <div className="db-ops-status-label">In Transit</div>
-                <div className="db-ops-status-value db-ops--blue">{stats.inTransitJobs}</div>
+              <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
+                <div className="text-xs text-gray-600 font-semibold mb-2">In Transit</div>
+                <div className="text-3xl font-bold text-blue-500">{stats.inTransitJobs}</div>
               </div>
-              <div className="db-ops-status-tile">
-                <div className="db-ops-status-label">Completed Jobs</div>
-                <div className="db-ops-status-value db-ops--green">{stats.closedJobs}</div>
+              <div className="bg-gray-50 border border-gray-200 rounded p-3 text-center">
+                <div className="text-xs text-gray-600 font-semibold mb-2">Completed Jobs</div>
+                <div className="text-3xl font-bold text-green-500">{stats.closedJobs}</div>
               </div>
             </div>
 
             {/* Invoices row */}
-            <div className="db-ops-invoice-row">
-              <div className="db-ops-invoice-tile">
-                <div className="db-ops-invoice-label">Total Invoices (Generated)</div>
-                <div className="db-ops-invoice-value">{stats.totalBills}</div>
-                <div className="db-ops-invoice-sub">Total invoices across all jobs</div>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="text-xs text-gray-600 font-semibold mb-2 leading-tight">Total Invoices (Generated)</div>
+                <div className="text-3xl font-bold text-gray-900 leading-tight">{stats.totalBills}</div>
+                <div className="text-xs text-gray-400 mt-1">Total invoices across all jobs</div>
               </div>
-              <div className="db-ops-invoice-tile db-ops-invoice-tile--donut">
-                <div className="db-ops-invoice-label">Invoice Status Breakdown</div>
-                <div className="db-donut-row">
-                  <div className="db-donut-wrap">
-                    <svg viewBox="0 0 36 36" className="db-donut-svg">
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="text-xs text-gray-600 font-semibold mb-2 leading-tight">Invoice Status Breakdown</div>
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="w-14 h-14">
+                    <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
                       <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3.5"/>
                       {stats.totalBills > 0 && (
                         <circle cx="18" cy="18" r="15.9" fill="none" stroke="#27ae60" strokeWidth="3.5"
@@ -431,55 +440,61 @@ function Dashboard() {
                       )}
                     </svg>
                   </div>
-                  <div className="db-donut-legend">
-                    <div className="db-legend-item"><span className="db-legend-dot db-legend--green"></span>Paid ({stats.paidBills})</div>
-                    <div className="db-legend-item"><span className="db-legend-dot db-legend--red"></span>Unpaid ({stats.unpaidBills})</div>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2 text-xs text-gray-700">
+                      <span className="w-2.5 h-2.5 bg-green-500 rounded-full"></span>Paid ({stats.paidBills})
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-700">
+                      <span className="w-2.5 h-2.5 bg-red-500 rounded-full"></span>Unpaid ({stats.unpaidBills})
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Customers + Conversion */}
-            <div className="db-ops-bottom-row">
-              <div className="db-ops-bottom-tile">
-                <div className="db-ops-invoice-label">Total Customers</div>
-                <div className="db-ops-invoice-value">{stats.totalCustomers}</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <div className="text-xs text-gray-600 font-semibold mb-2">Total Customers</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.totalCustomers}</div>
               </div>
-              <div className="db-ops-bottom-tile db-ops-bottom-tile--conversion">
-                <div className="db-ops-invoice-label">Revenue Conversion Rate</div>
-                <div className="db-conversion-value">{stats.conversionRate}% Paid</div>
-                <div className="db-ops-invoice-sub">Paid Invoices / Total Invoices</div>
+              <div className="bg-gray-50 border-l-4 border-l-green-500 border border-gray-200 rounded p-3">
+                <div className="text-xs text-gray-600 font-semibold mb-2">Revenue Conversion Rate</div>
+                <div className="text-2xl font-bold text-green-500 my-1">{stats.conversionRate}% Paid</div>
+                <div className="text-xs text-gray-400">Paid Invoices / Total Invoices</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* ── Cash Flow Tracking ── */}
-        <div className="db-card db-cashflow-card">
-          <h2 className="db-card-title">CASH FLOW TRACKING</h2>
-          <div className="db-cashflow-grid">
-            <div className="db-cashflow-tile db-cashflow-tile--blue">
-              <div className="db-cashflow-label">Main Account Balance</div>
-              <div className="db-cashflow-value">{fmt(stats.mainAccountBalance)}</div>
-              <div className="db-cashflow-sub">Total funds in main account</div>
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <h2 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider mb-5 pb-3 border-b-2 border-gray-200">
+            Cash Flow Tracking
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="border-l-4 border-l-blue-500 bg-gray-50 border border-gray-200 rounded p-4">
+              <div className="text-xs text-gray-600 font-semibold mb-2">Main Account Balance</div>
+              <div className="text-2xl font-bold text-gray-900 mb-1">{fmt(stats.mainAccountBalance)}</div>
+              <div className="text-xs text-gray-400">Total funds in main account</div>
             </div>
-            <div className="db-cashflow-tile db-cashflow-tile--teal">
-              <div className="db-cashflow-label">Petty Cash Balance</div>
-              <div className="db-cashflow-value">{fmt(stats.pettyCashBalance)}</div>
-              <div className="db-cashflow-sub">Available petty cash</div>
+            <div className="border-l-4 border-l-teal-500 bg-gray-50 border border-gray-200 rounded p-4">
+              <div className="text-xs text-gray-600 font-semibold mb-2">Petty Cash Balance</div>
+              <div className="text-2xl font-bold text-gray-900 mb-1">{fmt(stats.pettyCashBalance)}</div>
+              <div className="text-xs text-gray-400">Available petty cash</div>
             </div>
-            <div className="db-cashflow-tile db-cashflow-tile--purple">
-              <div className="db-cashflow-label">Petty Cash Issued {timePeriod !== 'all' ? '(Period)' : '(To Date)'}</div>
-              <div className="db-cashflow-tile-inner">
-                <span className="db-badge db-badge--purple">CASH</span>
-                <div className="db-cashflow-value">{fmt(pettyCashIssued)}</div>
+            <div className="border-l-4 border-l-purple-500 bg-gray-50 border border-gray-200 rounded p-4">
+              <div className="text-xs text-gray-600 font-semibold mb-2">Petty Cash Issued {timePeriod !== 'all' ? '(Period)' : '(To Date)'}</div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-purple-100 text-purple-700">CASH</span>
+                <div className="text-xl font-bold text-gray-900">{fmt(pettyCashIssued)}</div>
               </div>
-              <div className="db-cashflow-sub">{timePeriod !== 'all' ? 'Issued in selected period' : 'Total issued to date'}</div>
+              <div className="text-xs text-gray-400">{timePeriod !== 'all' ? 'Issued in selected period' : 'Total issued to date'}</div>
             </div>
-            <div className="db-cashflow-tile db-cashflow-tile--red">
-              <div className="db-cashflow-label">Uncollected Cash Due {timePeriod !== 'all' ? '(Period)' : ''}</div>
-              <div className="db-cashflow-value">{fmtShort(stats.uncollectedCash)}</div>
-              <div className="db-cashflow-sub">— sum of unpaid invoices</div>
+            <div className="border-l-4 border-l-red-500 bg-gray-50 border border-gray-200 rounded p-4">
+              <div className="text-xs text-gray-600 font-semibold mb-2">Uncollected Cash Due {timePeriod !== 'all' ? '(Period)' : ''}</div>
+              <div className="text-2xl font-bold text-gray-900 mb-1">{fmtShort(stats.uncollectedCash)}</div>
+              <div className="text-xs text-gray-400">— sum of unpaid invoices</div>
             </div>
           </div>
         </div>
@@ -491,31 +506,31 @@ function Dashboard() {
   /* ── WAFF CLERK ── */
   if (user?.role === 'Waff Clerk') {
     return (
-      <div className="db-page">
-        <div className="db-header">
-          <h1 className="db-title">Dashboard</h1>
-          <span className="db-welcome">Welcome back, {user?.fullName} — Super Shine Cargo Service</span>
+      <div className="p-6 md:p-8 max-w-full min-h-screen bg-gray-100">
+        <div className="flex justify-between items-baseline mb-5 pb-4 border-b-2 border-gray-200">
+          <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
+          <span className="text-sm text-gray-500">Welcome back, {user?.fullName} — Super Shine Cargo Service</span>
         </div>
-        <div className="stats-grid">
-          <div className="stat-card" style={{ borderLeftColor: '#f39c12' }}>
-            <h3>Open Jobs</h3>
-            <div className="value" style={{ color: '#f39c12' }}>{stats.openJobs}</div>
-            <div className="label">Pending</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white border-l-4 border-l-amber-400 border border-gray-200 rounded-lg p-4 shadow-sm">
+            <h3 className="font-semibold text-gray-700 mb-2">Open Jobs</h3>
+            <div className="text-3xl font-bold text-amber-400 mb-1">{stats.openJobs}</div>
+            <div className="text-sm text-gray-500">Pending</div>
           </div>
-          <div className="stat-card" style={{ borderLeftColor: '#27ae60' }}>
-            <h3>Completed Jobs</h3>
-            <div className="value" style={{ color: '#27ae60' }}>{stats.closedJobs}</div>
-            <div className="label">Finished</div>
+          <div className="bg-white border-l-4 border-l-green-600 border border-gray-200 rounded-lg p-4 shadow-sm">
+            <h3 className="font-semibold text-gray-700 mb-2">Completed Jobs</h3>
+            <div className="text-3xl font-bold text-green-600 mb-1">{stats.closedJobs}</div>
+            <div className="text-sm text-gray-500">Finished</div>
           </div>
-          <div className="stat-card">
-            <h3>Paid Invoices</h3>
-            <div className="value">{stats.paidBills}</div>
-            <div className="label">Total Paid</div>
+          <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <h3 className="font-semibold text-gray-700 mb-2">Paid Invoices</h3>
+            <div className="text-3xl font-bold text-gray-900 mb-1">{stats.paidBills}</div>
+            <div className="text-sm text-gray-500">Total Paid</div>
           </div>
-          <div className="stat-card" style={{ borderLeftColor: '#16a085' }}>
-            <h3>Petty Cash</h3>
-            <div className="value" style={{ fontSize: '1.5rem', color: '#16a085' }}>{fmt(stats.userPettyCash)}</div>
-            <div className="label">Assigned to you</div>
+          <div className="bg-white border-l-4 border-l-teal-600 border border-gray-200 rounded-lg p-4 shadow-sm">
+            <h3 className="font-semibold text-gray-700 mb-2">Petty Cash</h3>
+            <div className="text-2xl font-bold text-teal-600 mb-1">{fmt(stats.userPettyCash)}</div>
+            <div className="text-sm text-gray-500">Assigned to you</div>
           </div>
         </div>
       </div>
@@ -524,31 +539,31 @@ function Dashboard() {
 
   /* ── REGULAR USER ── */
   return (
-    <div className="db-page">
-      <div className="db-header">
-        <h1 className="db-title">Dashboard</h1>
-        <span className="db-welcome">Welcome back, {user?.fullName} — Super Shine Cargo Service</span>
+    <div className="p-6 md:p-8 max-w-full min-h-screen bg-gray-100">
+      <div className="flex justify-between items-baseline mb-5 pb-4 border-b-2 border-gray-200">
+        <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
+        <span className="text-sm text-gray-500">Welcome back, {user?.fullName} — Super Shine Cargo Service</span>
       </div>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <h3>Total Jobs</h3>
-          <div className="value">{stats.totalJobs}</div>
-          <div className="label">Assigned to you</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="font-semibold text-gray-700 mb-2">Total Jobs</h3>
+          <div className="text-3xl font-bold text-gray-900 mb-1">{stats.totalJobs}</div>
+          <div className="text-sm text-gray-500">Assigned to you</div>
         </div>
-        <div className="stat-card" style={{ borderLeftColor: '#f39c12' }}>
-          <h3>Open Jobs</h3>
-          <div className="value" style={{ color: '#f39c12' }}>{stats.openJobs}</div>
-          <div className="label">Pending</div>
+        <div className="bg-white border-l-4 border-l-amber-400 border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="font-semibold text-gray-700 mb-2">Open Jobs</h3>
+          <div className="text-3xl font-bold text-amber-400 mb-1">{stats.openJobs}</div>
+          <div className="text-sm text-gray-500">Pending</div>
         </div>
-        <div className="stat-card" style={{ borderLeftColor: '#27ae60' }}>
-          <h3>Completed Jobs</h3>
-          <div className="value" style={{ color: '#27ae60' }}>{stats.closedJobs}</div>
-          <div className="label">Finished</div>
+        <div className="bg-white border-l-4 border-l-green-600 border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="font-semibold text-gray-700 mb-2">Completed Jobs</h3>
+          <div className="text-3xl font-bold text-green-600 mb-1">{stats.closedJobs}</div>
+          <div className="text-sm text-gray-500">Finished</div>
         </div>
-        <div className="stat-card" style={{ borderLeftColor: '#16a085' }}>
-          <h3>Petty Cash</h3>
-          <div className="value" style={{ fontSize: '1.5rem', color: '#16a085' }}>{fmt(stats.pettyCashBalance)}</div>
-          <div className="label">Current Balance</div>
+        <div className="bg-white border-l-4 border-l-teal-600 border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="font-semibold text-gray-700 mb-2">Petty Cash</h3>
+          <div className="text-2xl font-bold text-teal-600 mb-1">{fmt(stats.pettyCashBalance)}</div>
+          <div className="text-sm text-gray-500">Current Balance</div>
         </div>
       </div>
     </div>

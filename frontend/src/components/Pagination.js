@@ -1,5 +1,4 @@
 import React from 'react';
-import '../styles/Pagination.css';
 
 const Pagination = ({ 
   currentPage, 
@@ -45,65 +44,71 @@ const Pagination = ({
   };
 
   return (
-    <div className="pagination-container">
-      <div className="pagination-info">
-        <span className="pagination-text">
-          Showing {startRecord} to {endRecord} of {totalRecords} records
-        </span>
-        <div className="records-per-page">
-          <label>Records per page:</label>
-          <select 
-            value={recordsPerPage} 
-            onChange={(e) => onRecordsPerPageChange(Number(e.target.value))}
-            className="records-select"
+    <div className="bg-white border-t border-gray-200 px-6 py-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <span className="text-sm text-gray-700">
+            Showing <span className="font-semibold">{startRecord}</span> to <span className="font-semibold">{endRecord}</span> of <span className="font-semibold">{totalRecords}</span> records
+          </span>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Records per page:</label>
+            <select 
+              value={recordsPerPage} 
+              onChange={(e) => onRecordsPerPageChange(Number(e.target.value))}
+              className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            >
+              {recordsPerPageOptions.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            title="Previous page"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition flex items-center gap-1"
           >
-            {recordsPerPageOptions.map(option => (
-              <option key={option} value={option}>{option}</option>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Previous
+          </button>
+          
+          <div className="flex items-center gap-1">
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="px-2 py-2 text-gray-500 text-sm">...</span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => onPageChange(page)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              )
             ))}
-          </select>
+          </div>
+          
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            title="Next page"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition flex items-center gap-1"
+          >
+            Next
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
         </div>
-      </div>
-      
-      <div className="pagination-controls">
-        <button
-          className="pagination-btn pagination-btn-prev"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          title="Previous page"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-          Previous
-        </button>
-        
-        <div className="pagination-numbers">
-          {getPageNumbers().map((page, index) => (
-            page === '...' ? (
-              <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
-            ) : (
-              <button
-                key={page}
-                className={`pagination-number ${currentPage === page ? 'active' : ''}`}
-                onClick={() => onPageChange(page)}
-              >
-                {page}
-              </button>
-            )
-          ))}
-        </div>
-        
-        <button
-          className="pagination-btn pagination-btn-next"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          title="Next page"
-        >
-          Next
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
       </div>
     </div>
   );

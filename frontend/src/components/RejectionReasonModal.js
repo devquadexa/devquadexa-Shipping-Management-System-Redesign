@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/RejectionReasonModal.css';
 
 function RejectionReasonModal({ show, onClose, onSubmit, loading }) {
   const [reason, setReason] = useState('');

@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { cashWithdrawalService } from '../api/services/cashWithdrawalService';
 import { otherExpenseService } from '../api/services/otherExpenseService';
-import '../styles/CashSummaryReport.css';
 import API_BASE from '../api/config';
 
 // Get today's date in local timezone (YYYY-MM-DD format)
@@ -244,62 +243,54 @@ function CashSummaryReport() {
 
   if (!hasAccess()) {
     return (
-      <div className="csr-container">
-        <div className="csr-access-denied">
-          <div className="csr-access-icon">
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md text-center">
+          <div className="flex justify-center mb-4">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          <h2>Access Restricted</h2>
-          <p>Only Super Admin and Admin users can access this report.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+          <p className="text-gray-600">Only Super Admin and Admin users can access this report.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="csr-container">
+    <div className="min-h-screen bg-gray-50 p-4">
       {/* Breadcrumb */}
-      <div className="csr-breadcrumb">
-        <button className="csr-breadcrumb-back" onClick={() => navigate('/reports')}>
+      <div className="flex items-center gap-2 mb-8">
+        <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition" onClick={() => navigate('/reports')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polyline points="15 18 9 12 15 6"></polyline>
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
           Reports
         </button>
-        <span className="csr-breadcrumb-sep">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <span className="text-gray-400">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </span>
-        <span className="csr-breadcrumb-current">Cash Summary</span>
+        <span className="text-gray-700 font-medium">Cash Summary Report</span>
       </div>
 
       {/* Header */}
-      <div className="csr-header">
-        <div className="csr-header-content">
-          <h1 className="csr-title">Cash Summary Report</h1>
-          <p className="csr-subtitle">
-            Comprehensive cash flow overview with withdrawals, petty cash and expenses
-          </p>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Cash Summary Report</h1>
+        <p className="text-gray-600 mt-1">
+          Comprehensive cash flow overview with withdrawals, petty cash and expenses
+        </p>
       </div>
 
-      {/* Message */}
-      {message && (
-        <div className={`csr-alert csr-alert-${messageType}`}>
-          {message}
-        </div>
-      )}
-
       {/* Filter Panel */}
-      <div className="csr-filter-panel">
-        <div className="csr-filter-row">
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '16px', flex: 1 }}>
-            <div className="csr-filter-field">
-              <label htmlFor="from-date" className="csr-filter-label">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="space-y-4">
+          <div className="flex flex-col lg:flex-row gap-6 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <label htmlFor="from-date" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -314,14 +305,14 @@ function CashSummaryReport() {
                 value={fromDate}
                 max={toDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="csr-date-input"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
 
-            <div className="csr-filter-sep">—</div>
+            <div className="text-gray-400">—</div>
 
-            <div className="csr-filter-field">
-              <label htmlFor="to-date" className="csr-filter-label">
+            <div className="flex-1 min-w-[200px]">
+              <label htmlFor="to-date" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -336,18 +327,18 @@ function CashSummaryReport() {
                 value={toDate}
                 min={fromDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="csr-date-input"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
 
             <button
-              className="csr-generate-btn"
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={fetchData}
               disabled={loading}
             >
               {loading ? (
                 <>
-                  <div className="csr-btn-spinner"></div>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
                   Generating...
                 </>
               ) : (
@@ -362,9 +353,9 @@ function CashSummaryReport() {
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
             <button
-              className="csr-btn csr-btn-pdf"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={exportToPDF}
               disabled={!hasSearched || loading}
             >
@@ -378,7 +369,7 @@ function CashSummaryReport() {
             </button>
 
             <button
-              className="csr-btn csr-btn-excel"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={exportToExcel}
               disabled={!hasSearched || loading}
             >
@@ -395,93 +386,95 @@ function CashSummaryReport() {
         </div>
       </div>
 
+      {/* Message */}
+      {message && (
+        <div className={`mb-6 p-4 rounded-lg font-medium flex items-center gap-3 ${
+          messageType === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+          messageType === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
+          'bg-blue-50 text-blue-800 border border-blue-200'
+        }`}>
+          <span className="text-lg">
+            {messageType === 'success' && '✓'}
+            {messageType === 'error' && '✕'}
+            {messageType === 'info' && 'ℹ'}
+          </span>
+          {message}
+        </div>
+      )}
+
       {/* Summary Cards */}
       {hasSearched && (
         <>
-          <div className="csr-summary-grid">
-            <div className="csr-summary-card csr-card-blue">
-              <div className="csr-summary-icon">💰</div>
-              <div className="csr-summary-content">
-                <div className="csr-summary-label">Total Cash Withdrawn</div>
-                <div className="csr-summary-value">{formatCurrency(summary.totalWithdrawn)}</div>
-                <div className="csr-summary-meta">{summary.withdrawalCount} withdrawal{summary.withdrawalCount !== 1 ? 's' : ''}</div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-blue-500">
+              <div className="text-2xl mb-2">💰</div>
+              <div className="text-sm font-medium text-gray-600">Total Cash Withdrawn</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.totalWithdrawn)}</div>
+              <div className="text-xs text-gray-500 mt-2">{summary.withdrawalCount} withdrawal{summary.withdrawalCount !== 1 ? 's' : ''}</div>
             </div>
 
-            <div className="csr-summary-card csr-card-purple">
-              <div className="csr-summary-icon">📤</div>
-              <div className="csr-summary-content">
-                <div className="csr-summary-label">Petty Cash Issued</div>
-                <div className="csr-summary-value">{formatCurrency(summary.totalPettyCash)}</div>
-                <div className="csr-summary-meta">{summary.assignmentCount} assignment{summary.assignmentCount !== 1 ? 's' : ''}</div>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-purple-500">
+              <div className="text-2xl mb-2">📤</div>
+              <div className="text-sm font-medium text-gray-600">Petty Cash Issued</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.totalPettyCash)}</div>
+              <div className="text-xs text-gray-500 mt-2">{summary.assignmentCount} assignment{summary.assignmentCount !== 1 ? 's' : ''}</div>
             </div>
 
-            <div className="csr-summary-card csr-card-amber">
-              <div className="csr-summary-icon">💳</div>
-              <div className="csr-summary-content">
-                <div className="csr-summary-label">Other Expenses</div>
-                <div className="csr-summary-value">{formatCurrency(summary.totalExpenses)}</div>
-                <div className="csr-summary-meta">{summary.expenseCount} expense{summary.expenseCount !== 1 ? 's' : ''}</div>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-amber-500">
+              <div className="text-2xl mb-2">💳</div>
+              <div className="text-sm font-medium text-gray-600">Other Expenses</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.totalExpenses)}</div>
+              <div className="text-xs text-gray-500 mt-2">{summary.expenseCount} expense{summary.expenseCount !== 1 ? 's' : ''}</div>
             </div>
 
-            <div className="csr-summary-card csr-card-teal">
-              <div className="csr-summary-icon">🏦</div>
-              <div className="csr-summary-content">
-                <div className="csr-summary-label">Total Cash Deposited</div>
-                <div className="csr-summary-value">{formatCurrency(summary.totalDeposited)}</div>
-                <div className="csr-summary-meta">{summary.depositCount} deposit{summary.depositCount !== 1 ? 's' : ''}</div>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-teal-500">
+              <div className="text-2xl mb-2">🏦</div>
+              <div className="text-sm font-medium text-gray-600">Total Cash Deposited</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.totalDeposited)}</div>
+              <div className="text-xs text-gray-500 mt-2">{summary.depositCount} deposit{summary.depositCount !== 1 ? 's' : ''}</div>
             </div>
 
-            <div className={`csr-summary-card ${summary.availableBalance >= 0 ? 'csr-card-green' : 'csr-card-red'}`}>
-              <div className="csr-summary-icon">{summary.availableBalance >= 0 ? '✅' : '⚠️'}</div>
-              <div className="csr-summary-content">
-                <div className="csr-summary-label">Available Balance</div>
-                <div className="csr-summary-value">{formatCurrency(summary.availableBalance)}</div>
-                <div className="csr-summary-meta">
-                  {summary.availableBalance >= 0 ? 'Positive balance' : 'Negative balance'}
-                </div>
+            <div className={`bg-white rounded-lg shadow-sm p-6 border-t-4 ${summary.availableBalance >= 0 ? 'border-green-500' : 'border-red-500'}`}>
+              <div className="text-2xl mb-2">{summary.availableBalance >= 0 ? '✅' : '⚠️'}</div>
+              <div className="text-sm font-medium text-gray-600">Available Balance</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.availableBalance)}</div>
+              <div className="text-xs text-gray-500 mt-2">
+                {summary.availableBalance >= 0 ? 'Positive balance' : 'Negative balance'}
               </div>
             </div>
           </div>
 
           {/* Cash Withdrawals Section */}
-          <div className="csr-section">
-            <div className="csr-section-header">
-              <h2 className="csr-section-title">Cash Withdrawals ({summary.withdrawalCount})</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Cash Withdrawals ({summary.withdrawalCount})</h2>
             </div>
-            <div className="csr-table-wrapper">
-              <table className="csr-table">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr>
-                    <th>Withdrawal ID</th>
-                    <th>Date</th>
-                    <th>Bank Name</th>
-                    <th className="csr-text-right">Amount</th>
-                    <th>Recorded By</th>
-                    <th>Notes</th>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Withdrawal ID</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Date</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Bank Name</th>
+                    <th className="px-6 py-3 text-right font-medium text-gray-700">Amount</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Recorded By</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Notes</th>
                   </tr>
                 </thead>
                 <tbody>
                   {cashWithdrawals.map(withdrawal => (
-                    <tr key={withdrawal.withdrawalId}>
-                      <td data-label="Withdrawal ID">
-                        <span className="csr-record-id">{withdrawal.withdrawalId}</span>
-                      </td>
-                      <td data-label="Date">{formatDate(withdrawal.withdrawalDate)}</td>
-                      <td data-label="Bank Name">{withdrawal.bankName}</td>
-                      <td data-label="Amount" className="csr-amount-cell">
-                        {formatCurrency(withdrawal.amount)}
-                      </td>
-                      <td data-label="Recorded By">{withdrawal.recordedByName || '-'}</td>
-                      <td data-label="Notes">{withdrawal.notes || '-'}</td>
+                    <tr key={withdrawal.withdrawalId} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="px-6 py-4 font-mono text-xs bg-gray-50 rounded">{withdrawal.withdrawalId}</td>
+                      <td className="px-6 py-4 text-gray-700">{formatDate(withdrawal.withdrawalDate)}</td>
+                      <td className="px-6 py-4 text-gray-700">{withdrawal.bankName}</td>
+                      <td className="px-6 py-4 text-right text-gray-900 font-medium">{formatCurrency(withdrawal.amount)}</td>
+                      <td className="px-6 py-4 text-gray-700">{withdrawal.recordedByName || '-'}</td>
+                      <td className="px-6 py-4 text-gray-600 text-xs">{withdrawal.notes || '-'}</td>
                     </tr>
                   ))}
-                  <tr className="csr-total-row">
-                    <td colSpan="3"><strong>TOTAL</strong></td>
-                    <td className="csr-amount-cell"><strong>{formatCurrency(summary.totalWithdrawn)}</strong></td>
+                  <tr className="bg-gray-50 border-t-2 border-gray-200">
+                    <td colSpan="3" className="px-6 py-4 font-bold text-gray-900">TOTAL</td>
+                    <td className="px-6 py-4 text-right font-bold text-gray-900">{formatCurrency(summary.totalWithdrawn)}</td>
                     <td colSpan="2"></td>
                   </tr>
                 </tbody>
@@ -490,90 +483,78 @@ function CashSummaryReport() {
           </div>
 
           {/* Cash Deposits Section */}
-          <div className="csr-section">
-            <div className="csr-section-header">
-              <h2 className="csr-section-title">Cash Deposits ({summary.depositCount})</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Cash Deposits ({summary.depositCount})</h2>
             </div>
             {cashDeposits.length > 0 ? (
-              <div className="csr-table-wrapper">
-                <table className="csr-table">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
                   <thead>
-                    <tr>
-                      <th>Deposit ID</th>
-                      <th>Date</th>
-                      <th>Bank Name</th>
-                      <th className="csr-text-right">Amount</th>
-                      <th>Recorded By</th>
-                      <th>Notes</th>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="px-6 py-3 text-left font-medium text-gray-700">Deposit ID</th>
+                      <th className="px-6 py-3 text-left font-medium text-gray-700">Date</th>
+                      <th className="px-6 py-3 text-left font-medium text-gray-700">Bank Name</th>
+                      <th className="px-6 py-3 text-right font-medium text-gray-700">Amount</th>
+                      <th className="px-6 py-3 text-left font-medium text-gray-700">Recorded By</th>
+                      <th className="px-6 py-3 text-left font-medium text-gray-700">Notes</th>
                     </tr>
                   </thead>
                   <tbody>
                     {cashDeposits.map(deposit => (
-                      <tr key={deposit.withdrawalId}>
-                        <td data-label="Deposit ID">
-                          <span className="csr-record-id">{deposit.withdrawalId}</span>
-                        </td>
-                        <td data-label="Date">{formatDate(deposit.withdrawalDate)}</td>
-                        <td data-label="Bank Name">{deposit.bankName}</td>
-                        <td data-label="Amount" className="csr-amount-cell">
-                          {formatCurrency(deposit.amount)}
-                        </td>
-                        <td data-label="Recorded By">{deposit.createdByName || deposit.createdBy || '-'}</td>
-                        <td data-label="Notes">{deposit.notes || '-'}</td>
+                      <tr key={deposit.withdrawalId} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="px-6 py-4 font-mono text-xs bg-gray-50 rounded">{deposit.withdrawalId}</td>
+                        <td className="px-6 py-4 text-gray-700">{formatDate(deposit.withdrawalDate)}</td>
+                        <td className="px-6 py-4 text-gray-700">{deposit.bankName}</td>
+                        <td className="px-6 py-4 text-right text-gray-900 font-medium">{formatCurrency(deposit.amount)}</td>
+                        <td className="px-6 py-4 text-gray-700">{deposit.createdByName || deposit.createdBy || '-'}</td>
+                        <td className="px-6 py-4 text-gray-600 text-xs">{deposit.notes || '-'}</td>
                       </tr>
                     ))}
-                    <tr className="csr-total-row">
-                      <td colSpan="3"><strong>TOTAL</strong></td>
-                      <td className="csr-amount-cell"><strong>{formatCurrency(summary.totalDeposited)}</strong></td>
+                    <tr className="bg-gray-50 border-t-2 border-gray-200">
+                      <td colSpan="3" className="px-6 py-4 font-bold text-gray-900">TOTAL</td>
+                      <td className="px-6 py-4 text-right font-bold text-gray-900">{formatCurrency(summary.totalDeposited)}</td>
                       <td colSpan="2"></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             ) : (
-              <div style={{ padding: '1.5rem', textAlign: 'center', color: '#9ca3af' }}>
-                No cash deposits recorded for the selected date range
-              </div>
+              <div className="p-12 text-center text-gray-500">No cash deposits recorded for the selected date range</div>
             )}
           </div>
 
           {/* Petty Cash Assignments Section */}
-          <div className="csr-section">
-            <div className="csr-section-header">
-              <h2 className="csr-section-title">Petty Cash Issued ({summary.assignmentCount})</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Petty Cash Issued ({summary.assignmentCount})</h2>
             </div>
-            <div className="csr-table-wrapper">
-              <table className="csr-table">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr>
-                    <th>Assignment ID</th>
-                    <th>Date</th>
-                    <th>Job ID</th>
-                    <th>Assigned To</th>
-                    <th className="csr-text-right">Amount</th>
-                    <th>Status</th>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Assignment ID</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Date</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Job ID</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Assigned To</th>
+                    <th className="px-6 py-3 text-right font-medium text-gray-700">Amount</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {pettyCashAssignments.map(assignment => (
-                    <tr key={assignment.assignmentId}>
-                      <td data-label="Assignment ID">
-                        <span className="csr-record-id">{assignment.assignmentId}</span>
-                      </td>
-                      <td data-label="Date">{formatDate(assignment.assignedDate)}</td>
-                      <td data-label="Job ID">{assignment.jobId}</td>
-                      <td data-label="Assigned To">{assignment.assignedToName || '-'}</td>
-                      <td data-label="Amount" className="csr-amount-cell">
-                        {formatCurrency(assignment.assignedAmount)}
-                      </td>
-                      <td data-label="Status">
-                        <span className="csr-status-badge">{assignment.status}</span>
-                      </td>
+                    <tr key={assignment.assignmentId} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="px-6 py-4 font-mono text-xs bg-gray-50 rounded">{assignment.assignmentId}</td>
+                      <td className="px-6 py-4 text-gray-700">{formatDate(assignment.assignedDate)}</td>
+                      <td className="px-6 py-4 text-gray-700">{assignment.jobId}</td>
+                      <td className="px-6 py-4 text-gray-700">{assignment.assignedToName || '-'}</td>
+                      <td className="px-6 py-4 text-right text-gray-900 font-medium">{formatCurrency(assignment.assignedAmount)}</td>
+                      <td className="px-6 py-4"><span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-blue-50 text-blue-700">{assignment.status}</span></td>
                     </tr>
                   ))}
-                  <tr className="csr-total-row">
-                    <td colSpan="4"><strong>TOTAL</strong></td>
-                    <td className="csr-amount-cell"><strong>{formatCurrency(summary.totalPettyCash)}</strong></td>
+                  <tr className="bg-gray-50 border-t-2 border-gray-200">
+                    <td colSpan="4" className="px-6 py-4 font-bold text-gray-900">TOTAL</td>
+                    <td className="px-6 py-4 text-right font-bold text-gray-900">{formatCurrency(summary.totalPettyCash)}</td>
                     <td></td>
                   </tr>
                 </tbody>
@@ -582,42 +563,36 @@ function CashSummaryReport() {
           </div>
 
           {/* Other Expenses Section */}
-          <div className="csr-section">
-            <div className="csr-section-header">
-              <h2 className="csr-section-title">Other Expenses ({summary.expenseCount})</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Other Expenses ({summary.expenseCount})</h2>
             </div>
-            <div className="csr-table-wrapper">
-              <table className="csr-table">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr>
-                    <th>Expense ID</th>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th className="csr-text-right">Amount</th>
-                    <th>Payment Method</th>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Expense ID</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Date</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Category</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Description</th>
+                    <th className="px-6 py-3 text-right font-medium text-gray-700">Amount</th>
+                    <th className="px-6 py-3 text-left font-medium text-gray-700">Payment Method</th>
                   </tr>
                 </thead>
                 <tbody>
                   {otherExpenses.map(expense => (
-                    <tr key={expense.expenseId}>
-                      <td data-label="Expense ID">
-                        <span className="csr-record-id">{expense.expenseId}</span>
-                      </td>
-                      <td data-label="Date">{formatDate(expense.expenseDate)}</td>
-                      <td data-label="Category">
-                        <span className="csr-category-badge">{expense.category}</span>
-                      </td>
-                      <td data-label="Description">{expense.description}</td>
-                      <td data-label="Amount" className="csr-amount-cell">
-                        {formatCurrency(expense.amount)}
-                      </td>
-                      <td data-label="Payment Method">{expense.paymentMethod || '-'}</td>
+                    <tr key={expense.expenseId} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="px-6 py-4 font-mono text-xs bg-gray-50 rounded">{expense.expenseId}</td>
+                      <td className="px-6 py-4 text-gray-700">{formatDate(expense.expenseDate)}</td>
+                      <td className="px-6 py-4"><span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-amber-50 text-amber-700">{expense.category}</span></td>
+                      <td className="px-6 py-4 text-gray-700">{expense.description}</td>
+                      <td className="px-6 py-4 text-right text-gray-900 font-medium">{formatCurrency(expense.amount)}</td>
+                      <td className="px-6 py-4 text-gray-600">{expense.paymentMethod || '-'}</td>
                     </tr>
                   ))}
-                  <tr className="csr-total-row">
-                    <td colSpan="4"><strong>TOTAL</strong></td>
-                    <td className="csr-amount-cell"><strong>{formatCurrency(summary.totalExpenses)}</strong></td>
+                  <tr className="bg-gray-50 border-t-2 border-gray-200">
+                    <td colSpan="4" className="px-6 py-4 font-bold text-gray-900">TOTAL</td>
+                    <td className="px-6 py-4 text-right font-bold text-gray-900">{formatCurrency(summary.totalExpenses)}</td>
                     <td></td>
                   </tr>
                 </tbody>
@@ -628,17 +603,17 @@ function CashSummaryReport() {
       )}
 
       {!loading && !hasSearched && (
-        <div className="csr-empty-state">
-          <div className="csr-empty-icon">📊</div>
-          <p className="csr-empty-text">Select date range and click "Generate Report" to view data</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="text-gray-300 text-5xl mb-4">📊</div>
+          <p className="text-gray-600">Select date range and click "Generate Report" to view data</p>
         </div>
       )}
 
       {!loading && hasSearched && cashWithdrawals.length === 0 && pettyCashAssignments.length === 0 && otherExpenses.length === 0 && (
-        <div className="csr-empty-state">
-          <div className="csr-empty-icon">📊</div>
-          <p className="csr-empty-text">No data found for the selected date range</p>
-          <p className="csr-empty-hint">Try adjusting your date filters</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="text-gray-300 text-5xl mb-4">📊</div>
+          <p className="text-gray-600">No data found for the selected date range</p>
+          <p className="text-gray-500 text-sm mt-2">Try adjusting your date filters</p>
         </div>
       )}
     </div>

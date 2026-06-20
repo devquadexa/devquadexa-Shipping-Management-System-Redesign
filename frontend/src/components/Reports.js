@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import '../styles/Reports.css';
 
 const REPORT_CARDS = [
   {
@@ -187,16 +186,16 @@ function Reports() {
 
   if (!canAccess) {
     return (
-      <div className="rpt-access-denied">
-        <div className="rpt-access-box">
-          <div className="rpt-access-icon">
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md text-center">
+          <div className="flex justify-center mb-4">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          <h2>Access Restricted</h2>
-          <p>Only Super Admin and Admin users can access the Reports section.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+          <p className="text-gray-600">Only Super Admin and Admin users can access the Reports section.</p>
         </div>
       </div>
     );
@@ -209,22 +208,26 @@ function Reports() {
   };
 
   return (
-    <div className="rpt-container">
+    <div className="min-h-screen bg-gray-50 p-4">
       {/* Page header */}
-      <div className="rpt-header">
-        <div>
-          <h1 className="rpt-title">Reports</h1>
-          <p className="rpt-subtitle">
-            Select a report to view detailed data, apply filters and export results.
-          </p>
-        </div>
-        <div className="rpt-header-meta">
-          <span className="rpt-available-count">
-            {REPORT_CARDS.filter(r => r.available).length} available
-          </span>
-          <span className="rpt-total-count">
-            {REPORT_CARDS.length} total
-          </span>
+      <div className="mb-12">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">Reports</h1>
+            <p className="text-gray-600 mt-2">
+              Select a report to view detailed data, apply filters and export results.
+            </p>
+          </div>
+          <div className="flex gap-6">
+            <div className="bg-white px-6 py-4 rounded-lg shadow-sm border border-gray-100">
+              <div className="text-4xl font-bold text-blue-600 text-center">{REPORT_CARDS.filter(r => r.available).length}</div>
+              <div className="text-sm font-medium text-gray-600 text-center mt-2">Available</div>
+            </div>
+            <div className="bg-white px-6 py-4 rounded-lg shadow-sm border border-gray-100">
+              <div className="text-4xl font-bold text-gray-900 text-center">{REPORT_CARDS.length}</div>
+              <div className="text-sm font-medium text-gray-600 text-center mt-2">Total</div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -232,17 +235,27 @@ function Reports() {
       {CATEGORIES.map(category => {
         const cards = REPORT_CARDS.filter(r => r.category === category);
         return (
-          <section key={category} className="rpt-section">
-            <div className="rpt-section-header">
-              <h2 className="rpt-section-title">{category} Reports</h2>
-              <div className="rpt-section-line"></div>
+          <section key={category} className="mb-16">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">{category} Reports</h2>
+              <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-blue-400 mt-3 rounded-full"></div>
             </div>
 
-            <div className="rpt-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {cards.map(card => (
                 <div
                   key={card.id}
-                  className={`rpt-card rpt-card-${card.color} ${card.available ? 'rpt-card-available' : 'rpt-card-soon'}`}
+                  className={`relative bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group ${
+                    !card.available ? 'opacity-60 cursor-not-allowed' : 'hover:-translate-y-1'
+                  } ${
+                    card.color === 'blue' ? 'border-t-4 border-blue-500' :
+                    card.color === 'red' ? 'border-t-4 border-red-500' :
+                    card.color === 'amber' ? 'border-t-4 border-amber-500' :
+                    card.color === 'green' ? 'border-t-4 border-green-500' :
+                    card.color === 'purple' ? 'border-t-4 border-purple-500' :
+                    card.color === 'teal' ? 'border-t-4 border-teal-500' :
+                    'border-t-4 border-orange-500'
+                  }`}
                   onClick={() => handleCardClick(card)}
                   role={card.available ? 'button' : undefined}
                   tabIndex={card.available ? 0 : undefined}
@@ -251,38 +264,47 @@ function Reports() {
                 >
                   {/* Availability badge */}
                   {card.available ? (
-                    <span className="rpt-badge rpt-badge-available">Available</span>
+                    <span className="absolute top-4 right-4 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Available</span>
                   ) : (
-                    <span className="rpt-badge rpt-badge-soon">Coming Soon</span>
+                    <span className="absolute top-4 right-4 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">Coming Soon</span>
                   )}
 
                   {/* Icon */}
-                  <div className={`rpt-card-icon rpt-icon-${card.color}`}>
+                  <div className={`p-4 flex items-center justify-center ${
+                    card.color === 'blue' ? 'bg-blue-50 text-blue-600' :
+                    card.color === 'red' ? 'bg-red-50 text-red-600' :
+                    card.color === 'amber' ? 'bg-amber-50 text-amber-600' :
+                    card.color === 'green' ? 'bg-green-50 text-green-600' :
+                    card.color === 'purple' ? 'bg-purple-50 text-purple-600' :
+                    card.color === 'teal' ? 'bg-teal-50 text-teal-600' :
+                    'bg-orange-50 text-orange-600'
+                  }`}>
                     {card.icon}
                   </div>
 
                   {/* Content */}
-                  <div className="rpt-card-body">
-                    <h3 className="rpt-card-title">{card.title}</h3>
-                    <p className="rpt-card-desc">{card.description}</p>
-                  </div>
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">{card.title}</h3>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{card.description}</p>
 
-                  {/* Tags */}
-                  <div className="rpt-card-tags">
-                    {card.tags.map(tag => (
-                      <span key={tag} className="rpt-tag">{tag}</span>
-                    ))}
-                  </div>
-
-                  {/* Arrow — only for available */}
-                  {card.available && (
-                    <div className="rpt-card-arrow">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {card.tags.map(tag => (
+                        <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">{tag}</span>
+                      ))}
                     </div>
-                  )}
+
+                    {/* Arrow — only for available */}
+                    {card.available && (
+                      <div className="flex items-center text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <span>View Report</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 group-hover:translate-x-1 transition-transform">
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                          <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import '../styles/Sidebar.css';
 
 function Sidebar({ isOpen, onClose }) {
   const { user } = useAuth();
@@ -42,172 +41,160 @@ function Sidebar({ isOpen, onClose }) {
   return (
     <>
       {/* Overlay for mobile */}
-      {isOpen && <div className="sidebar-overlay" onClick={onClose}></div>}
+      {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-30" onClick={onClose}></div>}
       
-      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      {/* Sidebar */}
+      <aside className={`fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-blue-50 to-white border-r-2 border-gray-200 overflow-y-auto z-40 transform transition-transform duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} pt-20`}>
         {/* Logo Section */}
-        <div className="sidebar-header">
-          <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="Logo" className="sidebar-logo" />
-          <div className="sidebar-brand">
-            <h2>Super Shine Cargo</h2>
-            <p>Sri Lanka's Premier Cargo</p>
+        <div className="px-6 py-6 border-b-2 border-gray-200">
+          <div className="flex items-center gap-3 mb-4">
+            <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="Logo" className="h-10 w-10" />
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-gray-900">Super Shine</h2>
+              <p className="text-xs text-gray-600 leading-tight">Cargo Solutions</p>
+            </div>
           </div>
           <button 
-            className="sidebar-hide-btn" 
+            className="lg:hidden w-full p-2 rounded-lg hover:bg-gray-200 transition text-gray-600"
             onClick={onClose}
             title="Hide sidebar"
             aria-label="Hide sidebar"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 mx-auto">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
           </button>
         </div>
 
         {/* Navigation Menu */}
-        <nav className="sidebar-nav">
+        <nav className="px-3 py-6 space-y-2">
           
           {/* DASHBOARD & OVERVIEW */}
-          <div className="nav-group">
+          <div className="space-y-1">
             <button 
-              className="nav-group-header" 
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition font-semibold text-sm ${expandedGroups.dashboard ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
               onClick={() => toggleGroup('dashboard')}
             >
-              <span className="nav-group-title">
-                <svg className="nav-group-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <span className="flex items-center gap-3">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="7" height="7"></rect>
                   <rect x="14" y="3" width="7" height="7"></rect>
                   <rect x="14" y="14" width="7" height="7"></rect>
                   <rect x="3" y="14" width="7" height="7"></rect>
                 </svg>
-                DASHBOARD & OVERVIEW
+                Dashboard
               </span>
-              <svg className={`nav-group-chevron ${expandedGroups.dashboard ? 'expanded' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className={`w-4 h-4 transition-transform ${expandedGroups.dashboard ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
             {expandedGroups.dashboard && (
-              <div className="nav-group-items">
+              <div className="space-y-1 pl-4">
                 <Link 
                   to="/" 
-                  className={`nav-item ${isActive('/') ? 'active' : ''}`}
+                  className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={handleLinkClick}
                 >
-                  <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                  </svg>
-                  <span>Dashboard</span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-current"></div>
+                    Dashboard
+                  </div>
                 </Link>
               </div>
             )}
           </div>
 
           {/* CORE OPERATIONS */}
-          <div className="nav-group">
+          <div className="space-y-1">
             <button 
-              className="nav-group-header" 
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition font-semibold text-sm ${expandedGroups.operations ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
               onClick={() => toggleGroup('operations')}
             >
-              <span className="nav-group-title">
-                <svg className="nav-group-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m0 6l4.2 4.2M23 12h-6m-6 0H1m18.2 5.2l-4.2-4.2m0-6l4.2-4.2"></path>
+              <span className="flex items-center gap-3">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="19" cy="12" r="1"></circle>
+                  <circle cx="5" cy="12" r="1"></circle>
                 </svg>
-                CORE OPERATIONS
+                Operations
               </span>
-              <svg className={`nav-group-chevron ${expandedGroups.operations ? 'expanded' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className={`w-4 h-4 transition-transform ${expandedGroups.operations ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
             {expandedGroups.operations && (
-              <div className="nav-group-items">
+              <div className="space-y-1 pl-4">
                 <Link 
                   to="/customers" 
-                  className={`nav-item ${isActive('/customers') ? 'active' : ''}`}
+                  className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/customers') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={handleLinkClick}
                 >
-                  <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  <span>Customers</span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-current"></div>
+                    Customers
+                  </div>
                 </Link>
 
                 {canAccessTransporters && (
                   <Link 
                     to="/transporters" 
-                    className={`nav-item ${isActive('/transporters') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/transporters') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="1" y="3" width="15" height="13" rx="1"></rect>
-                      <path d="M16 8h4l3 3v5h-7V8z"></path>
-                      <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                      <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                    </svg>
-                    <span>Transporters</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Transporters
+                    </div>
                   </Link>
                 )}
 
                 <Link 
                   to="/jobs" 
-                  className={`nav-item ${isActive('/jobs') ? 'active' : ''}`}
+                  className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/jobs') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                   onClick={handleLinkClick}
                 >
-                  <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                  </svg>
-                  <span>Jobs</span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-current"></div>
+                    Jobs
+                  </div>
                 </Link>
 
                 {canAccessPettyCash && (
                   <Link 
                     to="/petty-cash" 
-                    className={`nav-item ${isActive('/petty-cash') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/petty-cash') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="12" y1="1" x2="12" y2="23"></line>
-                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                    </svg>
-                    <span>Petty Cash</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Petty Cash
+                    </div>
                   </Link>
                 )}
 
                 {canAccessInvoiceReviews && (
                   <Link 
                     to="/invoice-reviews" 
-                    className={`nav-item ${isActive('/invoice-reviews') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/invoice-reviews') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                      <polyline points="14 2 14 8 20 8"></polyline>
-                      <line x1="12" y1="13" x2="8" y2="13"></line>
-                      <line x1="12" y1="17" x2="8" y2="17"></line>
-                    </svg>
-                    <span>Invoice Reviews</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Invoice Reviews
+                    </div>
                   </Link>
                 )}
 
                 {canAccessBilling && (
                   <Link 
                     to="/billing" 
-                    className={`nav-item ${isActive('/billing') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/billing') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                      <line x1="1" y1="10" x2="23" y2="10"></line>
-                    </svg>
-                    <span>Invoicing</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Invoicing
+                    </div>
                   </Link>
                 )}
               </div>
@@ -216,52 +203,47 @@ function Sidebar({ isOpen, onClose }) {
 
           {/* FINANCIAL MANAGEMENT */}
           {(canAccessOtherExpenses || canAccessAccounting) && (
-            <div className="nav-group">
+            <div className="space-y-1">
               <button 
-                className="nav-group-header" 
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition font-semibold text-sm ${expandedGroups.financial ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
                 onClick={() => toggleGroup('financial')}
               >
-                <span className="nav-group-title">
-                  <svg className="nav-group-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <span className="flex items-center gap-3">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="12" y1="1" x2="12" y2="23"></line>
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
                   </svg>
-                  FINANCIAL MANAGEMENT
+                  Financial
                 </span>
-                <svg className={`nav-group-chevron ${expandedGroups.financial ? 'expanded' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className={`w-4 h-4 transition-transform ${expandedGroups.financial ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
               {expandedGroups.financial && (
-                <div className="nav-group-items">
+                <div className="space-y-1 pl-4">
                   {canAccessOtherExpenses && (
                     <Link 
                       to="/other-expenses" 
-                      className={`nav-item ${isActive('/other-expenses') ? 'active' : ''}`}
+                      className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/other-expenses') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                       onClick={handleLinkClick}
                     >
-                      <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                        <line x1="1" y1="10" x2="23" y2="10"></line>
-                        <circle cx="12" cy="14" r="2"></circle>
-                      </svg>
-                      <span>Other Expenses</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-current"></div>
+                        Other Expenses
+                      </div>
                     </Link>
                   )}
 
                   {canAccessAccounting && (
                     <Link 
                       to="/accounting" 
-                      className={`nav-item ${isActive('/accounting') ? 'active' : ''}`}
+                      className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/accounting') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                       onClick={handleLinkClick}
                     >
-                      <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="18" y1="20" x2="18" y2="10"></line>
-                        <line x1="12" y1="20" x2="12" y2="4"></line>
-                        <line x1="6" y1="20" x2="6" y2="14"></line>
-                        <polyline points="3 20 21 20"></polyline>
-                      </svg>
-                      <span>Accounting</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-current"></div>
+                        Accounting
+                      </div>
                     </Link>
                   )}
                 </div>
@@ -271,89 +253,78 @@ function Sidebar({ isOpen, onClose }) {
 
           {/* REPORTS & ANALYTICS */}
           {canAccessReports && (
-            <div className="nav-group">
+            <div className="space-y-1">
               <button 
-                className="nav-group-header" 
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition font-semibold text-sm ${expandedGroups.reports ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
                 onClick={() => toggleGroup('reports')}
               >
-                <span className="nav-group-title">
-                  <svg className="nav-group-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <span className="flex items-center gap-3">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="20" x2="18" y2="10"></line>
                     <line x1="12" y1="20" x2="12" y2="4"></line>
                     <line x1="6" y1="20" x2="6" y2="14"></line>
-                    <polyline points="3 20 21 20"></polyline>
                   </svg>
-                  REPORTS & ANALYTICS
+                  Reports
                 </span>
-                <svg className={`nav-group-chevron ${expandedGroups.reports ? 'expanded' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className={`w-4 h-4 transition-transform ${expandedGroups.reports ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
               {expandedGroups.reports && (
-                <div className="nav-group-items">
+                <div className="space-y-1 pl-4">
                   <Link 
                     to="/reports" 
-                    className={`nav-item ${isActive('/reports') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/reports') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="20" x2="18" y2="10"></line>
-                      <line x1="12" y1="20" x2="12" y2="4"></line>
-                      <line x1="6" y1="20" x2="6" y2="14"></line>
-                      <polyline points="3 20 21 20"></polyline>
-                    </svg>
-                    <span>All Reports</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      All Reports
+                    </div>
                   </Link>
 
                   <Link 
                     to="/reports/petty-cash" 
-                    className={`nav-item ${isActive('/reports/petty-cash') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/reports/petty-cash') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="12" y1="1" x2="12" y2="23"></line>
-                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                    </svg>
-                    <span>Petty Cash Report</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Petty Cash Report
+                    </div>
                   </Link>
 
                   <Link 
                     to="/reports/pending-payments" 
-                    className={`nav-item ${isActive('/reports/pending-payments') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/reports/pending-payments') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                      <line x1="1" y1="10" x2="23" y2="10"></line>
-                    </svg>
-                    <span>Pending Payments</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Pending Payments
+                    </div>
                   </Link>
 
                   <Link 
                     to="/reports/other-expenses" 
-                    className={`nav-item ${isActive('/reports/other-expenses') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/reports/other-expenses') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                      <line x1="1" y1="10" x2="23" y2="10"></line>
-                      <circle cx="12" cy="14" r="2"></circle>
-                    </svg>
-                    <span>Other Expenses Report</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Other Expenses Report
+                    </div>
                   </Link>
 
                   <Link 
                     to="/reports/transporters" 
-                    className={`nav-item ${isActive('/reports/transporters') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/reports/transporters') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="1" y="3" width="15" height="13" rx="1"></rect>
-                      <path d="M16 8h4l3 3v5h-7V8z"></path>
-                      <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                      <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                    </svg>
-                    <span>Transporters Report</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Transporters Report
+                    </div>
                   </Link>
                 </div>
               )}
@@ -362,58 +333,55 @@ function Sidebar({ isOpen, onClose }) {
 
           {/* SYSTEM ADMINISTRATION */}
           {isSuperAdmin && (
-            <div className="nav-group">
+            <div className="space-y-1">
               <button 
-                className="nav-group-header" 
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition font-semibold text-sm ${expandedGroups.admin ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'}`}
                 onClick={() => toggleGroup('admin')}
               >
-                <span className="nav-group-title">
-                  <svg className="nav-group-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <span className="flex items-center gap-3">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m0 6l4.2 4.2m11-5.2h-6m-6 0H1"></path>
                   </svg>
-                  SYSTEM ADMINISTRATION
+                  Administration
                 </span>
-                <svg className={`nav-group-chevron ${expandedGroups.admin ? 'expanded' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className={`w-4 h-4 transition-transform ${expandedGroups.admin ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
               {expandedGroups.admin && (
-                <div className="nav-group-items">
+                <div className="space-y-1 pl-4">
                   <Link 
                     to="/users" 
-                    className={`nav-item ${isActive('/users') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/users') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    <span>Users</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Users
+                    </div>
                   </Link>
 
                   <Link 
                     to="/password-reset-requests" 
-                    className={`nav-item ${isActive('/password-reset-requests') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/password-reset-requests') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                    </svg>
-                    <span>Password Resets</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Password Resets
+                    </div>
                   </Link>
 
                   <Link 
                     to="/settings" 
-                    className={`nav-item ${isActive('/settings') ? 'active' : ''}`}
+                    className={`block px-4 py-2 rounded-lg text-sm transition ${isActive('/settings') ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                     onClick={handleLinkClick}
                   >
-                    <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="3"></circle>
-                      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                    </svg>
-                    <span>Settings</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-current"></div>
+                      Settings
+                    </div>
                   </Link>
                 </div>
               )}

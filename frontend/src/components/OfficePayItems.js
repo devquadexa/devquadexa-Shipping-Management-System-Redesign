@@ -1,27 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { officePayItemService } from '../api/services/officePayItemService';
-import '../styles/OfficePayItems.css';
-
-// Inline styles to ensure column padding is applied
-const columnStyles = `
-  .billing-table th.col-description,
-  .billing-table td.col-description {
-    padding-left: 1.5rem !important;
-  }
-  .billing-table th.col-actual,
-  .billing-table td.col-actual {
-    padding-left: 1rem !important;
-  }
-  .billing-table th.col-paidby,
-  .billing-table td.col-paidby {
-    padding-left: 1rem !important;
-  }
-  .billing-table th.col-date,
-  .billing-table td.col-date {
-    padding-left: 1rem !important;
-  }
-`;
 
 function OfficePayItems({ jobId, onUpdate }) {
   const { user } = useAuth();
@@ -233,40 +212,37 @@ function OfficePayItems({ jobId, onUpdate }) {
   }
 
   return (
-    <div className="office-pay-items-section">
-      <style>{columnStyles}</style>
-      <div className="section-header">
-        <div className="header-content">
-          <h3>Office Pay Items</h3>
-          <p className="section-description">
-            Record upfront payments made by office staff (e.g., DO charges, port fees)
-          </p>
-        </div>
-      </div>
+    <div>
+      <div className="font-semibold text-gray-900 mb-2">Office Pay Items</div>
+      <p className="text-sm text-gray-600 mb-4">
+        Record upfront payments made by office staff (e.g., DO charges, port fees)
+      </p>
 
       {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+        <div className={`mb-4 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>
           {message}
         </div>
       )}
 
       {showAddForm && (
-        <div className="add-form-container">
-          <div className="form-card">
-            <div className="form-header">
-              <h4>{editingId ? 'Edit Office Payment' : 'Add New Office Payment'}</h4>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-2xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="text-lg font-bold text-gray-900">{editingId ? 'Edit Office Payment' : 'Add New Office Payment'}</h3>
               <button 
-                className="btn-close"
                 onClick={handleCloseForm}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
               >
                 ×
               </button>
             </div>
             
-            <form onSubmit={handleSubmit} className="office-pay-item-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="description">Description <span className="required">*</span></label>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                    Description <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="text"
                     id="description"
@@ -274,12 +250,15 @@ function OfficePayItems({ jobId, onUpdate }) {
                     value={formData.description}
                     onChange={handleChange}
                     placeholder="e.g., DO Charges, Port Fees, Documentation"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     required
                   />
                 </div>
                 
-                <div className="form-group">
-                  <label htmlFor="actualCost">Amount Paid (LKR) <span className="required">*</span></label>
+                <div>
+                  <label htmlFor="actualCost" className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount Paid (LKR) <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="text"
                     id="actualCost"
@@ -290,39 +269,47 @@ function OfficePayItems({ jobId, onUpdate }) {
                     onPaste={handleAmountPaste}
                     placeholder="0.00"
                     inputMode="decimal"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     required
                   />
                 </div>
               </div>
-
-              <div className="form-actions">
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? 'Processing...' : (editingId ? 'Update Payment' : 'Add Payment')}
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-secondary"
-                  onClick={handleCloseForm}
-                >
-                  Cancel
-                </button>
-              </div>
             </form>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <button 
+                type="button"
+                onClick={handleCloseForm}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 rounded-lg transition font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : (editingId ? 'Update Payment' : 'Add Payment')}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {showSlotsModal && (
-        <div className="modal-overlay" onClick={closePaymentModal}>
-          <div className="payment-slots-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Add Office Payment</h3>
-              <button className="btn-close" onClick={closePaymentModal}>×</button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-md w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="text-lg font-bold text-gray-900">Add Office Payment</h3>
+              <button className="text-gray-500 hover:text-gray-700 text-2xl font-bold" onClick={closePaymentModal}>×</button>
             </div>
             
-            <form onSubmit={handleSubmit} className="office-pay-item-form">
-              <div className="form-slot">
-                <label htmlFor="description-modal">Description <span className="required">*</span></label>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label htmlFor="description-modal" className="block text-sm font-medium text-gray-700 mb-1">
+                  Description <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   id="description-modal"
@@ -330,12 +317,15 @@ function OfficePayItems({ jobId, onUpdate }) {
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="e.g., DO Charges, Port Fees, Documentation"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required
                 />
               </div>
               
-              <div className="form-slot">
-                <label htmlFor="actualCost-modal">Amount Paid (LKR) <span className="required">*</span></label>
+              <div>
+                <label htmlFor="actualCost-modal" className="block text-sm font-medium text-gray-700 mb-1">
+                  Amount Paid (LKR) <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   id="actualCost-modal"
@@ -346,40 +336,48 @@ function OfficePayItems({ jobId, onUpdate }) {
                   onPaste={handleAmountPaste}
                   placeholder="0.00"
                   inputMode="decimal"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required
                 />
               </div>
-
-              <div className="modal-actions">
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? 'Processing...' : 'Add Payment'}
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-secondary"
-                  onClick={closePaymentModal}
-                >
-                  Cancel
-                </button>
-              </div>
             </form>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <button 
+                type="button"
+                onClick={closePaymentModal}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 rounded-lg transition font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : 'Add Payment'}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="office-pay-items-list">
+      <div>
         {loading && officePayItems.length === 0 ? (
-          <div className="loading-state">
-            <div className="loading-spinner"></div>
-            <p>Loading office pay items...</p>
+          <div className="p-12 text-center">
+            <div className="inline-block mb-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+            <p className="text-gray-600">Loading office pay items...</p>
           </div>
         ) : officePayItems.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📦</div>
-            <h4>No Office Payments Yet</h4>
-            <p>Add upfront payments made by office staff for this job</p>
+          <div className="p-12 text-center">
+            <div className="text-4xl mb-4">📦</div>
+            <h4 className="font-semibold text-gray-900 mb-2">No Office Payments Yet</h4>
+            <p className="text-gray-600 mb-6">Add upfront payments made by office staff for this job</p>
             <button 
-              className="btn btn-primary btn-empty-state"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
               onClick={openAddPaymentModal}
               disabled={loading}
             >
@@ -387,49 +385,40 @@ function OfficePayItems({ jobId, onUpdate }) {
             </button>
           </div>
         ) : (
-          <div className="billing-table-wrapper">
-            <div className="table-header-bar">
-              <div className="table-title">Payment Records</div>
+          <div className="bg-white rounded-xl border-2 border-gray-200">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <div className="text-lg font-semibold text-gray-900">Payment Records</div>
               <button 
-                className="btn btn-primary btn-add-payment"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium text-sm"
                 onClick={openAddPaymentModal}
                 disabled={loading}
                 title="Add new payment"
               >
-                <span className="btn-icon">+</span>
-                Add Payment
+                + Add Payment
               </button>
             </div>
             
-            <table className="billing-table">
-              <thead>
-                <tr>
-                  <th className="col-description">Description</th>
-                  <th className="col-actual">Actual Cost</th>
-                  <th className="col-paidby">Paid By</th>
-                  <th className="col-date">Payment Date</th>
-                  <th className="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {officePayItems.map((item) => (
-                  <tr key={item.officePayItemId}>
-                    <td className="col-description" data-label="Description">
-                      <span className="cell-content">{item.description}</span>
-                    </td>
-                    <td className="col-actual" data-label="Actual Cost">
-                      <span className="cell-content currency">{formatCurrency(item.actualCost)}</span>
-                    </td>
-                    <td className="col-paidby" data-label="Paid By">
-                      <span className="cell-content">{item.paidByName || '-'}</span>
-                    </td>
-                    <td className="col-date" data-label="Payment Date">
-                      <span className="cell-content">{formatDate(item.paymentDate)}</span>
-                    </td>
-                    <td className="col-actions" data-label="Actions">
-                      <div className="action-icons">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Description</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actual Cost</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Paid By</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Payment Date</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {officePayItems.map((item) => (
+                    <tr key={item.officePayItemId} className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(item.actualCost)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{item.paidByName || '-'}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{formatDate(item.paymentDate)}</td>
+                      <td className="px-6 py-4 text-sm flex gap-2">
                         <button
-                          className="icon-btn edit-btn"
+                          className="text-blue-600 hover:text-blue-800 transition p-1"
                           onClick={() => handleEdit(item)}
                           disabled={loading}
                           title="Edit payment"
@@ -441,7 +430,7 @@ function OfficePayItems({ jobId, onUpdate }) {
                           </svg>
                         </button>
                         <button
-                          className="icon-btn delete-btn"
+                          className="text-red-600 hover:text-red-800 transition p-1"
                           onClick={() => handleDelete(item.officePayItemId)}
                           disabled={loading}
                           title="Delete payment"
@@ -454,17 +443,17 @@ function OfficePayItems({ jobId, onUpdate }) {
                             <line x1="14" y1="11" x2="14" y2="17"></line>
                           </svg>
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             
-            <div className="totals-section">
-              <div className="total-row">
-                <span className="total-label">Total Actual Cost:</span>
-                <span className="total-value">
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex justify-end items-center">
+                <span className="text-sm font-semibold text-gray-900 mr-4">Total Actual Cost:</span>
+                <span className="text-lg font-bold text-gray-900">
                   {formatCurrency(officePayItems.reduce((sum, item) => sum + (item.actualCost || 0), 0))}
                 </span>
               </div>

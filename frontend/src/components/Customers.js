@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { customerService } from '../api/services/customerService';
 import Pagination from './Pagination';
-import '../styles/Customers.css';
-import API_BASE from '../api/config';
 
 function Customers() {
   const { user } = useAuth();
@@ -20,14 +18,12 @@ function Customers() {
     name: '',
     mainPhone: '',
     email: '',
-    // Residential Address
     addressNumber: '',
     addressStreet1: '',
     addressStreet2: '',
     addressDistrict: '',
     addressCity: '',
     addressCountry: 'Sri Lanka',
-    // Office Address
     officeAddressNumber: '',
     officeAddressStreet1: '',
     officeAddressStreet2: '',
@@ -48,7 +44,6 @@ function Customers() {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(20);
 
-  // Check if user is Admin, Super Admin, Manager, or Office Executive
   const isAdminOrSuperAdmin = () => {
     return user && (user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager' || user.role === 'Office Executive');
   };
@@ -60,7 +55,6 @@ function Customers() {
     fetchAllCities();
   }, []);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (showModal) {
       document.body.style.overflow = 'hidden';
@@ -72,9 +66,11 @@ function Customers() {
     };
   }, [showModal]);
 
+  const getAPIBase = () => process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/customers/categories/all`, {
+      const response = await fetch(`${getAPIBase()}/api/customers/categories/all`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -88,7 +84,7 @@ function Customers() {
 
   const fetchDistricts = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/locations/districts`, {
+      const response = await fetch(`${getAPIBase()}/api/locations/districts`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -102,7 +98,7 @@ function Customers() {
 
   const fetchCities = async (districtId) => {
     try {
-      const response = await fetch(`${API_BASE}/api/locations/cities/${districtId}`, {
+      const response = await fetch(`${getAPIBase()}/api/locations/cities/${districtId}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -117,7 +113,7 @@ function Customers() {
 
   const fetchAllCities = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/locations/cities`, {
+      const response = await fetch(`${getAPIBase()}/api/locations/cities`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -132,14 +128,10 @@ function Customers() {
 
   const fetchCustomers = async () => {
     try {
-      console.log('Fetching customers... User role:', user?.role);
       const data = await customerService.getAll();
-      console.log('Customers fetched successfully:', data.length, 'customers');
       setCustomers(data);
     } catch (error) {
       console.error('Error fetching customers:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
       if (error.response?.status === 403) {
         setMessage('Access denied. Please contact administrator.');
       } else {
@@ -152,28 +144,24 @@ function Customers() {
   const validateForm = () => {
     const errors = {};
     
-    // Name validation - only letters, spaces, and hyphens
     if (!formData.name.trim()) {
       errors.name = 'Name is required';
     } else if (!/^[a-zA-Z\s-]+$/.test(formData.name)) {
       errors.name = 'Name can only contain letters, spaces, and hyphens (-)';
     }
     
-    // Main phone validation - exactly 10 digits
     if (!formData.mainPhone.trim()) {
       errors.mainPhone = 'Main phone number is required';
     } else if (!/^\d{10}$/.test(formData.mainPhone.replace(/\s/g, ''))) {
       errors.mainPhone = 'Phone number must be exactly 10 digits';
     }
     
-    // Email validation
     if (!formData.email.trim()) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
-    // Credit period validation - numeric only, range 1-365
     const creditPeriodValue = String(formData.creditPeriodDays ?? '').trim();
     if (!creditPeriodValue) {
       errors.creditPeriodDays = 'Credit period is required';
@@ -186,7 +174,6 @@ function Customers() {
       }
     }
     
-    // Address validation
     if (!formData.addressNumber.trim()) {
       errors.addressNumber = 'Address number is required';
     }
@@ -207,7 +194,6 @@ function Customers() {
       errors.addressCountry = 'Country is required';
     }
 
-    // Office address validation (if not same as residential)
     if (!formData.isOfficeAddressSame) {
       if (!formData.officeAddressNumber.trim()) {
         errors.officeAddressNumber = 'Office address number is required';
@@ -230,7 +216,6 @@ function Customers() {
       }
     }
     
-    // Contact persons validation - at least one required
     const validContactPersons = formData.contactPersons.filter(
       cp => cp.name.trim() !== '' || cp.phone.trim() !== ''
     );
@@ -238,10 +223,8 @@ function Customers() {
     if (validContactPersons.length === 0) {
       errors.contactPersons = 'At least one contact person is required';
     } else {
-      // Validate each contact person
       formData.contactPersons.forEach((cp, index) => {
         if (cp.name.trim() !== '' || cp.phone.trim() !== '' || cp.email.trim() !== '' || cp.designation.trim() !== '') {
-          // If any field has data, name and phone must be valid
           if (!cp.name.trim()) {
             errors[`contactPerson${index}Name`] = 'Contact person name is required';
           } else if (!/^[a-zA-Z\s-]+$/.test(cp.name)) {
@@ -254,7 +237,6 @@ function Customers() {
             errors[`contactPerson${index}Phone`] = 'Phone number must be exactly 10 digits';
           }
           
-          // Email validation (optional but must be valid if provided)
           if (cp.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cp.email)) {
             errors[`contactPerson${index}Email`] = 'Please enter a valid email address';
           }
@@ -269,7 +251,6 @@ function Customers() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
     if (!validateForm()) {
       setMessage('Please fix the errors in the form');
       setTimeout(() => setMessage(''), 5000);
@@ -277,20 +258,14 @@ function Customers() {
     }
     
     try {
-      console.log('Submitting customer data:', formData);
-      
-      // Filter out empty contact persons
       const filteredContactPersons = formData.contactPersons.filter(
         cp => cp.name.trim() !== '' && cp.phone.trim() !== ''
       );
       
       const submitData = {
         ...formData,
-        contactPersons: filteredContactPersons,
-        officeLocation: formData.isSameLocation ? formData.address : formData.officeLocation
+        contactPersons: filteredContactPersons
       };
-      
-      console.log('Submit data with isActive:', submitData.isActive);
       
       if (editingCustomer) {
         await customerService.update(editingCustomer.customerId, submitData);
@@ -382,7 +357,6 @@ function Customers() {
       isActive: customer.isActive !== undefined ? customer.isActive : true
     });
     
-    // Set up filtered cities for editing
     if (customer.addressDistrict) {
       handleDistrictChange(customer.addressDistrict, false);
     }
@@ -417,11 +391,9 @@ function Customers() {
   };
 
   const handleDistrictChange = (districtName, isOffice = false) => {
-    // Find the district to get its ID
     const selectedDistrict = districts.find(d => d.districtName === districtName);
     
     if (selectedDistrict) {
-      // Filter cities for this district
       const districtCities = cities.filter(c => c.districtId === selectedDistrict.districtId);
       
       if (isOffice) {
@@ -429,14 +401,14 @@ function Customers() {
         setFormData(prev => ({ 
           ...prev, 
           officeAddressDistrict: districtName,
-          officeAddressCity: '' // Reset city when district changes
+          officeAddressCity: ''
         }));
       } else {
         setFilteredCities(districtCities);
         setFormData(prev => ({ 
           ...prev, 
           addressDistrict: districtName,
-          addressCity: '' // Reset city when district changes
+          addressCity: ''
         }));
       }
     }
@@ -448,9 +420,7 @@ function Customers() {
     if (name === 'creditPeriodDays') {
       const digitsOnly = value.replace(/\D/g, '');
       const normalizedValue = digitsOnly === '' ? '' : String(Math.min(parseInt(digitsOnly, 10), 365));
-
       setFormData({ ...formData, creditPeriodDays: normalizedValue });
-
       if (formErrors.creditPeriodDays) {
         setFormErrors({ ...formErrors, creditPeriodDays: '' });
       }
@@ -462,7 +432,6 @@ function Customers() {
     } else {
       setFormData({ ...formData, [name]: value });
       
-      // Handle district changes
       if (name === 'addressDistrict') {
         handleDistrictChange(value, false);
       } else if (name === 'officeAddressDistrict') {
@@ -470,7 +439,6 @@ function Customers() {
       }
     }
     
-    // Clear error for this field when user starts typing
     if (formErrors[name]) {
       setFormErrors({ ...formErrors, [name]: '' });
     }
@@ -478,7 +446,6 @@ function Customers() {
 
   const validateNameInput = (e) => {
     const value = e.target.value;
-    // Only allow letters, spaces, and hyphens
     if (value === '' || /^[a-zA-Z\s-]*$/.test(value)) {
       return true;
     }
@@ -488,7 +455,6 @@ function Customers() {
 
   const validatePhoneInput = (e) => {
     const value = e.target.value;
-    // Only allow digits and limit to 10
     if (value === '' || (/^\d*$/.test(value) && value.length <= 10)) {
       return true;
     }
@@ -496,45 +462,11 @@ function Customers() {
     return false;
   };
 
-  const validateCreditPeriodInput = (e) => {
-    const value = e.target.value;
-    if (value === '' || /^\d*$/.test(value)) {
-      return true;
-    }
-    e.preventDefault();
-    return false;
-  };
-
-  const handleCreditPeriodKeyDown = (e) => {
-    const allowedControlKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
-    if (allowedControlKeys.includes(e.key)) {
-      return;
-    }
-
-    if (!/^\d$/.test(e.key)) {
-      e.preventDefault();
-    }
-  };
-
-  const handleCreditPeriodBeforeInput = (e) => {
-    if (e.data && !/^\d+$/.test(e.data)) {
-      e.preventDefault();
-    }
-  };
-
-  const handleCreditPeriodPaste = (e) => {
-    const pastedText = e.clipboardData.getData('text');
-    if (!/^\d+$/.test(pastedText.trim())) {
-      e.preventDefault();
-    }
-  };
-
   const handleContactPersonChange = (index, field, value) => {
     const updatedContactPersons = [...formData.contactPersons];
     updatedContactPersons[index][field] = value;
     setFormData({ ...formData, contactPersons: updatedContactPersons });
     
-    // Clear errors for this contact person field
     const errorKey = `contactPerson${index}${field.charAt(0).toUpperCase() + field.slice(1)}`;
     if (formErrors[errorKey]) {
       setFormErrors({ ...formErrors, [errorKey]: '', contactPersons: '' });
@@ -554,7 +486,6 @@ function Customers() {
     if (formData.contactPersons.length > 1) {
       const updatedContactPersons = formData.contactPersons.filter((_, i) => i !== index);
       setFormData({ ...formData, contactPersons: updatedContactPersons });
-      // Clear related errors
       const newErrors = { ...formErrors };
       delete newErrors[`contactPerson${index}Name`];
       delete newErrors[`contactPerson${index}Phone`];
@@ -575,13 +506,11 @@ function Customers() {
     (customer.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredCustomers.length / recordsPerPage);
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
   const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
 
-  // Reset to page 1 when search term changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -597,205 +526,110 @@ function Customers() {
   };
 
   return (
-    <div className="container customers-page">
-      <div className="page-header">
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h1>Customer Management</h1>
-          <p>Manage customer information and registrations</p>
+          <h1 className="text-3xl font-bold text-gray-900">Customer Management</h1>
+          <p className="text-gray-600 mt-1">Manage customer information and registrations</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn btn-primary">
+        <button 
+          onClick={() => setShowModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+        >
           + New Customer
         </button>
       </div>
 
       {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+        <div className={`mb-6 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>
           {message}
         </div>
       )}
 
-      <div className="card">
-        <div className="card-header">
-          <h2>All Customers ({filteredCustomers.length})</h2>
-          <div className="search-box">
+      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">All Customers ({filteredCustomers.length})</h2>
+          <div className="relative">
+            <svg className="absolute left-3 top-3 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
             <input
               type="text"
               placeholder="Search by name, ID, or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
           </div>
         </div>
 
         {filteredCustomers.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">
-              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-            </div>
-            <p>{searchTerm ? 'No customers found matching your search' : 'No customers registered yet'}</p>
+          <div className="p-12 text-center">
+            <svg className="mx-auto mb-4 text-gray-400" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <p className="text-gray-600">{searchTerm ? 'No customers found matching your search' : 'No customers registered yet'}</p>
           </div>
         ) : (
-          <div className="customers-table-wrapper">
-            <table className="customers-table">
-              <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th>Customer ID</th>
-                  <th>Name</th>
-                  <th>Main Phone</th>
-                  <th>Email</th>
-                  <th>Registered</th>
-                  <th>Actions</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Customer ID</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Name</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Phone</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Email</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Registered</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {paginatedCustomers.map(customer => (
                   <React.Fragment key={customer.customerId}>
-                    <tr className={expandedRow === customer.customerId ? 'expanded' : ''}>
-                      <td data-label="Customer ID"><strong className="customer-id">{customer.customerId}</strong></td>
-                      <td data-label="Name"><strong>{customer.name}</strong></td>
-                      <td data-label="Phone">{customer.mainPhone}</td>
-                      <td data-label="Email" className="email-cell">{customer.email}</td>
-                      <td data-label="Registered">{new Date(customer.registrationDate).toLocaleDateString()}</td>
-                      <td data-label="Actions">
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          {isAdminOrSuperAdmin() && (
-                            <button
-                              className="btn-action btn-edit"
-                              onClick={() => handleEdit(customer)}
-                              title="Edit Customer"
-                            >
-                              Edit
-                            </button>
-                          )}
-                          <button
-                            className="btn-action btn-view"
-                            onClick={() => setExpandedRow(expandedRow === customer.customerId ? null : customer.customerId)}
-                            title="View Details"
-                          >
-                            {expandedRow === customer.customerId ? 'Hide' : 'View'}
-                          </button>
-                        </div>
+                    <tr className="hover:bg-gray-50 transition">
+                      <td className="px-6 py-4 text-sm font-semibold text-blue-600">{customer.customerId}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{customer.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{customer.mainPhone}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{customer.email}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{new Date(customer.registrationDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-sm flex gap-2">
+                        {isAdminOrSuperAdmin() && (
+                          <button onClick={() => handleEdit(customer)} className="px-3 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition text-xs font-medium">Edit</button>
+                        )}
+                        <button onClick={() => setExpandedRow(expandedRow === customer.customerId ? null : customer.customerId)} className="px-3 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded transition text-xs font-medium">{expandedRow === customer.customerId ? 'Hide' : 'View'}</button>
                       </td>
                     </tr>
                     {expandedRow === customer.customerId && (
-                      <tr className="expanded-details">
-                        <td colSpan="6">
-                          <div className="details-grid">
-                            <div className="detail-section">
-                              <h4 className="section-title">Address Information</h4>
-                              <div className="detail-item-block">
-                                <span className="detail-label">Residential Address:</span>
-                                <span className="detail-value-block">
-                                  {customer.getFormattedResidentialAddress ? customer.getFormattedResidentialAddress() : 
-                                   `${customer.addressNumber || ''}, ${customer.addressStreet1 || ''}, ${customer.addressStreet2 ? customer.addressStreet2 + ', ' : ''}${customer.addressDistrict || ''}, ${customer.addressCity || ''}, ${customer.addressCountry || 'Sri Lanka'}`}
-                                </span>
-                              </div>
-                              <div className="detail-item-block">
-                                <span className="detail-label">Office Address:</span>
-                                <span className="detail-value-block">
-                                  {customer.isOfficeAddressSame ? 'Same as residential address' : 
-                                   (customer.getFormattedOfficeAddress ? customer.getFormattedOfficeAddress() : 
-                                    `${customer.officeAddressNumber || ''}, ${customer.officeAddressStreet1 || ''}, ${customer.officeAddressStreet2 ? customer.officeAddressStreet2 + ', ' : ''}${customer.officeAddressDistrict || ''}, ${customer.officeAddressCity || ''}, ${customer.officeAddressCountry || 'Sri Lanka'}`)}
-                                </span>
-                              </div>
-                              {customer.website && (
-                                <div className="detail-item">
-                                  <span className="detail-label">Website:</span>
-                                  <span className="detail-value">
-                                    <a href={customer.website} target="_blank" rel="noopener noreferrer">{customer.website}</a>
-                                  </span>
-                                </div>
-                              )}
-                              <div className="detail-item">
-                                <span className="detail-label">Credit Period:</span>
-                                <span className="detail-value">{customer.creditPeriodDays || 30} days</span>
-                              </div>
+                      <tr className="bg-gray-50">
+                        <td colSpan="6" className="px-6 py-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-3">Residential Address</h4>
+                              <p className="text-sm text-gray-600">{customer.addressNumber}, {customer.addressStreet1}{customer.addressStreet2 ? ', ' + customer.addressStreet2 : ''}<br/>{customer.addressDistrict}, {customer.addressCity}<br/>{customer.addressCountry}</p>
                             </div>
-                            
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-3">Office Address</h4>
+                              <p className="text-sm text-gray-600">{customer.isOfficeAddressSame ? 'Same as residential' : (<>{customer.officeAddressNumber}, {customer.officeAddressStreet1}{customer.officeAddressStreet2 ? ', ' + customer.officeAddressStreet2 : ''}<br/>{customer.officeAddressDistrict}, {customer.officeAddressCity}<br/>{customer.officeAddressCountry}</>)}</p>
+                            </div>
                             {customer.contactPersons && customer.contactPersons.length > 0 && (
-                              <div className="detail-section">
-                                <h4 className="section-title">Contact Persons</h4>
-                                <div className="contact-persons-list">
-                                  {customer.contactPersons.map((cp, idx) => (
-                                    <div key={idx} className="contact-person-card">
-                                      <div className="contact-person-summary">
-                                        <div className="contact-name">{cp.name}</div>
-                                        {cp.designation && (
-                                          <div className="contact-designation">{cp.designation}</div>
-                                        )}
-                                      </div>
-                                      <div className="contact-person-hover-details">
-                                        <div className="contact-detail-row">
-                                          <span className="detail-label-small">Phone:</span>
-                                          <span className="detail-value-small">{cp.phone}</span>
-                                          <button 
-                                            className="btn-copy-small" 
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              navigator.clipboard.writeText(cp.phone);
-                                              setMessage('Phone number copied!');
-                                              setTimeout(() => setMessage(''), 2000);
-                                            }}
-                                            title="Copy phone number"
-                                          >
-                                            Copy
-                                          </button>
-                                        </div>
-                                        {cp.email && (
-                                          <div className="contact-detail-row">
-                                            <span className="detail-label-small">Email:</span>
-                                            <span className="detail-value-small">{cp.email}</span>
-                                            <button 
-                                              className="btn-copy-small" 
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                navigator.clipboard.writeText(cp.email);
-                                                setMessage('Email copied!');
-                                                setTimeout(() => setMessage(''), 2000);
-                                              }}
-                                              title="Copy email"
-                                            >
-                                              Copy
-                                            </button>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-900 mb-3">Contact Persons</h4>
+                                <div className="space-y-2">{customer.contactPersons.map((cp, idx) => (<div key={idx} className="text-sm"><p className="font-medium text-gray-900">{cp.name}</p><p className="text-gray-600">{cp.phone}</p>{cp.email && <p className="text-gray-600">{cp.email}</p>}</div>))}</div>
                               </div>
                             )}
-                            
                             {customer.categories && customer.categories.length > 0 && (
-                              <div className="detail-section">
-                                <h4 className="section-title">Business Categories</h4>
-                                <div className="categories-list">
-                                  {customer.categories.map(cat => (
-                                    <span key={cat.categoryId} className="category-badge">
-                                      {cat.categoryName}
-                                    </span>
-                                  ))}
-                                </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-900 mb-3">Categories</h4>
+                                <div className="flex flex-wrap gap-2">{customer.categories.map(cat => (<span key={cat.categoryId} className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">{cat.categoryName}</span>))}</div>
                               </div>
                             )}
-                            
                             {isAdminOrSuperAdmin() && (
-                              <div className="detail-section">
-                                <div className="detail-actions">
-                                  <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleDeactivate(customer.customerId)}
-                                    title="Deactivate Customer"
-                                  >
-                                    Deactivate Customer
-                                  </button>
-                                </div>
+                              <div>
+                                <button onClick={() => handleDeactivate(customer.customerId)} className="text-sm bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg transition font-medium">Deactivate Customer</button>
                               </div>
                             )}
                           </div>
@@ -810,489 +644,213 @@ function Customers() {
         )}
 
         {filteredCustomers.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalRecords={filteredCustomers.length}
-            recordsPerPage={recordsPerPage}
-            onPageChange={handlePageChange}
-            onRecordsPerPageChange={handleRecordsPerPageChange}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} totalRecords={filteredCustomers.length} recordsPerPage={recordsPerPage} onPageChange={handlePageChange} onRecordsPerPageChange={handleRecordsPerPageChange} />
         )}
       </div>
 
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal modal-large">
-            <div className="modal-header">
-              <h2>{editingCustomer ? 'Edit Customer' : 'Register New Customer'}</h2>
-              <button className="btn-close" onClick={() => { setShowModal(false); resetForm(); }}>×</button>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-4xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h2 className="text-2xl font-bold text-gray-900">{editingCustomer ? 'Edit Customer' : 'Register New Customer'}</h2>
+              <button onClick={() => { setShowModal(false); resetForm(); }} className="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
             </div>
-            <form onSubmit={handleSubmit} className="customer-form">
-              {/* Basic Information */}
-              <div className="form-section">
-                <h3 className="section-heading">Basic Information</h3>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Customer / Company Name <span className="required">*</span></label>
-                    <input 
-                      type="text" 
-                      name="name" 
-                      value={formData.name} 
-                      onChange={handleChange}
-                      onKeyPress={validateNameInput}
-                      className={formErrors.name ? 'error' : ''}
-                      placeholder="Enter name (letters, spaces, and hyphens only)"
-                      required 
-                    />
-                    {formErrors.name && <span className="error-message">{formErrors.name}</span>}
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-96 overflow-y-auto">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Customer / Company Name <span className="text-red-600">*</span></label>
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} onKeyPress={validateNameInput} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.name ? 'border-red-500' : 'border-gray-300'}`} placeholder="Enter name" required />
+                    {formErrors.name && <p className="text-red-600 text-xs mt-1">{formErrors.name}</p>}
                   </div>
-                  
-                  <div className="form-group">
-                    <label>Main Phone Number <span className="required">*</span> (10 digits)</label>
-                    <input 
-                      type="tel" 
-                      name="mainPhone" 
-                      value={formData.mainPhone} 
-                      onChange={handleChange}
-                      onKeyPress={validatePhoneInput}
-                      className={formErrors.mainPhone ? 'error' : ''}
-                      placeholder="0771234567"
-                      maxLength="10"
-                      required 
-                    />
-                    {formErrors.mainPhone && <span className="error-message">{formErrors.mainPhone}</span>}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Main Phone <span className="text-red-600">*</span></label>
+                    <input type="tel" name="mainPhone" value={formData.mainPhone} onChange={handleChange} onKeyPress={validatePhoneInput} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.mainPhone ? 'border-red-500' : 'border-gray-300'}`} maxLength="10" required />
+                    {formErrors.mainPhone && <p className="text-red-600 text-xs mt-1">{formErrors.mainPhone}</p>}
                   </div>
-                  
-                  <div className="form-group">
-                    <label>Email Address <span className="required">*</span></label>
-                    <input 
-                      type="email" 
-                      name="email" 
-                      value={formData.email} 
-                      onChange={handleChange}
-                      className={formErrors.email ? 'error' : ''}
-                      placeholder="email@example.com"
-                      required 
-                    />
-                    {formErrors.email && <span className="error-message">{formErrors.email}</span>}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className="text-red-600">*</span></label>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.email ? 'border-red-500' : 'border-gray-300'}`} required />
+                    {formErrors.email && <p className="text-red-600 text-xs mt-1">{formErrors.email}</p>}
                   </div>
                 </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Registration Date <span className="required">*</span></label>
-                    <input 
-                      type="date" 
-                      name="registrationDate" 
-                      value={formData.registrationDate} 
-                      onChange={handleChange}
-                      required 
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Registration Date <span className="text-red-600">*</span></label>
+                    <input type="date" name="registrationDate" value={formData.registrationDate} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" required />
                   </div>
-
-                  <div className="form-group">
-                    <label>Credit Period (Days) <span className="required">*</span></label>
-                    <input 
-                      type="text" 
-                      name="creditPeriodDays" 
-                      value={formData.creditPeriodDays} 
-                      onChange={handleChange}
-                      onKeyPress={validateCreditPeriodInput}
-                      onKeyDown={handleCreditPeriodKeyDown}
-                      onBeforeInput={handleCreditPeriodBeforeInput}
-                      onPaste={handleCreditPeriodPaste}
-                      min="1"
-                      max="365"
-                      step="1"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      className={formErrors.creditPeriodDays ? 'error' : ''}
-                      placeholder="30"
-                      required 
-                    />
-                    {formErrors.creditPeriodDays && <span className="error-message">{formErrors.creditPeriodDays}</span>}
-                    <small className="help-text">Number of days before invoice becomes overdue</small>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Credit Period (Days) <span className="text-red-600">*</span></label>
+                    <input type="text" name="creditPeriodDays" value={formData.creditPeriodDays} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.creditPeriodDays ? 'border-red-500' : 'border-gray-300'}`} required />
+                    {formErrors.creditPeriodDays && <p className="text-red-600 text-xs mt-1">{formErrors.creditPeriodDays}</p>}
                   </div>
-
-                  <div className="form-group">
-                    <label>Website</label>
-                    <input 
-                      type="url" 
-                      name="website" 
-                      value={formData.website} 
-                      onChange={handleChange} 
-                      placeholder="https://example.com" 
-                    />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                    <input type="url" name="website" value={formData.website} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
                   </div>
                 </div>
               </div>
 
-              {/* Address Information */}
-              <div className="form-section">
-                <h3 className="section-heading">Residential Address (Standard Sri Lankan Format)</h3>
-                
-                {/* Three column row: Address Number, Street Name 1, Street Name 2 */}
-                <div className="form-row form-row-three">
-                  <div className="form-group">
-                    <label>Address Number <span className="required">*</span></label>
-                    <input 
-                      type="text" 
-                      name="addressNumber" 
-                      value={formData.addressNumber} 
-                      onChange={handleChange}
-                      className={formErrors.addressNumber ? 'error' : ''}
-                      placeholder="e.g., 45, 123/2A"
-                      required 
-                    />
-                    {formErrors.addressNumber && <span className="error-message">{formErrors.addressNumber}</span>}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Residential Address</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address Number <span className="text-red-600">*</span></label>
+                    <input type="text" name="addressNumber" value={formData.addressNumber} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.addressNumber ? 'border-red-500' : 'border-gray-300'}`} required />
+                    {formErrors.addressNumber && <p className="text-red-600 text-xs mt-1">{formErrors.addressNumber}</p>}
                   </div>
-                  
-                  <div className="form-group">
-                    <label>Street Name 1 <span className="required">*</span></label>
-                    <input 
-                      type="text" 
-                      name="addressStreet1" 
-                      value={formData.addressStreet1} 
-                      onChange={handleChange}
-                      className={formErrors.addressStreet1 ? 'error' : ''}
-                      placeholder="e.g., Galle Road, Temple Road"
-                      required 
-                    />
-                    {formErrors.addressStreet1 && <span className="error-message">{formErrors.addressStreet1}</span>}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Name 1 <span className="text-red-600">*</span></label>
+                    <input type="text" name="addressStreet1" value={formData.addressStreet1} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.addressStreet1 ? 'border-red-500' : 'border-gray-300'}`} required />
+                    {formErrors.addressStreet1 && <p className="text-red-600 text-xs mt-1">{formErrors.addressStreet1}</p>}
                   </div>
-
-                  <div className="form-group">
-                    <label>Street Name 2 (Optional)</label>
-                    <input 
-                      type="text" 
-                      name="addressStreet2" 
-                      value={formData.addressStreet2} 
-                      onChange={handleChange}
-                      placeholder="e.g., Lane 3, Near School"
-                    />
-                    <small className="help-text">Additional street info</small>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Street Name 2 (Optional)</label>
+                    <input type="text" name="addressStreet2" value={formData.addressStreet2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
                   </div>
                 </div>
-
-                {/* Three column row: District (left), City (right), Country */}
-                <div className="form-row form-row-three-address">
-                  <div className="form-group">
-                    <label>District <span className="required">*</span></label>
-                    <select 
-                      name="addressDistrict" 
-                      value={formData.addressDistrict} 
-                      onChange={handleChange}
-                      className={formErrors.addressDistrict ? 'error' : ''}
-                      required 
-                    >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">District <span className="text-red-600">*</span></label>
+                    <select name="addressDistrict" value={formData.addressDistrict} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.addressDistrict ? 'border-red-500' : 'border-gray-300'}`} required>
                       <option value="">Select District</option>
-                      {districts.map(district => (
-                        <option key={district.districtId} value={district.districtName}>
-                          {district.districtName}
-                        </option>
-                      ))}
+                      {districts.map(district => (<option key={district.districtId} value={district.districtName}>{district.districtName}</option>))}
                     </select>
-                    {formErrors.addressDistrict && <span className="error-message">{formErrors.addressDistrict}</span>}
+                    {formErrors.addressDistrict && <p className="text-red-600 text-xs mt-1">{formErrors.addressDistrict}</p>}
                   </div>
-                  
-                  <div className="form-group">
-                    <label>City/Town <span className="required">*</span></label>
-                    <select 
-                      name="addressCity" 
-                      value={formData.addressCity} 
-                      onChange={handleChange}
-                      className={formErrors.addressCity ? 'error' : ''}
-                      disabled={!formData.addressDistrict}
-                      required 
-                    >
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City/Town <span className="text-red-600">*</span></label>
+                    <select name="addressCity" value={formData.addressCity} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.addressCity ? 'border-red-500' : 'border-gray-300'}`} disabled={!formData.addressDistrict} required>
                       <option value="">Select City</option>
-                      {filteredCities.map(city => (
-                        <option key={city.cityId} value={city.cityName}>
-                          {city.cityName}
-                        </option>
-                      ))}
+                      {filteredCities.map(city => (<option key={city.cityId} value={city.cityName}>{city.cityName}</option>))}
                     </select>
-                    {formErrors.addressCity && <span className="error-message">{formErrors.addressCity}</span>}
-                    {!formData.addressDistrict && <small className="help-text">Select district first</small>}
+                    {formErrors.addressCity && <p className="text-red-600 text-xs mt-1">{formErrors.addressCity}</p>}
                   </div>
-
-                  <div className="form-group">
-                    <label>Country <span className="required">*</span></label>
-                    <input 
-                      type="text" 
-                      name="addressCountry" 
-                      value={formData.addressCountry} 
-                      onChange={handleChange}
-                      className={formErrors.addressCountry ? 'error' : ''}
-                      placeholder="Sri Lanka"
-                      required 
-                    />
-                    {formErrors.addressCountry && <span className="error-message">{formErrors.addressCountry}</span>}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Country <span className="text-red-600">*</span></label>
+                    <input type="text" name="addressCountry" value={formData.addressCountry} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.addressCountry ? 'border-red-500' : 'border-gray-300'}`} required />
+                    {formErrors.addressCountry && <p className="text-red-600 text-xs mt-1">{formErrors.addressCountry}</p>}
                   </div>
                 </div>
               </div>
 
-              {/* Office Address Information */}
-              <div className="form-section">
-                <h3 className="section-heading">Office Address</h3>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="checkbox-label">
-                      <input 
-                        type="checkbox" 
-                        name="isOfficeAddressSame" 
-                        checked={formData.isOfficeAddressSame} 
-                        onChange={handleChange}
-                      />
-                      <span>Office address is same as residential address</span>
-                    </label>
-                  </div>
-                </div>
-
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Office Address</h3>
+                <label className="flex items-center mb-4">
+                  <input type="checkbox" name="isOfficeAddressSame" checked={formData.isOfficeAddressSame} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
+                  <span className="ml-2 text-sm font-medium text-gray-700">Office address is same as residential address</span>
+                </label>
                 {!formData.isOfficeAddressSame && (
                   <>
-                    {/* Three column row: Office Address Number, Street Name 1, Street Name 2 */}
-                    <div className="form-row form-row-three">
-                      <div className="form-group">
-                        <label>Office Address Number <span className="required">*</span></label>
-                        <input 
-                          type="text" 
-                          name="officeAddressNumber" 
-                          value={formData.officeAddressNumber} 
-                          onChange={handleChange}
-                          className={formErrors.officeAddressNumber ? 'error' : ''}
-                          placeholder="e.g., 45, 123/2A"
-                          required={!formData.isOfficeAddressSame}
-                        />
-                        {formErrors.officeAddressNumber && <span className="error-message">{formErrors.officeAddressNumber}</span>}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Address Number <span className="text-red-600">*</span></label>
+                        <input type="text" name="officeAddressNumber" value={formData.officeAddressNumber} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.officeAddressNumber ? 'border-red-500' : 'border-gray-300'}`} required={!formData.isOfficeAddressSame} />
+                        {formErrors.officeAddressNumber && <p className="text-red-600 text-xs mt-1">{formErrors.officeAddressNumber}</p>}
                       </div>
-                      
-                      <div className="form-group">
-                        <label>Office Street Name 1 <span className="required">*</span></label>
-                        <input 
-                          type="text" 
-                          name="officeAddressStreet1" 
-                          value={formData.officeAddressStreet1} 
-                          onChange={handleChange}
-                          className={formErrors.officeAddressStreet1 ? 'error' : ''}
-                          placeholder="e.g., Galle Road, Temple Road"
-                          required={!formData.isOfficeAddressSame}
-                        />
-                        {formErrors.officeAddressStreet1 && <span className="error-message">{formErrors.officeAddressStreet1}</span>}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Street Name 1 <span className="text-red-600">*</span></label>
+                        <input type="text" name="officeAddressStreet1" value={formData.officeAddressStreet1} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.officeAddressStreet1 ? 'border-red-500' : 'border-gray-300'}`} required={!formData.isOfficeAddressSame} />
+                        {formErrors.officeAddressStreet1 && <p className="text-red-600 text-xs mt-1">{formErrors.officeAddressStreet1}</p>}
                       </div>
-
-                      <div className="form-group">
-                        <label>Office Street Name 2 (Optional)</label>
-                        <input 
-                          type="text" 
-                          name="officeAddressStreet2" 
-                          value={formData.officeAddressStreet2} 
-                          onChange={handleChange}
-                          placeholder="e.g., Lane 3, Near School"
-                        />
-                        <small className="help-text">Additional street info</small>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Street Name 2 (Optional)</label>
+                        <input type="text" name="officeAddressStreet2" value={formData.officeAddressStreet2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
                       </div>
                     </div>
-
-                    {/* Three column row: Office District (left), City (right), Country */}
-                    <div className="form-row form-row-three-address">
-                      <div className="form-group">
-                        <label>Office District <span className="required">*</span></label>
-                        <select 
-                          name="officeAddressDistrict" 
-                          value={formData.officeAddressDistrict} 
-                          onChange={handleChange}
-                          className={formErrors.officeAddressDistrict ? 'error' : ''}
-                          required={!formData.isOfficeAddressSame}
-                        >
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">District <span className="text-red-600">*</span></label>
+                        <select name="officeAddressDistrict" value={formData.officeAddressDistrict} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.officeAddressDistrict ? 'border-red-500' : 'border-gray-300'}`} required={!formData.isOfficeAddressSame}>
                           <option value="">Select District</option>
-                          {districts.map(district => (
-                            <option key={district.districtId} value={district.districtName}>
-                              {district.districtName}
-                            </option>
-                          ))}
+                          {districts.map(district => (<option key={district.districtId} value={district.districtName}>{district.districtName}</option>))}
                         </select>
-                        {formErrors.officeAddressDistrict && <span className="error-message">{formErrors.officeAddressDistrict}</span>}
+                        {formErrors.officeAddressDistrict && <p className="text-red-600 text-xs mt-1">{formErrors.officeAddressDistrict}</p>}
                       </div>
-                      
-                      <div className="form-group">
-                        <label>Office City/Town <span className="required">*</span></label>
-                        <select 
-                          name="officeAddressCity" 
-                          value={formData.officeAddressCity} 
-                          onChange={handleChange}
-                          className={formErrors.officeAddressCity ? 'error' : ''}
-                          disabled={!formData.officeAddressDistrict}
-                          required={!formData.isOfficeAddressSame}
-                        >
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">City/Town <span className="text-red-600">*</span></label>
+                        <select name="officeAddressCity" value={formData.officeAddressCity} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.officeAddressCity ? 'border-red-500' : 'border-gray-300'}`} disabled={!formData.officeAddressDistrict} required={!formData.isOfficeAddressSame}>
                           <option value="">Select City</option>
-                          {filteredOfficeCities.map(city => (
-                            <option key={city.cityId} value={city.cityName}>
-                              {city.cityName}
-                            </option>
-                          ))}
+                          {filteredOfficeCities.map(city => (<option key={city.cityId} value={city.cityName}>{city.cityName}</option>))}
                         </select>
-                        {formErrors.officeAddressCity && <span className="error-message">{formErrors.officeAddressCity}</span>}
-                        {!formData.officeAddressDistrict && <small className="help-text">Select district first</small>}
+                        {formErrors.officeAddressCity && <p className="text-red-600 text-xs mt-1">{formErrors.officeAddressCity}</p>}
                       </div>
-
-                      <div className="form-group">
-                        <label>Office Country <span className="required">*</span></label>
-                        <input 
-                          type="text" 
-                          name="officeAddressCountry" 
-                          value={formData.officeAddressCountry} 
-                          onChange={handleChange}
-                          className={formErrors.officeAddressCountry ? 'error' : ''}
-                          placeholder="Sri Lanka"
-                          required={!formData.isOfficeAddressSame}
-                        />
-                        {formErrors.officeAddressCountry && <span className="error-message">{formErrors.officeAddressCountry}</span>}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Country <span className="text-red-600">*</span></label>
+                        <input type="text" name="officeAddressCountry" value={formData.officeAddressCountry} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors.officeAddressCountry ? 'border-red-500' : 'border-gray-300'}`} required={!formData.isOfficeAddressSame} />
+                        {formErrors.officeAddressCountry && <p className="text-red-600 text-xs mt-1">{formErrors.officeAddressCountry}</p>}
                       </div>
                     </div>
                   </>
                 )}
               </div>
 
-              {/* Categories */}
-              <div className="form-section">
-                <h3 className="section-heading">Business Categories</h3>
-                <div className="categories-grid">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Categories</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {categories.map(category => (
-                    <label key={category.categoryId} className="category-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={formData.categories.includes(category.categoryId)}
-                        onChange={() => handleCategoryChange(category.categoryId)}
-                      />
-                      <span>{category.categoryName}</span>
+                    <label key={category.categoryId} className="flex items-center p-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <input type="checkbox" checked={formData.categories.includes(category.categoryId)} onChange={() => handleCategoryChange(category.categoryId)} className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
+                      <span className="ml-2 text-sm font-medium text-gray-700">{category.categoryName}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Contact Persons */}
-              <div className="form-section">
-                <h3 className="section-heading">Contact Persons <span className="required">*</span> (At least 1 required, up to 3)</h3>
-                {formErrors.contactPersons && (
-                  <div className="error-message" style={{ marginBottom: '1rem' }}>
-                    {formErrors.contactPersons}
-                  </div>
-                )}
-                {formData.contactPersons.map((cp, index) => (
-                  <div key={index} className="contact-person-row">
-                    <div className="contact-person-header">
-                      <h4>Contact Person {index + 1}</h4>
-                      {formData.contactPersons.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeContactPerson(index)}
-                          className="btn-remove-contact"
-                          title="Remove Contact Person"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Name <span className="required">*</span></label>
-                        <input
-                          type="text"
-                          placeholder="Full Name"
-                          value={cp.name}
-                          onChange={(e) => handleContactPersonChange(index, 'name', e.target.value)}
-                          onKeyPress={validateNameInput}
-                          className={formErrors[`contactPerson${index}Name`] ? 'error' : ''}
-                        />
-                        {formErrors[`contactPerson${index}Name`] && (
-                          <span className="error-message">{formErrors[`contactPerson${index}Name`]}</span>
-                        )}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Persons <span className="text-red-600">*</span></h3>
+                {formErrors.contactPersons && <p className="text-red-600 text-sm mb-4">{formErrors.contactPersons}</p>}
+                <div className="space-y-4">
+                  {formData.contactPersons.map((cp, index) => (
+                    <div key={index} className="p-4 border border-gray-300 rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-gray-900">Contact Person {index + 1}</h4>
+                        {formData.contactPersons.length > 1 && <button type="button" onClick={() => removeContactPerson(index)} className="text-red-600 hover:text-red-700 text-sm font-medium">Remove</button>}
                       </div>
-                      <div className="form-group">
-                        <label>Designation</label>
-                        <input
-                          type="text"
-                          placeholder="e.g., Manager, Director"
-                          value={cp.designation}
-                          onChange={(e) => handleContactPersonChange(index, 'designation', e.target.value)}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Phone <span className="required">*</span> (10 digits)</label>
-                        <input
-                          type="tel"
-                          placeholder="0771234567"
-                          value={cp.phone}
-                          onChange={(e) => handleContactPersonChange(index, 'phone', e.target.value)}
-                          onKeyPress={validatePhoneInput}
-                          maxLength="10"
-                          className={formErrors[`contactPerson${index}Phone`] ? 'error' : ''}
-                        />
-                        {formErrors[`contactPerson${index}Phone`] && (
-                          <span className="error-message">{formErrors[`contactPerson${index}Phone`]}</span>
-                        )}
-                      </div>
-                      <div className="form-group">
-                        <label>Email</label>
-                        <input
-                          type="email"
-                          placeholder="email@example.com"
-                          value={cp.email}
-                          onChange={(e) => handleContactPersonChange(index, 'email', e.target.value)}
-                          className={formErrors[`contactPerson${index}Email`] ? 'error' : ''}
-                        />
-                        {formErrors[`contactPerson${index}Email`] && (
-                          <span className="error-message">{formErrors[`contactPerson${index}Email`]}</span>
-                        )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Name <span className="text-red-600">*</span></label>
+                          <input type="text" placeholder="Full Name" value={cp.name} onChange={(e) => handleContactPersonChange(index, 'name', e.target.value)} onKeyPress={validateNameInput} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors[`contactPerson${index}Name`] ? 'border-red-500' : 'border-gray-300'}`} />
+                          {formErrors[`contactPerson${index}Name`] && <p className="text-red-600 text-xs mt-1">{formErrors[`contactPerson${index}Name`]}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                          <input type="text" placeholder="Manager, Director" value={cp.designation} onChange={(e) => handleContactPersonChange(index, 'designation', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Phone <span className="text-red-600">*</span></label>
+                          <input type="tel" placeholder="0771234567" value={cp.phone} onChange={(e) => handleContactPersonChange(index, 'phone', e.target.value)} onKeyPress={validatePhoneInput} maxLength="10" className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors[`contactPerson${index}Phone`] ? 'border-red-500' : 'border-gray-300'}`} />
+                          {formErrors[`contactPerson${index}Phone`] && <p className="text-red-600 text-xs mt-1">{formErrors[`contactPerson${index}Phone`]}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                          <input type="email" placeholder="email@example.com" value={cp.email} onChange={(e) => handleContactPersonChange(index, 'email', e.target.value)} className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${formErrors[`contactPerson${index}Email`] ? 'border-red-500' : 'border-gray-300'}`} />
+                          {formErrors[`contactPerson${index}Email`] && <p className="text-red-600 text-xs mt-1">{formErrors[`contactPerson${index}Email`]}</p>}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-                {formData.contactPersons.length < 3 && (
-                  <button
-                    type="button"
-                    onClick={addContactPerson}
-                    className="btn btn-secondary"
-                  >
-                    + Add Another Contact Person
-                  </button>
-                )}
+                  ))}
+                </div>
+                {formData.contactPersons.length < 3 && <button type="button" onClick={addContactPerson} className="mt-4 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition font-medium text-sm">+ Add Contact Person</button>}
               </div>
 
-              {/* Customer Status - Only show when editing */}
               {editingCustomer && (
-                <div className="form-section">
-                  <h3 className="section-heading">Customer Status</h3>
-                  <div className="status-control">
-                    <label className="status-checkbox-label">
-                      <input 
-                        type="checkbox" 
-                        name="isActive" 
-                        checked={formData.isActive} 
-                        onChange={handleChange}
-                        className="status-checkbox-input"
-                      />
-                      <span className="status-checkbox-text">Customer is Active</span>
-                    </label>
-                    <p className="help-text">
-                      {formData.isActive 
-                        ? 'This customer can place orders and access services.' 
-                        : 'Unchecking this will hide the customer from the active customer list.'}
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Status</h3>
+                  <label className="flex items-center">
+                    <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500" />
+                    <span className="ml-2 text-sm font-medium text-gray-700">Customer is Active</span>
+                  </label>
                 </div>
               )}
-              
-              <div className="form-actions">
-                <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="btn btn-secondary">Cancel</button>
-                <button type="submit" className="btn btn-primary">
-                  {editingCustomer ? 'Update Customer' : 'Register Customer'}
-                </button>
-              </div>
             </form>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <button onClick={() => { setShowModal(false); resetForm(); }} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition font-medium">Cancel</button>
+              <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">{editingCustomer ? 'Update' : 'Register'}</button>
+            </div>
           </div>
         </div>
       )}
@@ -1301,5 +859,3 @@ function Customers() {
 }
 
 export default Customers;
-
-

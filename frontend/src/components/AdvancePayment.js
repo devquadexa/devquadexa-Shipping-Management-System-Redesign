@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import '../styles/AdvancePayment.css';
 import API_BASE from '../api/config';
 
 function AdvancePayment({ job, onUpdate }) {
@@ -344,40 +343,38 @@ function AdvancePayment({ job, onUpdate }) {
     : parseFloat(job?.advancePayment || 0);
 
   return (
-    <div className="advance-payment-section">
-      <div className="section-header">
-        <div className="header-content">
-          <h3>Advance Payments</h3>
-          <p className="section-description">
-            Record and track advance payments received for this job
-          </p>
-        </div>
-      </div>
+    <div>
+      <div className="font-semibold text-gray-900 mb-2">Advance Payments</div>
+      <p className="text-sm text-gray-600 mb-4">
+        Record and track advance payments received for this job
+      </p>
 
       {message && (
-        <div className={`advance-message ${message.includes('Error') ? 'error' : 'success'}`}>
+        <div className={`mb-4 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>
           {message}
         </div>
       )}
 
       {isEditing && (
-        <div className="add-form-container">
-          <div className="form-card">
-            <div className="form-header">
-              <h4>{editingPaymentId ? 'Edit Advance Payment' : 'Add New Advance Payment'}</h4>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-2xl w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="text-lg font-bold text-gray-900">{editingPaymentId ? 'Edit Advance Payment' : 'Add New Advance Payment'}</h3>
               <button
                 type="button"
-                className="btn-close"
                 onClick={handleCancel}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
               >
                 ×
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="advance-payment-form">
-              <div className="form-row form-row-two">
-                <div className="form-group">
-                  <label htmlFor="advancePayment">Advance Amount (LKR) <span className="required">*</span></label>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="advancePayment" className="block text-sm font-medium text-gray-700 mb-1">
+                    Advance Amount (LKR) <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="text"
                     id="advancePayment"
@@ -387,32 +384,36 @@ function AdvancePayment({ job, onUpdate }) {
                     onPaste={handleAdvanceAmountPaste}
                     placeholder="0.00"
                     inputMode="decimal"
-                    className="form-control"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     required
                   />
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="paymentMadeDate">Payment Made Date <span className="required">*</span></label>
+                <div>
+                  <label htmlFor="paymentMadeDate" className="block text-sm font-medium text-gray-700 mb-1">
+                    Payment Made Date <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="date"
                     id="paymentMadeDate"
                     value={formData.paymentMadeDate}
                     onChange={(e) => setFormData({ ...formData, paymentMadeDate: e.target.value })}
-                    className="form-control"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     required={parseFloat(formData.advancePayment) > 0}
                   />
                 </div>
               </div>
 
-              <div className="form-row form-row-two">
-                <div className="form-group">
-                  <label htmlFor="paymentType">Payment Type <span className="required">*</span></label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="paymentType" className="block text-sm font-medium text-gray-700 mb-1">
+                    Payment Type <span className="text-red-600">*</span>
+                  </label>
                   <select
                     id="paymentType"
                     value={formData.paymentType}
                     onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
-                    className="form-control"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     required={parseFloat(formData.advancePayment) > 0}
                   >
                     <option value="cash">Cash</option>
@@ -422,88 +423,95 @@ function AdvancePayment({ job, onUpdate }) {
                 </div>
 
                 {formData.paymentType === 'check' ? (
-                  <div className="form-group">
-                    <label htmlFor="checkNo">Check No <span className="required">*</span></label>
+                  <div>
+                    <label htmlFor="checkNo" className="block text-sm font-medium text-gray-700 mb-1">
+                      Check No <span className="text-red-600">*</span>
+                    </label>
                     <input
                       type="text"
                       id="checkNo"
                       value={formData.checkNo}
                       onChange={(e) => setFormData({ ...formData, checkNo: e.target.value })}
                       placeholder="Enter check number"
-                      className="form-control"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                       required={parseFloat(formData.advancePayment) > 0}
                     />
                   </div>
                 ) : (
-                  <div className="form-group">
-                    <label htmlFor="notesTop">Notes (Optional)</label>
+                  <div>
+                    <label htmlFor="notesTop" className="block text-sm font-medium text-gray-700 mb-1">
+                      Notes (Optional)
+                    </label>
                     <input
                       type="text"
                       id="notesTop"
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       placeholder="Short note"
-                      className="form-control"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     />
                   </div>
                 )}
               </div>
 
               {formData.paymentType === 'check' && (
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="notes">Notes (Optional)</label>
-                    <textarea
-                      id="notes"
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      placeholder="Enter any notes about this advance payment..."
-                      className="form-control"
-                      rows="3"
-                    />
-                  </div>
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    id="notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Enter any notes about this advance payment..."
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    rows="3"
+                  />
                 </div>
               )}
-
-              <div className="form-actions">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Processing...' : (editingPaymentId ? 'Update Payment' : 'Add Payment')}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCancel}
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-              </div>
             </form>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 rounded-lg transition font-medium"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : (editingPaymentId ? 'Update Payment' : 'Add Payment')}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {showSlotsModal && (
-        <div className="modal-overlay" onClick={closePaymentModal}>
-          <div className="payment-slots-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{editingPaymentId ? 'Edit Advance Payment' : 'Add Advance Payment'}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-md w-full my-8">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <h3 className="text-lg font-bold text-gray-900">{editingPaymentId ? 'Edit Advance Payment' : 'Add Advance Payment'}</h3>
               <button
                 type="button"
-                className="btn-close"
                 onClick={closePaymentModal}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
               >
                 ×
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="advance-payment-form">
-              <div className="form-slot">
-                <label htmlFor="advancePayment-modal">Advance Amount (LKR) <span className="required">*</span></label>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label htmlFor="advancePayment-modal" className="block text-sm font-medium text-gray-700 mb-1">
+                  Advance Amount (LKR) <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="text"
                   id="advancePayment-modal"
@@ -513,30 +521,34 @@ function AdvancePayment({ job, onUpdate }) {
                   onPaste={handleAdvanceAmountPaste}
                   placeholder="0.00"
                   inputMode="decimal"
-                  className="form-control"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required
                 />
               </div>
 
-              <div className="form-slot">
-                <label htmlFor="paymentMadeDate-modal">Payment Made Date <span className="required">*</span></label>
+              <div>
+                <label htmlFor="paymentMadeDate-modal" className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Made Date <span className="text-red-600">*</span>
+                </label>
                 <input
                   type="date"
                   id="paymentMadeDate-modal"
                   value={formData.paymentMadeDate}
                   onChange={(e) => setFormData({ ...formData, paymentMadeDate: e.target.value })}
-                  className="form-control"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required={parseFloat(formData.advancePayment) > 0}
                 />
               </div>
 
-              <div className="form-slot">
-                <label htmlFor="paymentType-modal">Payment Type <span className="required">*</span></label>
+              <div>
+                <label htmlFor="paymentType-modal" className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Type <span className="text-red-600">*</span>
+                </label>
                 <select
                   id="paymentType-modal"
                   value={formData.paymentType}
                   onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
-                  className="form-control"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   required={parseFloat(formData.advancePayment) > 0}
                 >
                   <option value="cash">Cash</option>
@@ -546,68 +558,77 @@ function AdvancePayment({ job, onUpdate }) {
               </div>
 
               {formData.paymentType === 'check' && (
-                <div className="form-slot">
-                  <label htmlFor="checkNo-modal">Check No <span className="required">*</span></label>
+                <div>
+                  <label htmlFor="checkNo-modal" className="block text-sm font-medium text-gray-700 mb-1">
+                    Check No <span className="text-red-600">*</span>
+                  </label>
                   <input
                     type="text"
                     id="checkNo-modal"
                     value={formData.checkNo}
                     onChange={(e) => setFormData({ ...formData, checkNo: e.target.value })}
                     placeholder="Enter check number"
-                    className="form-control"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     required={parseFloat(formData.advancePayment) > 0}
                   />
                 </div>
               )}
 
-              <div className="form-slot">
-                <label htmlFor="notes-modal">Notes (Optional)</label>
+              <div>
+                <label htmlFor="notes-modal" className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes (Optional)
+                </label>
                 <textarea
                   id="notes-modal"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   placeholder="Enter any notes about this advance payment..."
-                  className="form-control"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   rows="3"
                 />
               </div>
 
-              <div className="modal-actions">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Processing...' : (editingPaymentId ? 'Update Payment' : 'Add Payment')}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={closePaymentModal}
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-              </div>
+              <div />
             </form>
+
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+              <button
+                type="button"
+                onClick={closePaymentModal}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 rounded-lg transition font-medium"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
+                disabled={loading}
+              >
+                {loading ? 'Processing...' : (editingPaymentId ? 'Update Payment' : 'Add Payment')}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="advance-payment-display">
+      <div>
         {loadingPayments && advancePayments.length === 0 ? (
-          <div className="loading-state">
-            <div className="loading-spinner"></div>
-            <p>Loading advance payments...</p>
+          <div className="p-12 text-center">
+            <div className="inline-block mb-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+            <p className="text-gray-600">Loading advance payments...</p>
           </div>
         ) : advancePayments.length === 0 && totalAdvanceAmount === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">💳</div>
-            <h4>No Advance Payments Yet</h4>
-            <p>Add the first advance payment for this job</p>
+          <div className="p-12 text-center">
+            <div className="text-4xl mb-4">💳</div>
+            <h4 className="font-semibold text-gray-900 mb-2">No Advance Payments Yet</h4>
+            <p className="text-gray-600 mb-6">Add the first advance payment for this job</p>
             {canEdit && (
               <button
-                className="btn btn-primary btn-empty-state"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
                 onClick={openAddPaymentModal}
                 disabled={loadingPayments}
               >
@@ -616,62 +637,51 @@ function AdvancePayment({ job, onUpdate }) {
             )}
           </div>
         ) : (
-          <div className="billing-table-wrapper advance-billing-wrapper">
-            <div className="table-header-bar">
-              <div className="table-title">Payment Records</div>
+          <div className="bg-white rounded-xl border-2 border-gray-200">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <div className="text-lg font-semibold text-gray-900">Payment Records</div>
               {canEdit && (
                 <button
-                  className="btn btn-primary btn-add-payment"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium text-sm"
                   onClick={openAddPaymentModal}
                   disabled={loadingPayments}
                   title={advancePayments.length > 0 || totalAdvanceAmount > 0 ? 'Add another advance payment' : 'Add payment'}
                 >
-                  <span className="btn-icon">+</span>
-                  Add Payment
+                  + Add Payment
                 </button>
               )}
             </div>
 
-            <table className={`billing-table advance-billing-table ${canEdit ? 'has-actions' : ''}`}>
-              <thead>
-                <tr>
-                  <th className="col-description">Description</th>
-                  <th className="col-actual">Actual Cost</th>
-                  <th className="col-paidby">Paid By</th>
-                  <th className="col-date">Payment Date</th>
-                  <th className="col-notes">Notes</th>
-                  {canEdit && <th className="col-actions">Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {advancePayments.map((payment, index) => {
-                  const paymentType = (payment.paymentType || '').toLowerCase();
-                  const description = paymentType === 'check'
-                    ? `Advance Payment (Check #${payment.checkNo || '-'})`
-                    : `Advance Payment (${payment.paymentType || '-'})`;
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Description</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actual Cost</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Paid By</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Payment Date</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Notes</th>
+                    {canEdit && <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {advancePayments.map((payment, index) => {
+                    const paymentType = (payment.paymentType || '').toLowerCase();
+                    const description = paymentType === 'check'
+                      ? `Advance Payment (Check #${payment.checkNo || '-'})`
+                      : `Advance Payment (${payment.paymentType || '-'})`;
 
-                  return (
-                    <tr key={`${payment.advancePaymentId || index}-${payment.paymentMadeDate || index}`}>
-                      <td className="col-description" data-label="Description">
-                        <span className="cell-content">{description}</span>
-                      </td>
-                      <td className="col-actual" data-label="Actual Cost">
-                        <span className="cell-content currency">LKR {formatCurrency(payment.amount)}</span>
-                      </td>
-                      <td className="col-paidby" data-label="Paid By">
-                        <span className="cell-content">{payment.recordedByName || payment.recordedBy || '-'}</span>
-                      </td>
-                      <td className="col-date" data-label="Payment Date">
-                        <span className="cell-content">{formatDateTimeDisplay(payment.paymentMadeDate)}</span>
-                      </td>
-                      <td className="col-notes" data-label="Notes">
-                        <span className="cell-content">{payment.notes || '-'}</span>
-                      </td>
-                      {canEdit && (
-                        <td className="col-actions" data-label="Actions">
-                          <div className="action-icons">
+                    return (
+                      <tr key={`${payment.advancePaymentId || index}-${payment.paymentMadeDate || index}`} className="hover:bg-gray-50 transition">
+                        <td className="px-6 py-4 text-sm text-gray-900">{description}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">LKR {formatCurrency(payment.amount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{payment.recordedByName || payment.recordedBy || '-'}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{formatDateTimeDisplay(payment.paymentMadeDate)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{payment.notes || '-'}</td>
+                        {canEdit && (
+                          <td className="px-6 py-4 text-sm flex gap-2">
                             <button
-                              className="icon-btn edit-btn"
+                              className={`${payment.isLegacy ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:text-blue-800'} transition p-1`}
                               onClick={() => openEditPaymentForm(payment)}
                               disabled={loading || payment.isLegacy}
                               title={payment.isLegacy ? 'Legacy records cannot be edited' : 'Edit payment'}
@@ -683,7 +693,7 @@ function AdvancePayment({ job, onUpdate }) {
                               </svg>
                             </button>
                             <button
-                              className="icon-btn delete-btn"
+                              className={`${payment.isLegacy ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-800'} transition p-1`}
                               onClick={() => handleDeletePayment(payment)}
                               disabled={loading || payment.isLegacy}
                               title={payment.isLegacy ? 'Legacy records cannot be deleted' : 'Delete payment'}
@@ -696,19 +706,19 @@ function AdvancePayment({ job, onUpdate }) {
                                 <line x1="14" y1="11" x2="14" y2="17"></line>
                               </svg>
                             </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-            <div className="totals-section">
-              <div className="total-row">
-                <span className="total-label">Total Advance Cost:</span>
-                <span className="total-value">LKR {formatCurrency(totalAdvanceAmount)}</span>
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex justify-end items-center">
+                <span className="text-sm font-semibold text-gray-900 mr-4">Total Advance Cost:</span>
+                <span className="text-lg font-bold text-gray-900">LKR {formatCurrency(totalAdvanceAmount)}</span>
               </div>
             </div>
           </div>
@@ -719,4 +729,3 @@ function AdvancePayment({ job, onUpdate }) {
 }
 
 export default AdvancePayment;
-

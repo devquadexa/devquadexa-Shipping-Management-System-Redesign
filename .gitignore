@@ -54,3 +54,5 @@ tmp/
 # Backup files
 *.backup
 *.old
+
+.kiro

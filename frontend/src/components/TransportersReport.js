@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 import { jobService } from '../api/services/jobService';
 import { transporterService } from '../api/services/transporterService';
-import '../styles/TransportersReport.css';
 
 // Get today's date in local timezone (YYYY-MM-DD format)
 const getLocalDateString = () => {
@@ -259,54 +258,53 @@ function TransportersReport() {
 
   if (!hasAccess()) {
     return (
-      <div className="trr-access-denied">
-        <div className="trr-access-denied-content">
-          <div className="trr-access-icon">
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md text-center">
+          <div className="flex justify-center mb-4">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </div>
-          <h2>Access Denied</h2>
-          <p>Only Super Admin and Admin users can access this report.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">Only Super Admin and Admin users can access this report.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="trr-container">
+    <div className="min-h-screen bg-gray-50 p-4">
 
       {/* Breadcrumb */}
-      <div className="trr-breadcrumb">
-        <button className="trr-breadcrumb-back" onClick={() => navigate('/reports')}>
+      <div className="flex items-center gap-2 mb-8">
+        <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition" onClick={() => navigate('/reports')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
           Reports
         </button>
-        <span className="trr-breadcrumb-sep">
+        <span className="text-gray-400">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </span>
-        <span className="trr-breadcrumb-current">Transporters Report</span>
+        <span className="text-gray-700 font-medium">Transporters Report</span>
       </div>
 
       {/* Header */}
-      <div className="trr-header">
-        <div className="trr-header-content">
-          <h1 className="trr-title">Transporters Report</h1>
-          <p className="trr-subtitle">Transporter-wise payment details and job assignments for a selected date range</p>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Transporters Report</h1>
+        <p className="text-gray-600 mt-1">Transporter-wise payment details and job assignments for a selected date range</p>
       </div>
 
-      {/* ── Date Range Filter Panel ── */}
-      <div className="trr-filter-panel">
-        <div className="trr-filter-row">
-          <div className="trr-filter-field">
-            <label htmlFor="from-date" className="trr-filter-label">
+      {/* Date Range Filter Panel */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="space-y-4">
+          <div className="flex flex-col lg:flex-row gap-6 items-end">
+            <div className="flex-1 min-w-[200px]">
+            <label htmlFor="from-date" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -321,59 +319,95 @@ function TransportersReport() {
               value={fromDate}
               max={toDate}
               onChange={e => setFromDate(e.target.value)}
-              className="trr-date-input"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
-          </div>
+            </div>
 
-          <div className="trr-filter-sep">—</div>
+            <div className="text-gray-400">—</div>
 
-          <div className="trr-filter-field">
-            <label htmlFor="to-date" className="trr-filter-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              To Date
-            </label>
-            <input
-              id="to-date"
-              type="date"
-              value={toDate}
-              min={fromDate}
-              onChange={e => setToDate(e.target.value)}
-              className="trr-date-input"
-            />
-          </div>
-
-          <button
-            className="trr-generate-btn"
-            onClick={fetchReportData}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <div className="trr-btn-spinner"></div>
-                Generating...
-              </>
-            ) : (
-              <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <div className="flex-1 min-w-[200px]">
+              <label htmlFor="to-date" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                Generate Report
-              </>
-            )}
-          </button>
+                To Date
+              </label>
+              <input
+                id="to-date"
+                type="date"
+                value={toDate}
+                min={fromDate}
+                onChange={e => setToDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              />
+            </div>
+
+            <button
+              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={fetchReportData}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  Generate Report
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+            <button
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={exportToPDF}
+              disabled={!hasSearched || transporterReports.length === 0}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              Export to PDF
+            </button>
+
+            <button
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={exportToExcel}
+              disabled={!hasSearched || transporterReports.length === 0}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="3" y1="15" x2="21" y2="15"></line>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+                <line x1="15" y1="3" x2="15" y2="21"></line>
+              </svg>
+              Export to Excel
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Alert Messages */}
       {message && (
-        <div className={`trr-alert trr-alert-${messageType}`}>
-          <span className="trr-alert-icon">
+        <div className={`mb-6 p-4 rounded-lg font-medium flex items-center gap-3 ${
+          messageType === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+          messageType === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
+          'bg-blue-50 text-blue-800 border border-blue-200'
+        }`}>
+          <span className="text-lg">
             {messageType === 'success' && '✓'}
             {messageType === 'error' && '✕'}
             {messageType === 'info' && 'ℹ'}
@@ -382,157 +416,72 @@ function TransportersReport() {
         </div>
       )}
 
-      {/* Only show results after user has generated */}
+      {/* Summary and Export */}
       {hasSearched && !loading && (
         <>
           {/* Summary Cards */}
-          <div className="trr-summary-grid">
-            <div className="trr-card trr-card-blue">
-              <div className="trr-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="1" y="3" width="15" height="13"></rect>
-                  <polygon points="16 8 20 8 23 11 23 16 18 16 18 8"></polygon>
-                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                </svg>
-              </div>
-              <div className="trr-card-content">
-                <div className="trr-card-label">Total Cost</div>
-                <div className="trr-card-value">{formatCurrency(summary.totalCost)}</div>
-                <div className="trr-card-sub">{summary.jobCount} jobs</div>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-blue-500">
+              <div className="text-sm font-medium text-gray-600">Total Cost</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.totalCost)}</div>
+              <div className="text-xs text-gray-500 mt-2">{summary.jobCount} jobs</div>
             </div>
 
-            <div className="trr-card trr-card-green">
-              <div className="trr-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-              <div className="trr-card-content">
-                <div className="trr-card-label">Total Paid</div>
-                <div className="trr-card-value">{formatCurrency(summary.totalPaid)}</div>
-                <div className="trr-card-sub">Completed payments</div>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-green-500">
+              <div className="text-sm font-medium text-gray-600">Total Paid</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.totalPaid)}</div>
+              <div className="text-xs text-gray-500 mt-2">Completed payments</div>
             </div>
 
-            <div className="trr-card trr-card-teal">
-              <div className="trr-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-              </div>
-              <div className="trr-card-content">
-                <div className="trr-card-label">Total Balance</div>
-                <div className="trr-card-value">{formatCurrency(summary.totalBalance)}</div>
-                <div className="trr-card-sub">Pending payment</div>
-              </div>
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-teal-500">
+              <div className="text-sm font-medium text-gray-600">Total Balance</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(summary.totalBalance)}</div>
+              <div className="text-xs text-gray-500 mt-2">Pending payment</div>
             </div>
 
-            <div className="trr-card trr-card-purple">
-              <div className="trr-card-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-              <div className="trr-card-content">
-                <div className="trr-card-label">Transporters</div>
-                <div className="trr-card-value">{summary.transporterCount}</div>
-                <div className="trr-card-sub">Active transporters</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Export Controls */}
-          <div className="trr-controls">
-            <div className="trr-period-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              {dateRangeLabel}
-            </div>
-            <div className="trr-export-buttons">
-              <button
-                className="trr-btn trr-btn-pdf"
-                onClick={exportToPDF}
-                disabled={transporterReports.length === 0}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
-                Export to PDF
-              </button>
-              <button
-                className="trr-btn trr-btn-excel"
-                onClick={exportToExcel}
-                disabled={transporterReports.length === 0}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="3" y1="9" x2="21" y2="9"></line>
-                  <line x1="3" y1="15" x2="21" y2="15"></line>
-                  <line x1="9" y1="3" x2="9" y2="21"></line>
-                  <line x1="15" y1="3" x2="15" y2="21"></line>
-                </svg>
-                Export to Excel
-              </button>
+            <div className="bg-white rounded-lg shadow-sm p-6 border-t-4 border-purple-500">
+              <div className="text-sm font-medium text-gray-600">Transporters</div>
+              <div className="text-2xl font-bold text-gray-900 mt-2">{summary.transporterCount}</div>
+              <div className="text-xs text-gray-500 mt-2">Active transporters</div>
             </div>
           </div>
 
           {/* Data Table */}
-          <div className="trr-table-card">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {transporterReports.length === 0 ? (
-              <div className="trr-empty">
-                <div className="trr-empty-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="3" width="15" height="13"></rect>
-                    <polygon points="16 8 20 8 23 11 23 16 18 16 18 8"></polygon>
-                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                  </svg>
-                </div>
-                <p>No transporter payments found for {dateRangeLabel}</p>
+              <div className="p-12 text-center">
+                <div className="text-gray-400 text-4xl mb-4">🚚</div>
+                <p className="text-gray-500">No transporter payments found for {dateRangeLabel}</p>
               </div>
             ) : (
               <>
-                <div className="trr-table-wrap">
-                  <table className="trr-table">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
                     <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Transporter ID</th>
-                        <th>Transporter Name</th>
-                        <th>Phone</th>
-                        <th>Email</th>
-                        <th>Total Cost</th>
-                        <th>Total Paid</th>
-                        <th>Balance</th>
-                        <th>Jobs</th>
+                      <tr className="border-b border-gray-200 bg-gray-50">
+                        <th className="px-6 py-3 text-left font-medium text-gray-700">#</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700">Transporter ID</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700">Transporter Name</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700">Phone</th>
+                        <th className="px-6 py-3 text-left font-medium text-gray-700">Email</th>
+                        <th className="px-6 py-3 text-right font-medium text-gray-700">Total Cost</th>
+                        <th className="px-6 py-3 text-right font-medium text-gray-700">Total Paid</th>
+                        <th className="px-6 py-3 text-right font-medium text-gray-700">Balance</th>
+                        <th className="px-6 py-3 text-center font-medium text-gray-700">Jobs</th>
                       </tr>
                     </thead>
                     <tbody>
                       {paginatedData.map((r, index) => (
-                        <tr key={r.transporterId}>
-                          <td>{(currentPage - 1) * recordsPerPage + index + 1}</td>
-                          <td><span className="trr-transporter-id">{r.transporterId}</span></td>
-                          <td>{r.transporterName}</td>
-                          <td>{r.mainPhone || '-'}</td>
-                          <td>{r.email || '-'}</td>
-                          <td className="trr-amount">{formatCurrency(r.totalCost)}</td>
-                          <td className="trr-amount trr-paid">{formatCurrency(r.totalPaid)}</td>
-                          <td className="trr-amount trr-balance">
-                            {r.totalBalance > 0 ? formatCurrency(r.totalBalance) : formatCurrency(0)}
-                          </td>
-                          <td className="trr-jobs-count">{r.jobs.length}</td>
+                        <tr key={r.transporterId} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4 text-gray-700">{(currentPage - 1) * recordsPerPage + index + 1}</td>
+                          <td className="px-6 py-4 font-mono text-xs bg-gray-50 rounded">{r.transporterId}</td>
+                          <td className="px-6 py-4 text-gray-900">{r.transporterName}</td>
+                          <td className="px-6 py-4 text-gray-600">{r.mainPhone || '-'}</td>
+                          <td className="px-6 py-4 text-gray-600 text-xs">{r.email || '-'}</td>
+                          <td className="px-6 py-4 text-right text-gray-900 font-medium">{formatCurrency(r.totalCost)}</td>
+                          <td className="px-6 py-4 text-right text-green-600 font-medium">{formatCurrency(r.totalPaid)}</td>
+                          <td className="px-6 py-4 text-right font-medium" style={{color: r.totalBalance > 0 ? '#d97706' : '#6b7280'}}>{r.totalBalance > 0 ? formatCurrency(r.totalBalance) : formatCurrency(0)}</td>
+                          <td className="px-6 py-4 text-center text-gray-700">{r.jobs.length}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -540,17 +489,17 @@ function TransportersReport() {
                 </div>
 
                 {totalPages > 1 && (
-                  <div className="trr-pagination">
+                  <div className="flex items-center justify-center gap-4 p-6 border-t border-gray-200">
                     <button
-                      className="trr-pagination-btn"
+                      className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >← Previous</button>
-                    <span className="trr-pagination-info">
-                      Page {currentPage} of {totalPages} &nbsp;·&nbsp; {transporterReports.length} records
+                    <span className="text-sm text-gray-600">
+                      Page {currentPage} of {totalPages} · {transporterReports.length} records
                     </span>
                     <button
-                      className="trr-pagination-btn"
+                      className="px-4 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
                     >Next →</button>
@@ -562,20 +511,11 @@ function TransportersReport() {
         </>
       )}
 
-      {/* Initial state — nothing generated yet */}
+      {/* Initial state */}
       {!hasSearched && !loading && (
-        <div className="trr-initial-state">
-          <div className="trr-initial-icon">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-              <line x1="8" y1="14" x2="16" y2="14"></line>
-              <line x1="8" y1="18" x2="13" y2="18"></line>
-            </svg>
-          </div>
-          <p>Select a date range and click <strong>Generate Report</strong> to view transporter payment details.</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <div className="text-gray-300 text-5xl mb-4">📅</div>
+          <p className="text-gray-600">Select a date range and click <strong>Generate Report</strong> to view transporter payment details.</p>
         </div>
       )}
 

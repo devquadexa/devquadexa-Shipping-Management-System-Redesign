@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { billingService } from '../api/services/billingService';
 import { jobService } from '../api/services/jobService';
@@ -10,8 +10,7 @@ import apiClient from '../api/client';
 import Pagination from './Pagination';
 import ReviewInvoiceModal from './ReviewInvoiceModal';
 import { formatDate, formatDateWithMonth, formatDateWithFullMonth } from '../utils/dateFormatter';
-import '../styles/Billing.css';
-import '../styles/InvoicePaymentTracking.css';
+
 
 function Billing() {
   const { user } = useAuth();
@@ -31,7 +30,7 @@ function Billing() {
   const getTransporterCostItem = () => {
     // Always build transporter cost description with place names
     const fromPlace = selectedJob?.exporter || 'placename';
-    const toPlace = selectedJob?.exporter || 'placename';
+    const toPlace = selectedJob?.transporter || 'placename';
     const description = `transporter cost (from ${fromPlace} to ${toPlace})`;
     
     return {
@@ -43,12 +42,12 @@ function Billing() {
     };
   };
 
-  // Transform pay item description to add prefix if it's a transporter cost
+  // Transform pay item description - only replace if it uses placeholder names
   const getDisplayDescription = (item, job = selectedJob) => {
     const description = item.description || item.name || '';
     const normalized = description.toLowerCase().trim();
     
-    // If it's the old format transporter cost, add the prefix
+    // If it's the old format transporter cost with NO custom places, add the actual place names
     if (normalized === 'transporter cost' && job) {
       const fromPlace = job.exporter || 'placename';
       const toPlace = job.transporter || 'placename';
@@ -326,19 +325,26 @@ function Billing() {
     }
   };
 
-  const handleTransporterChange = async (newTransporterName) => {
-    if (!selectedJob || !newTransporterName) return;
+  const handleTransporterChange = async (transporterId) => {
+    if (!selectedJob || !transporterId) return;
 
     try {
-      // Update job with new transporter
+      // Find the transporter name from the transporterId
+      const selectedTransporter = transporters.find(t => t.transporterId == transporterId);
+      if (!selectedTransporter) {
+        setMessage('Transporter not found');
+        return;
+      }
+
+      // Update job with new transporter name
       await jobService.update(selectedJob.jobId, {
-        transporter: newTransporterName
+        transporter: selectedTransporter.name
       });
 
       // Update selected job state
       setSelectedJob({
         ...selectedJob,
-        transporter: newTransporterName
+        transporter: selectedTransporter.name
       });
 
       setMessage('Transporter updated successfully!');
@@ -461,7 +467,7 @@ function Billing() {
       const hasExistingPayItems = job.payItems && job.payItems.length > 0;
 
       if (hasExistingPayItems) {
-        // Job has saved pay items � merge any office pay items not already saved
+        // Job has saved pay items ï¿½ merge any office pay items not already saved
         let mergedPayItems = [...job.payItems];
         const officeItemsFromApi = allPayItems.filter(item => item.isOfficePayItem);
         officeItemsFromApi.forEach(opi => {
@@ -483,7 +489,7 @@ function Billing() {
         mergedPayItems = ensureFclTransporterCost(mergedPayItems, job.shipmentCategory);
         setSelectedJob({ ...job, payItems: mergedPayItems });
         setShowPayItemsRow(false);
-        setMessage(`?? Job has ${mergedPayItems.length} pay items. Use "+ Add More Items" to add additional items.`);
+        setMessage(`✅ Job has ${mergedPayItems.length} pay items. Use "+ Add More Items" to add additional items.`);
         setTimeout(() => setMessage(''), 5000);
       } else if (allPayItems.length > 0) {
         const payItemsWithFclItem = ensureFclTransporterCost(allPayItems, job.shipmentCategory);
@@ -492,7 +498,7 @@ function Billing() {
         
         const officeItemsCount = allPayItems.filter(item => item.isOfficePayItem).length;
         const pettyCashItemsCount = allPayItems.filter(item => item.isPettyCashItem).length;
-        let message = `? Loaded ${allPayItems.length} items: `;
+        let message = `✅ Loaded ${allPayItems.length} items: `;
         if (officeItemsCount > 0) message += `${officeItemsCount} office payments`;
         if (pettyCashItemsCount > 0) {
           if (officeItemsCount > 0) message += `, `;
@@ -502,7 +508,7 @@ function Billing() {
         setMessage(message);
         setTimeout(() => setMessage(''), 5000);
       } else {
-        // No existing pay items, no office/petty cash items � show entry form or load templates
+        // No existing pay items, no office/petty cash items ï¿½ show entry form or load templates
         if (job?.pettyCashStatus !== 'Settled') {
           setMessage('Petty cash must be settled before generating invoice');
           setTimeout(() => setMessage(''), 3000);
@@ -737,9 +743,9 @@ function Billing() {
       const totalCount = finalPayItemsData.length;
       
       if (isAddingToExisting) {
-        setMessage(`? Added ${addedCount} new pay item(s) successfully! Total: ${totalCount} items. Review below and generate invoice.`);
+        setMessage(`✅ Added ${addedCount} new pay item(s) successfully! Total: ${totalCount} items. Review below and generate invoice.`);
       } else {
-        setMessage(`? ${addedCount} pay item(s) saved successfully! Review the details below and generate invoice.`);
+        setMessage(`✅ ${addedCount} pay item(s) saved successfully! Review the details below and generate invoice.`);
       }
       
       setShowPayItemsRow(false);
@@ -888,7 +894,7 @@ function Billing() {
   // Start inline editing for a pay item
   const startEditingPayItem = (index) => {
     if (!canEditPayItems()) {
-      setMessage('? Only Super Admin, Admin, and Manager users can edit pay items. Please contact an administrator for changes.');
+      setMessage('⚠️ Only Super Admin, Admin, and Manager users can edit pay items. Please contact an administrator for changes.');
       setTimeout(() => setMessage(''), 5000);
       return;
     }
@@ -910,7 +916,7 @@ function Billing() {
     
     const newBillingAmount = parseFloat(editingBillingAmount);
     if (isNaN(newBillingAmount) || newBillingAmount < 0) {
-      setMessage('? Please enter a valid billing amount');
+      setMessage('❌ Please enter a valid billing amount');
       setTimeout(() => setMessage(''), 3000);
       return;
     }
@@ -932,13 +938,13 @@ function Billing() {
         payItems: updatedPayItems
       });
 
-      setMessage('? Pay item billing amount updated successfully');
+      setMessage('✅ Pay item billing amount updated successfully');
       setEditingPayItemIndex(null);
       setEditingBillingAmount('');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error updating pay item:', error);
-      setMessage('? Error updating pay item. Please try again.');
+      setMessage('❌ Error updating pay item. Please try again.');
       setTimeout(() => setMessage(''), 3000);
     }
   };
@@ -946,7 +952,7 @@ function Billing() {
   // Remove a pay item
   const removePayItem = async (index) => {
     if (!canEditPayItems()) {
-      setMessage('? Only Super Admin, Admin, and Manager users can remove pay items. Please contact an administrator for changes.');
+      setMessage('⚠️ Only Super Admin, Admin, and Manager users can remove pay items. Please contact an administrator for changes.');
       setTimeout(() => setMessage(''), 5000);
       return;
     }
@@ -971,11 +977,11 @@ function Billing() {
         payItems: updatedPayItems
       });
 
-      setMessage('? Pay item removed successfully');
+      setMessage('✅ Pay item removed successfully');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error removing pay item:', error);
-      setMessage('? Error removing pay item. Please try again.');
+      setMessage('❌ Error removing pay item. Please try again.');
       setTimeout(() => setMessage(''), 3000);
     }
   };
@@ -1030,7 +1036,7 @@ function Billing() {
     if (missingFields.length > 0) {
       const fieldsList = missingFields.join(', ');
       console.error('BLOCKING INVOICE GENERATION - Missing fields:', fieldsList);
-      setValidationMessage(`Please edit the job and complete the following required fields:\n\n${missingFields.map(f => `� ${f}`).join('\n')}`);
+      setValidationMessage(`Please edit the job and complete the following required fields:\n\n${missingFields.map(f => `ï¿½ ${f}`).join('\n')}`);
       setShowValidationModal(true);
       return; // STOP HERE - Do not proceed with invoice generation
     }
@@ -1078,7 +1084,15 @@ function Billing() {
       };
       console.log('generateBill - sending billData:', billData);
       
-      await billingService.createBill(billData);
+      const result = await billingService.createBill(billData);
+      
+      // Check if bill generation was blocked (paid/partially paid)
+      if (result.blocked) {
+        setMessage(`Cannot generate invoice: This job already has an invoice that is ${result.paymentStatus.toLowerCase()}. No changes were made.`);
+        setTimeout(() => setMessage(''), 7000);
+        console.log('=== GENERATE BILL BLOCKED ===', result.message);
+        return;
+      }
       
       // Update petty cash assignment status to Closed via direct API call (safety net)
       try {
@@ -1228,7 +1242,7 @@ function Billing() {
         setChequeAutoFillData(null);
       }
     } catch {
-      // 404 = new cheque, user fills manually � this is normal
+      // 404 = new cheque, user fills manually ï¿½ this is normal
       setChequeAutoFilled(false);
       setChequeAutoFillData(null);
     }
@@ -1246,13 +1260,13 @@ function Billing() {
                        0;
       
       if (!amount || amount <= 0) {
-        setMessage('? Please enter a valid payment amount');
+        setMessage('❌ Please enter a valid payment amount');
         setTimeout(() => setMessage(''), 5000);
         return;
       }
       
       if (amount > remaining + 0.01) { // 0.01 tolerance for floating point
-        setMessage(`? Payment amount (LKR ${formatAmount(amount)}) exceeds remaining balance (LKR ${formatAmount(remaining)})`);
+        setMessage(`❌ Payment amount (LKR ${formatAmount(amount)}) exceeds remaining balance (LKR ${formatAmount(remaining)})`);
         setTimeout(() => setMessage(''), 5000);
         return;
       }
@@ -1261,14 +1275,14 @@ function Billing() {
     // Validate based on payment method
     if (paymentMethod === 'Cheque') {
       if (!chequeNumber || !chequeDate || !chequeAmount) {
-        setMessage('? Please fill in all cheque details (Number, Date, Amount)');
+        setMessage('❌ Please fill in all cheque details (Number, Date, Amount)');
         setTimeout(() => setMessage(''), 5000);
         return;
       }
       
       const amount = parseFloat(chequeAmount);
       if (isNaN(amount) || amount <= 0) {
-        setMessage('? Please enter a valid cheque amount');
+        setMessage('❌ Please enter a valid cheque amount');
         setTimeout(() => setMessage(''), 5000);
         return;
       }
@@ -1276,7 +1290,7 @@ function Billing() {
     
     if (paymentMethod === 'Bank Transfer') {
       if (!bankName) {
-        setMessage('? Please select a bank');
+        setMessage('❌ Please select a bank');
         setTimeout(() => setMessage(''), 5000);
         return;
       }
@@ -1306,11 +1320,11 @@ function Billing() {
         const newRemaining = (parseFloat(selectedBillForPayment.remainingAmount || selectedBillForPayment.netTotal) - parseFloat(partialPaymentAmount));
         const newStatus = newRemaining <= 0.01 ? 'Paid' : 'Partially Paid';
         
-        setMessage(`? Partial payment of LKR ${formatAmount(partialPaymentAmount)} recorded successfully. Invoice status: ${newStatus}`);
+        setMessage(`✅ Partial payment of LKR ${formatAmount(partialPaymentAmount)} recorded successfully. Invoice status: ${newStatus}`);
       } else {
         // Call full payment endpoint
         await billingService.markAsPaid(selectedBillForPayment.billId, paymentDetails);
-        setMessage(`? Invoice ${selectedBillForPayment.invoiceNumber || selectedBillForPayment.billId} marked as paid via ${paymentMethod}`);
+        setMessage(`✅ Invoice ${selectedBillForPayment.invoiceNumber || selectedBillForPayment.billId} marked as paid via ${paymentMethod}`);
       }
       
       setShowPaymentModal(false);
@@ -1319,7 +1333,7 @@ function Billing() {
       setTimeout(() => setMessage(''), 5000);
     } catch (error) {
       console.error('Error marking bill as paid:', error);
-      setMessage(`? Error: ${error.response?.data?.message || error.message}`);
+      setMessage(`❌ Error: ${error.response?.data?.message || error.message}`);
       setTimeout(() => setMessage(''), 5000);
     }
   };
@@ -1455,9 +1469,9 @@ function Billing() {
     const printablePayItems = payItemsArray.map((item, index) => {
       let description = item.description || item.name || 'Service Charge';
       
-      // Always transform to new format with place names
+      // Only transform if it actually contains placeholder names
       const normalized = description.toLowerCase().trim();
-      if (normalized.startsWith('transporter cost')) {
+      if (normalized.startsWith('transporter cost') && (description.includes('placename') || (!description.includes('from') && !description.includes('to')))) {
         const fromPlace = job.exporter || 'placename';
         const toPlace = job.transporter || 'placename';
         description = `transporter cost (from ${fromPlace} to ${toPlace})`;
@@ -1931,8 +1945,17 @@ function Billing() {
 
   if (user?.role === 'Waff Clerk') {
     return (
-      <div className="billing-page">
-        <div className="alert alert-error">Access Denied: Admin or Super Admin only</div>
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-8 max-w-md text-center">
+          <div className="flex justify-center mb-4">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">Admin or Super Admin only</p>
+        </div>
       </div>
     );
   }
@@ -1962,41 +1985,45 @@ function Billing() {
   };
 
   const renderGeneratedInvoiceActions = (bill) => (
-    <div className="invoice-row-actions">
-      <button
-        type="button"
-        className="expand-btn-middle invoice-expand-btn"
-        onClick={() => setExpandedBillId(expandedBillId === bill.billId ? null : bill.billId)}
-        title={expandedBillId === bill.billId ? 'Hide details' : 'View details'}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points={expandedBillId === bill.billId ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}></polyline>
-        </svg>
-      </button>
+    <div className="flex items-center gap-2 flex-wrap">
       <button
         onClick={() => printBill(bill)}
-        className="btn btn-primary btn-small invoice-action-btn"
+        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
         title="Print Invoice"
+        aria-label="Print Invoice"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        <span className="invoice-action-label">Print</span>
+        Print
+      </button>
+      <button
+        onClick={() => {
+          setPaymentBreakdownBill(bill);
+          setShowPaymentBreakdownModal(true);
+        }}
+        className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition"
+        title="View Payment Breakdown"
+        aria-label="View Payment Breakdown"
+      >
+        Breakdown
       </button>
       {(bill.paymentStatus === 'Unpaid' || bill.paymentStatus === 'Partially Paid') && (
         <button
           onClick={() => markAsPaid(bill.billId)}
-          className={`btn ${bill.paymentStatus === 'Partially Paid' ? 'btn-primary' : 'btn-success'} btn-small invoice-action-btn`}
+          className={`px-3 py-2 text-white text-sm font-medium rounded-lg transition ${
+            bill.paymentStatus === 'Partially Paid'
+              ? 'bg-amber-600 hover:bg-amber-700'
+              : 'bg-green-600 hover:bg-green-700'
+          }`}
           title={bill.paymentStatus === 'Partially Paid' ? 'Pay Remaining' : 'Pay Invoice'}
+          aria-label={bill.paymentStatus === 'Partially Paid' ? 'Pay Remaining' : 'Pay Invoice'}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          <span className="invoice-action-label">{bill.paymentStatus === 'Partially Paid' ? 'Pay Remaining' : 'Pay Invoice'}</span>
+          {bill.paymentStatus === 'Partially Paid' ? 'Pay Remaining' : 'Pay Invoice'}
         </button>
       )}
       {bill.paymentStatus === 'Paid' && (
-        <span className="paid-indicator">
+        <span className="paid-indicator" title="Paid" aria-label="Paid">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
-          Paid
         </span>
       )}
     </div>
@@ -2069,10 +2096,7 @@ function Billing() {
                       <div className="invoice-payment-table-cell invoice-payment-date-col">{formatDateWithMonth(payment.paymentDate)}</div>
                       <div className="invoice-payment-table-cell invoice-payment-method-col">
                         <span className={`invoice-payment-method-badge invoice-payment-method-${payment.paymentMethod?.toLowerCase().replace(' ', '-')}`}>
-                          {payment.paymentMethod === 'Cash' && '💵'}
-                          {payment.paymentMethod === 'Cheque' && '📝'}
-                          {payment.paymentMethod === 'Bank Transfer' && '🏦'}
-                          {' '}{payment.paymentMethod || '-'}
+                          {payment.paymentMethod || '-'}
                         </span>
                       </div>
                       <div className="invoice-payment-table-cell invoice-payment-reference-col">
@@ -2101,9 +2125,9 @@ function Billing() {
                   <div className="invoice-payment-table-cell invoice-payment-date-col">{formatDateWithMonth(bill.paidDate)}</div>
                   <div className="invoice-payment-table-cell invoice-payment-method-col">
                     <span className={`invoice-payment-method-badge invoice-payment-method-${bill.paymentMethod?.toLowerCase().replace(' ', '-')}`}>
-                      {bill.paymentMethod === 'Cash' && '??'}
-                      {bill.paymentMethod === 'Cheque' && '??'}
-                      {bill.paymentMethod === 'Bank Transfer' && '??'}
+                      {bill.paymentMethod === 'Cash' && '💵'}
+                      {bill.paymentMethod === 'Cheque' && '📄'}
+                      {bill.paymentMethod === 'Bank Transfer' && '🏦'}
                       {' '}{bill.paymentMethod || '-'}
                     </span>
                   </div>
@@ -2141,16 +2165,13 @@ function Billing() {
 
       {bill.paymentStatus === 'Paid' && bill.paymentMethod && (
         <div className="payment-details-section">
-          <h4 className="payment-details-title">💳 Payment Information</h4>
+          <h4 className="payment-details-title">Payment Information</h4>
           <div className="payment-details-grid">
             <div className="payment-detail-card">
               <div className="payment-detail-label">Payment Method</div>
               <div className="payment-detail-value">
                 <span className={`payment-method-badge payment-method-${bill.paymentMethod.toLowerCase().replace(' ', '-')}`}>
-                  {bill.paymentMethod === 'Cash' && '💵'}
-                  {bill.paymentMethod === 'Cheque' && '📝'}
-                  {bill.paymentMethod === 'Bank Transfer' && '🏦'}
-                  {' '}{bill.paymentMethod}
+                  {bill.paymentMethod}
                 </span>
               </div>
             </div>
@@ -2185,7 +2206,7 @@ function Billing() {
             {bill.paymentMethod === 'Bank Transfer' && bill.bankName && (
               <div className="payment-detail-card">
                 <div className="payment-detail-label">Bank Name</div>
-                <div className="payment-detail-value bank-name">🏦 {bill.bankName}</div>
+                <div className="payment-detail-value bank-name">{bill.bankName}</div>
               </div>
             )}
           </div>
@@ -2196,27 +2217,26 @@ function Billing() {
 
   return (
     <div className="billing-page">
-      <div className="page-header">
-        <h1>Invoicing Management</h1>
-        <p>Generate invoices and track profitability</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Invoicing Management</h1>
+        <p className="text-gray-600 mt-1">Generate invoices and track profitability</p>
       </div>
 
-      {message && <div className={`alert ${message.includes('Error') || message.includes('Cannot') || message.includes('??') ? 'alert-error' : 'alert-success'}`}>{message}</div>}
+      {message && <div className={`${message.includes('Error') || message.includes('Cannot') || message.includes('âŒ') ? 'bg-red-50 border border-red-200 text-red-800' : 'bg-green-50 border border-green-200 text-green-800'} px-4 py-3 rounded-lg mb-6`}>{message}</div>}
 
-      <div className="card">
-        <div className="card-header">
-          <h2>Generate New Invoice</h2>
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-6">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-900">Generate New Invoice</h2>
         </div>
-        <div className="card-body">
-          <div className="form-group">
-            <label>Select Job *</label>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div className="p-6">
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Select Job *</label>
+            <div className="flex gap-2 items-center">
               <select 
                 value={selectedJob?.jobId || ''} 
                 onChange={(e) => handleJobSelect(e.target.value)}
-                className="form-control"
                 disabled={loadingSettlement}
-                style={{ flex: 1 }}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
               >
                 <option value="">-- Select a Job --</option>
                 {jobs.map(job => (
@@ -2225,99 +2245,90 @@ function Billing() {
                   </option>
                 ))}
               </select>
-              {selectedJob && (
-                <button 
-                  onClick={() => setShowJobInfoModal(true)}
-                  className="btn-job-info-mobile"
-                  title="View Job Information"
-                >
-                  ??
-                </button>
-              )}
             </div>
             {loadingSettlement && (
-              <div style={{ marginTop: '10px', color: '#101036', fontStyle: 'italic' }}>
+              <div className="mt-2 text-sm text-blue-700 italic">
                 Loading petty cash settlement data...
               </div>
             )}
           </div>
 
           {selectedJob && (
-            <div className="job-details-section">
-              <div className="job-info-card">
-                <h3>Job Information</h3>
+            <div className="mb-6">
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Job Information</h3>
                 {(() => {
                   const chassisMissing = !selectedJob.chassisNumber || selectedJob.chassisNumber.trim() === '';
                   const chassisRequired = isVehicleShipmentCategory(selectedJob.shipmentCategory);
                   return (
-                <div className="info-grid">
-                  <div className="info-row">
-                    <span className="info-label">Job ID:</span>
-                    <span className="info-value">{selectedJob.jobId}</span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">Job ID:</span>
+                    <span className="text-sm text-gray-900">{selectedJob.jobId}</span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">Customer:</span>
-                    <span className="info-value">{getCustomerName(selectedJob.customerId)}</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">Customer:</span>
+                    <span className="text-sm text-gray-900">{getCustomerName(selectedJob.customerId)}</span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">Category:</span>
-                    <span className="info-value">
-                      <span className="category-badge">{selectedJob.shipmentCategory}</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">Category:</span>
+                    <span className="text-sm text-gray-900">
+                      <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">{selectedJob.shipmentCategory}</span>
                     </span>
                   </div>
                   {chassisRequired && (
-                    <div className="info-row">
-                      <span className="info-label">
-                        Chassis Number: {chassisRequired && chassisMissing && <span className="required-indicator">*Required</span>}
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold text-gray-600 mb-1">
+                        Chassis Number: {chassisRequired && chassisMissing && <span className="text-red-600">*Required</span>}
                       </span>
-                      <span className={`info-value ${chassisRequired && chassisMissing ? 'missing-value' : ''}`}>
+                      <span className={`text-sm ${chassisRequired && chassisMissing ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
                         {selectedJob.chassisNumber || '-'}
                       </span>
                     </div>
                   )}
-                  <div className="info-row">
-                    <span className="info-label">BL Number: {(!selectedJob.blNumber || selectedJob.blNumber.trim() === '') && <span className="required-indicator">*Required</span>}</span>
-                    <span className={`info-value ${(!selectedJob.blNumber || selectedJob.blNumber.trim() === '') ? 'missing-value' : ''}`}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">BL Number: {(!selectedJob.blNumber || selectedJob.blNumber.trim() === '') && <span className="text-red-600">*Required</span>}</span>
+                    <span className={`text-sm ${(!selectedJob.blNumber || selectedJob.blNumber.trim() === '') ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
                       {selectedJob.blNumber || '-'}
                     </span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">CUSDEC Number: {(!selectedJob.cusdecNumber || selectedJob.cusdecNumber.trim() === '') && <span className="required-indicator">*Required</span>}</span>
-                    <span className={`info-value ${(!selectedJob.cusdecNumber || selectedJob.cusdecNumber.trim() === '') ? 'missing-value' : ''}`}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">CUSDEC Number: {(!selectedJob.cusdecNumber || selectedJob.cusdecNumber.trim() === '') && <span className="text-red-600">*Required</span>}</span>
+                    <span className={`text-sm ${(!selectedJob.cusdecNumber || selectedJob.cusdecNumber.trim() === '') ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
                       {formatCusdecWithDate(selectedJob.cusdecNumber, selectedJob.cusdecDate)}
                     </span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">Exporter:</span>
-                    <span className="info-value">{selectedJob.exporter || '-'}</span>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">Exporter:</span>
+                    <span className="text-sm text-gray-900">{selectedJob.exporter || '-'}</span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">TT / LC / DA / DP / NFE Number: {(!selectedJob.lcNumber || selectedJob.lcNumber.trim() === '') && <span className="required-indicator">*Required</span>}</span>
-                    <span className={`info-value ${(!selectedJob.lcNumber || selectedJob.lcNumber.trim() === '') ? 'missing-value' : ''}`}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">TT / LC / DA / DP / NFE Number: {(!selectedJob.lcNumber || selectedJob.lcNumber.trim() === '') && <span className="text-red-600">*Required</span>}</span>
+                    <span className={`text-sm ${(!selectedJob.lcNumber || selectedJob.lcNumber.trim() === '') ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
                       {selectedJob.lcNumber || '-'}
                     </span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">
                       Container Number: 
                       {!isVehicleShipmentCategory(selectedJob.shipmentCategory) && 
                        (!selectedJob.containerNumber || selectedJob.containerNumber.trim() === '') && 
-                       <span className="required-indicator">*Required</span>}
+                       <span className="text-red-600">*Required</span>}
                     </span>
-                    <span className={`info-value ${!isVehicleShipmentCategory(selectedJob.shipmentCategory) && (!selectedJob.containerNumber || selectedJob.containerNumber.trim() === '') ? 'missing-value' : ''}`}>
+                    <span className={`text-sm ${!isVehicleShipmentCategory(selectedJob.shipmentCategory) && (!selectedJob.containerNumber || selectedJob.containerNumber.trim() === '') ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
                       {selectedJob.containerNumber || '-'}
                     </span>
                   </div>
                   {selectedJob.hasOwnProperty('transporter') && (
-                    <div className="info-row">
-                      <span className="info-label">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-semibold text-gray-600 mb-1">
                         Transporter:
                         {selectedJob.shipmentCategory === 'FCL' && 
                          (!selectedJob.transporter || selectedJob.transporter.trim() === '') && 
-                         <span className="required-indicator">*Required</span>}
+                         <span className="text-red-600">*Required</span>}
                       </span>
                       <select 
-                        className="info-value transporter-dropdown"
+                        className="max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm"
                         value={transporters.find(t => t.name === selectedJob.transporter)?.transporterId || ''}
                         onChange={(e) => handleTransporterChange(e.target.value)}
                       >
@@ -2330,31 +2341,31 @@ function Billing() {
                       </select>
                     </div>
                   )}
-                  <div className="info-row">
-                    <span className="info-label">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">
                       Transport Delivery Date: 
                       {selectedJob.shipmentCategory === 'FCL' && 
                        (!selectedJob.transportDeliveryDate || (typeof selectedJob.transportDeliveryDate === 'string' && selectedJob.transportDeliveryDate.trim() === '')) && 
-                       <span className="required-indicator">*Required</span>}
+                       <span className="text-red-600">*Required</span>}
                     </span>
-                    <span className={`info-value ${selectedJob.shipmentCategory === 'FCL' && (!selectedJob.transportDeliveryDate || (typeof selectedJob.transportDeliveryDate === 'string' && selectedJob.transportDeliveryDate.trim() === '')) ? 'missing-value' : ''}`}>
+                    <span className={`text-sm ${selectedJob.shipmentCategory === 'FCL' && (!selectedJob.transportDeliveryDate || (typeof selectedJob.transportDeliveryDate === 'string' && selectedJob.transportDeliveryDate.trim() === '')) ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
                       {formatDate(selectedJob.transportDeliveryDate)}
                     </span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">Status:</span>
-                    <span className="info-value">
-                      <span className={`status-badge status-${(selectedJob.status || 'Open').toLowerCase()}`}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">Status:</span>
+                    <span className="text-sm text-gray-900">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${selectedJob.status === 'Open' ? 'bg-blue-100 text-blue-700' : selectedJob.status === 'Closed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
                         {selectedJob.status}
                       </span>
                     </span>
                   </div>
-                  <div className="info-row">
-                    <span className="info-label">Advance Payment:</span>
-                    <span className={`info-value ${selectedJob.advancePayment > 0 ? 'advance-received' : 'no-advance'}`}>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-600 mb-1">Advance Payment:</span>
+                    <span className={`text-sm font-semibold ${selectedJob.advancePayment > 0 ? 'text-green-600' : 'text-gray-900'}`}>
                       LKR {formatAmount(selectedJob.advancePayment || 0)}
                       {selectedJob.advancePayment > 0 && (
-                        <span className="advance-indicator"> ? Received</span>
+                        <span className="text-green-600 ml-1">Received</span>
                       )}
                     </span>
                   </div>
@@ -2364,39 +2375,42 @@ function Billing() {
               </div>
             </div>
           )}
+        </div>
+      </div>
 
-          {selectedJob && (
-            <div className="pay-items-card-container">
-              <div className="pay-items-card">
-                <div className="card-header-inline">
-                  <h3>Pay Items</h3>
+      <>
+        {selectedJob && (
+            <div className="mb-6">
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Pay Items</h3>
                   {!showPayItemsRow && selectedJob.payItems && selectedJob.payItems.length > 0 && (
-                    <div className="pay-items-header-actions">
+                    <div className="flex gap-2">
                       <button 
                         onClick={addTransporterCostFromHeader} 
-                        className="btn btn-secondary btn-small"
+                        className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition"
                       >
                         + Transporter Cost
                       </button>
                       <button 
                         onClick={openPayItemsEditor} 
-                        className="btn btn-primary btn-small"
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
                       >
                         + Add More Items
                       </button>
                     </div>
                   )}
                   {!showPayItemsRow && (!selectedJob.payItems || selectedJob.payItems.length === 0) && (
-                    <div className="pay-items-header-actions">
+                    <div className="flex gap-2">
                       <button 
                         onClick={addTransporterCostFromHeader} 
-                        className="btn btn-secondary btn-small"
+                        className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition"
                       >
                         + Transporter Cost
                       </button>
                       <button 
                         onClick={openPayItemsEditor} 
-                        className="btn btn-primary btn-small"
+                        className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
                       >
                         + Add Items
                       </button>
@@ -2405,150 +2419,156 @@ function Billing() {
                 </div>
 
                 {showPayItemsRow && (
-                  <div className="pay-items-form">
+                  <div className="p-6 space-y-4">
                     {selectedJob.payItems && selectedJob.payItems.length > 0 && (
-                      <div className="add-more-items-notice">
-                        <div className="notice-icon">??</div>
-                        <div className="notice-text">
-                          <strong>Adding Additional Items</strong>
-                          <p>You are adding new pay items to the existing {selectedJob.payItems.length} item(s). All items will be combined in the review table.</p>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
+                        <span className="text-2xl flex-shrink-0">â„¹ï¸</span>
+                        <div>
+                          <strong className="text-blue-900 block">Adding Additional Items</strong>
+                          <p className="text-sm text-blue-800 mt-1">You are adding new pay items to the existing {selectedJob.payItems.length} item(s). All items will be combined in the review table.</p>
                         </div>
                       </div>
                     )}
-                    <table className="pay-items-input-table">
-                      <thead>
+                    <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
+                      <thead className="bg-gray-100 border-b-2 border-gray-300">
                         <tr>
-                          <th>Pay Item Name</th>
-                          <th>Actual Cost (LKR)</th>
-                          <th>Paid By</th>
-                          <th>Bill</th>
-                          <th>Billing Amount (LKR)</th>
-                          <th>Same Amount</th>
-                          <th>Action</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Pay Item Name</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Actual Cost (LKR)</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Paid By</th>
+                          <th className="px-4 py-3 text-center font-semibold text-gray-700">Bill</th>
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Billing Amount (LKR)</th>
+                          <th className="px-4 py-3 text-center font-semibold text-gray-700">Same Amount</th>
+                          <th className="px-4 py-3 text-center font-semibold text-gray-700">Action</th>
                         </tr>
                       </thead>
                       <tbody>
                         {payItems.map((item, index) => (
-                          <tr key={index} className={item.isOfficePayItem ? 'office-pay-item-row' : item.isPettyCashItem ? 'petty-cash-item-row' : ''}>
-                            <td data-label="Pay Item Name">
-                              <div className="pay-item-name-container">
+                          <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                            <td className="px-4 py-3" data-label="Pay Item Name">
+                              <div className="flex items-center gap-2">
                                 <input
                                   type="text"
                                   value={item.name}
                                   onChange={(e) => handlePayItemChange(index, 'name', e.target.value)}
                                   placeholder="e.g., SLPA Bill, Transport"
-                                  className="form-control-small"
+                                  className="flex-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                   disabled={item.paidByName}
                                 />
                                 {item.isOfficePayItem && (
-                                  <span className="source-badge office-badge">Office Payment</span>
+                                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">Office Payment</span>
                                 )}
                                 {item.isPettyCashItem && (
-                                  <span className="source-badge petty-cash-badge">Petty Cash</span>
+                                  <span className="inline-block px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">Petty Cash</span>
                                 )}
                               </div>
                             </td>
-                            <td data-label="Actual Cost (LKR)">
+                            <td className="px-4 py-3" data-label="Actual Cost (LKR)">
                               <input
                                 type="number"
                                 step="0.01"
                                 value={item.actualCost}
                                 onChange={(e) => handlePayItemChange(index, 'actualCost', e.target.value)}
                                 placeholder="0.00"
-                                className="form-control-small"
+                                className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                 disabled={item.paidByName}
                               />
                             </td>
-                            <td data-label="Paid By">
+                            <td className="px-4 py-3" data-label="Paid By">
                               {item.paidByName ? (
-                                <span className="paid-by-name">{item.paidByName}</span>
+                                <span className="text-gray-900 font-medium">{item.paidByName}</span>
                               ) : (
-                                <span className="paid-by-empty">-</span>
+                                <span className="text-gray-400">-</span>
                               )}
                             </td>
-                            <td data-label="Bill" className="checkbox-cell">
+                            <td className="px-4 py-3 text-center" data-label="Bill">
                               <input
                                 type="checkbox"
                                 checked={item.hasBill || false}
                                 onChange={(e) => handlePayItemChange(index, 'hasBill', e.target.checked)}
                                 disabled={!canEditPayItems()}
                                 title={item.hasBill ? "Bill/Receipt exists" : "No bill/receipt"}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               />
                             </td>
-                            <td data-label="Billing Amount (LKR)">
+                            <td className="px-4 py-3" data-label="Billing Amount (LKR)">
                               <input
                                 type="number"
                                 step="0.01"
                                 value={item.billingAmount}
                                 onChange={(e) => handlePayItemChange(index, 'billingAmount', e.target.value)}
                                 placeholder="0.00"
-                                className="form-control-small"
+                                className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                 disabled={item.sameAmount}
                               />
                             </td>
-                            <td data-label="Same Amount" className="checkbox-cell">
+                            <td className="px-4 py-3 text-center" data-label="Same Amount">
                               <input
                                 type="checkbox"
                                 checked={item.sameAmount}
                                 onChange={(e) => handlePayItemChange(index, 'sameAmount', e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                               />
                             </td>
-                            <td data-label="Action">
+                            <td className="px-4 py-3 text-center" data-label="Action">
                               {payItems.length > 1 && !item.paidByName && !(selectedJob?.shipmentCategory === 'FCL' && isTransporterCostLabel(item.name)) && (
                                 <button
                                   type="button"
                                   onClick={() => removePayItemRow(index)}
-                                  className="action-btn remove-btn"
+                                  className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition"
                                   title="Remove"
                                   aria-label="Remove"
                                 >
-                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                 </button>
                               )}
                             </td>
                           </tr>
                         ))}
                       </tbody>
-                      <tfoot className="pay-items-totals-footer">
-                        <tr className="totals-row">
-                          <td className="total-label"><strong>Total</strong></td>
-                          <td className="total-amount" data-label="Actual Cost (LKR)"><strong>{formatAmount(calculateUnsavedTotals().actualCost)}</strong></td>
-                          <td></td>
-                          <td></td>
-                          <td className="total-amount" data-label="Billing Amount (LKR)"><strong>{formatAmount(calculateUnsavedTotals().billingAmount)}</strong></td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                        <tr className={`profit-row ${calculateUnsavedTotals().profit < 0 ? 'profit-negative-row' : ''}`}>
-                          <td className="profit-label"><strong>Profit Margin</strong></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td className={`profit-amount ${calculateUnsavedTotals().profit >= 0 ? 'profit-positive' : 'profit-negative'}`}>
-                            <strong>{formatAmount(calculateUnsavedTotals().profit)}</strong>
-                            <span className="profit-percentage">({calculateUnsavedTotals().profitMargin.toFixed(2)}%)</span>
-                          </td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tfoot>
                     </table>
+                      <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-t-2 border-gray-300 rounded-t">
+                        <strong className="text-gray-900">Total</strong>
+                        <div className="flex gap-8">
+                          <div className="text-right"><strong className="text-gray-900">{formatAmount(calculateUnsavedTotals().actualCost)}</strong></div>
+                          <div></div>
+                          <div></div>
+                          <div className="text-right"><strong className="text-gray-900">{formatAmount(calculateUnsavedTotals().billingAmount)}</strong></div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                      </div>
+                      <div className={`flex justify-between items-center px-4 py-3 rounded-b ${calculateUnsavedTotals().profit >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                        <strong className={calculateUnsavedTotals().profit >= 0 ? 'text-green-900' : 'text-red-900'}>Profit Margin</strong>
+                        <div className="flex gap-8">
+                          <div></div>
+                          <div></div>
+                          <div></div>
+                          <div className={`text-right font-semibold ${calculateUnsavedTotals().profit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                            <strong>{formatAmount(calculateUnsavedTotals().profit)}</strong>
+                            <span className="text-xs ml-1">({calculateUnsavedTotals().profitMargin.toFixed(2)}%)</span>
+                          </div>
+                          <div></div>
+                          <div></div>
+                        </div>
+                      </div>
+                    </div>
                     
-                    <div className="pay-items-actions">
-                      <div className="add-items-buttons">
+                    <div className="flex gap-3 mt-6">
+                      <div className="flex-1 flex gap-2">
                         {selectedJob?.shipmentCategory !== 'FCL' && !hasTransporterCostItem(payItems) && (
-                          <button onClick={addTransporterCostRow} className="btn btn-primary btn-small">
+                          <button onClick={addTransporterCostRow} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
                             + Add Transporter Cost
                           </button>
                         )}
                         {!(payItems.length === 1 && isTransporterCostLabel(payItems[0]?.name || payItems[0]?.description)) && (
-                          <button onClick={addPayItemRow} className="btn btn-secondary btn-small">
+                          <button onClick={addPayItemRow} className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm font-medium">
                             + Add Another Item
                           </button>
                         )}
                       </div>
-                      <div className="action-buttons-right">
-                        <button onClick={savePayItems} className="btn btn-success">
+                      <div className="flex gap-2">
+                        <button onClick={savePayItems} className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium">
                           Save Pay Items
                         </button>
                         <button 
@@ -2556,7 +2576,7 @@ function Billing() {
                             setShowPayItemsRow(false);
                             setPayItems([]);
                           }} 
-                          className="btn btn-secondary"
+                          className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm font-medium"
                         >
                           Cancel
                         </button>
@@ -2566,38 +2586,38 @@ function Billing() {
                 )}
 
                 {selectedJob.payItems && selectedJob.payItems.length > 0 && (
-                  <div className="saved-pay-items">
-                    <div className="pay-items-review-header">
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <div className="px-6 py-4 border-b border-gray-200">
                       <div>
-                        <h4>PAY ITEMS REVIEW</h4>
-                        <p className="review-subtitle">Review all pay items before generating invoice</p>
+                        <h4 className="text-lg font-semibold text-gray-900">PAY ITEMS REVIEW</h4>
+                        <p className="text-sm text-gray-600 mt-1">Review all pay items before generating invoice</p>
                       </div>
                     </div>
 
-                    <div className="pay-items-review-scroll">
-                    <table className="pay-items-review-table">
+                    <div className="overflow-x-auto">
+                    <table className="w-full border-collapse text-sm">
                       <colgroup>
                         {canEditPayItems() ? (
                           <>
-                            <col style={{width: '50%'}} />
+                            <col style={{width: '45%'}} />
                             <col style={{width: '20%'}} />
                             <col style={{width: '20%'}} />
-                            <col style={{width: '10%'}} />
+                            <col style={{width: '15%'}} />
                           </>
                         ) : (
                           <>
-                            <col style={{width: '40%'}} />
-                            <col style={{width: '30%'}} />
-                            <col style={{width: '30%'}} />
+                            <col style={{width: '45%'}} />
+                            <col style={{width: '27.5%'}} />
+                            <col style={{width: '27.5%'}} />
                           </>
                         )}
                       </colgroup>
-                      <thead>
+                      <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0">
                         <tr>
-                          <th className="col-description">Description</th>
-                          <th className="col-amount">Actual Cost (LKR)</th>
-                          <th className="col-amount">Billing Amount (LKR)</th>
-                          {canEditPayItems() && <th className="col-actions">Actions</th>}
+                          <th className="px-4 py-3 text-left font-semibold text-gray-700">Description</th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Actual Cost (LKR)</th>
+                          <th className="px-4 py-3 text-right font-semibold text-gray-700">Billing Amount (LKR)</th>
+                          {canEditPayItems() && <th className="px-4 py-3 text-center font-semibold text-gray-700">Actions</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -2605,25 +2625,25 @@ function Billing() {
                           const itemDescription = item.description || item.name || '';
                           let displayDescription = itemDescription;
                           
-                          // Always transform to new format with place names
+                          // Only transform if it actually contains placeholder names
                           const normalized = itemDescription.toLowerCase().trim();
-                          if (normalized.startsWith('transporter cost')) {
+                          if (normalized.startsWith('transporter cost') && (itemDescription.includes('placename') || (!itemDescription.includes('from') && !itemDescription.includes('to')))) {
                             const fromPlace = selectedJob.exporter || 'placename';
                             const toPlace = selectedJob.transporter || 'placename';
                             displayDescription = `transporter cost (from ${fromPlace} to ${toPlace})`;
                           }
                           
                           return (
-                          <tr key={idx} className="pay-item-row">
-                            <td className="col-description" data-label="Description">{displayDescription}</td>
-                            <td className="col-amount" data-label="Actual Cost (LKR)">
+                          <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50 transition">
+                            <td className="px-4 py-3 text-gray-900" data-label="Description">{displayDescription}</td>
+                            <td className="px-4 py-3 text-right text-gray-900" data-label="Actual Cost (LKR)">
                               {formatAmount(parseFloat(item.actualCost) || parseFloat(item.amount) || 0)}
                             </td>
-                            <td className="col-amount" data-label="Billing Amount (LKR)">
+                            <td className="px-4 py-3 text-right text-gray-900" data-label="Billing Amount (LKR)">
                               {editingPayItemIndex === idx ? (
                                 <input
                                   type="text"
-                                  className="inline-edit-input"
+                                  className="w-full px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm text-right"
                                   value={editingBillingAmount}
                                   onChange={(e) => setEditingBillingAmount(e.target.value)}
                                   onKeyDown={(e) => {
@@ -2637,18 +2657,18 @@ function Billing() {
                               )}
                             </td>
                             {canEditPayItems() && (
-                              <td className="col-actions">
+                              <td className="px-4 py-3 text-center">
                                 {editingPayItemIndex === idx ? (
-                                  <div className="action-btns">
-                                    <button className="action-btn save-btn" onClick={saveInlineEditedPayItem} title="Save">?</button>
-                                    <button className="action-btn cancel-btn" onClick={cancelEditingPayItem} title="Cancel">?</button>
+                                  <div className="flex gap-2 justify-center">
+                                    <button className="inline-flex items-center justify-center px-3 h-8 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition text-sm font-medium" onClick={saveInlineEditedPayItem} title="Save">Save</button>
+                                    <button className="inline-flex items-center justify-center px-3 h-8 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition text-sm font-medium" onClick={cancelEditingPayItem} title="Cancel">Cancel</button>
                                   </div>
                                 ) : (
-                                  <div className="action-btns">
-                                    <button className="action-btn edit-btn" onClick={() => startEditingPayItem(idx)} title="Edit billing amount" aria-label="Edit billing amount">
+                                  <div className="flex gap-2 justify-center">
+                                    <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition" onClick={() => startEditingPayItem(idx)} title="Edit billing amount" aria-label="Edit billing amount">
                                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                     </button>
-                                    <button className="action-btn remove-btn" onClick={() => removePayItem(idx)} title="Remove" aria-label="Remove">
+                                    <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition" onClick={() => removePayItem(idx)} title="Remove" aria-label="Remove">
                                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                     </button>
                                   </div>
@@ -2659,81 +2679,81 @@ function Billing() {
                         );
                         })}
                       </tbody>
-                      <tfoot>
+                      <tfoot className="bg-gray-50">
                         {/* Total Row */}
-                        <tr className="">
-                          <td className="col-description"><strong>Total</strong></td>
-                          <td className="col-amount"><strong>{formatAmount(calculateTotals().actualCost)}</strong></td>
-                          <td className="col-amount"><strong>{formatAmount(calculateTotals().billingAmount)}</strong></td>
-                          {canEditPayItems() && <td className="col-actions"></td>}
+                        <tr className="border-t-2 border-gray-300">
+                          <td className="px-4 py-3 font-semibold text-gray-900"><strong>Total</strong></td>
+                          <td className="px-4 py-3 text-right font-semibold text-gray-900"><strong>{formatAmount(calculateTotals().actualCost)}</strong></td>
+                          <td className="px-4 py-3 text-right font-semibold text-gray-900"><strong>{formatAmount(calculateTotals().billingAmount)}</strong></td>
+                          {canEditPayItems() && <td className="px-4 py-3 text-center"></td>}
                         </tr>
                         {/* Profit Margin Row */}
-                        <tr className="profit-row">
-                          <td className="col-description"><strong>PROFIT MARGIN</strong></td>
-                          <td className="col-amount"></td>
-                          <td className={`col-amount profit-amount ${calculateTotals().profit >= 0 ? 'profit-positive' : 'profit-negative'}`}>
+                        <tr className={`${calculateTotals().profit >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                          <td className="px-4 py-3 font-semibold text-gray-900"><strong>PROFIT MARGIN</strong></td>
+                          <td className="px-4 py-3 text-right"></td>
+                          <td className={`px-4 py-3 text-right font-semibold ${calculateTotals().profit >= 0 ? 'text-green-700' : 'text-red-700'}`}>
                             <strong>{formatAmount(calculateTotals().profit)}</strong>
                           </td>
-                          {canEditPayItems() && <td className="col-actions"></td>}
+                          {canEditPayItems() && <td className="px-4 py-3 text-center"></td>}
                         </tr>
                         {/* Invoice Summary Header */}
-                        <tr className="summary-header-row">
-                          <td className="col-description" colSpan={canEditPayItems() ? 4 : 3}><strong>INVOICE SUMMARY</strong></td>
+                        <tr className="bg-blue-100 border-t-2 border-gray-300">
+                          <td className="px-4 py-3 font-bold text-blue-900" colSpan={canEditPayItems() ? 4 : 3}><strong>INVOICE SUMMARY</strong></td>
                         </tr>
                         {/* Gross Total */}
-                        <tr className="gross-total-row">
-                          <td className="col-description">Gross Total</td>
-                          <td className="col-amount"></td>
-                          <td className="col-amount"><strong>{formatAmount(calculateTotals().grossTotal)}</strong></td>
-                          {canEditPayItems() && <td className="col-actions"></td>}
+                        <tr className="bg-gray-50">
+                          <td className="px-4 py-3 text-gray-700">Gross Total</td>
+                          <td className="px-4 py-3 text-right"></td>
+                          <td className="px-4 py-3 text-right font-semibold text-gray-900"><strong>{formatAmount(calculateTotals().grossTotal)}</strong></td>
+                          {canEditPayItems() && <td className="px-4 py-3 text-center"></td>}
                         </tr>
                         {/* Advance Payment */}
                         {selectedJob.advancePayment > 0 && (
-                          <tr className="advance-payment-row">
-                            <td className="col-description">Advance Payment</td>
-                            <td className="col-amount"></td>
-                            <td className="col-amount advance-deduction">
+                          <tr className="bg-gray-50">
+                            <td className="px-4 py-3 text-gray-700">Advance Payment</td>
+                            <td className="px-4 py-3 text-right"></td>
+                            <td className="px-4 py-3 text-right font-semibold text-red-600">
                               <strong>({formatAmount(calculateTotals().advancePayment)})</strong>
                             </td>
-                            {canEditPayItems() && <td className="col-actions"></td>}
+                            {canEditPayItems() && <td className="px-4 py-3 text-center"></td>}
                           </tr>
                         )}
                         {/* Net Total */}
-                        <tr className="net-total-row">
-                          <td className="col-description"><strong>NET TOTAL (CUSTOMER PAYABLE)</strong></td>
-                          <td className="col-amount net-total-divider"></td>
-                          <td className="col-amount net-total-amount">
-                            <strong>{formatAmount(calculateTotals().netTotal)}</strong>
+                        <tr className="bg-indigo-50 border-t-2 border-indigo-300">
+                          <td className="px-4 py-3 font-bold text-indigo-900"><strong>NET TOTAL (CUSTOMER PAYABLE)</strong></td>
+                          <td className="px-4 py-3 text-right border-l-2 border-indigo-300"></td>
+                          <td className="px-4 py-3 text-right font-bold text-indigo-900">
+                            <strong className="text-lg">{formatAmount(calculateTotals().netTotal)}</strong>
                           </td>
-                          {canEditPayItems() && <td className="col-actions"></td>}
+                          {canEditPayItems() && <td className="px-4 py-3 text-center"></td>}
                         </tr>
                       </tfoot>
                     </table>
                     </div>
 
-                    <div className="generate-bill-section">
+                    <div className="p-6 flex gap-3">
                       <button 
                         onClick={() => setShowReviewInvoiceModal(true)} 
-                        className="btn btn-secondary btn-small"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                         disabled={!selectedJob || !selectedJob.payItems || selectedJob.payItems.length === 0 || !getAssignedClerks().length}
                       >
-                        📋 Review Invoice
+                        Review Invoice
                       </button>
-                      <button onClick={generateBill} className="btn btn-primary btn-small">
-                        ✓ Generate Invoice
+                      <button onClick={generateBill} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium">
+                        Generate Invoice
                       </button>
                       {showValidationModal && (
-                        <div className="validation-modal-overlay">
-                          <div className="validation-modal">
-                            <div className="validation-modal-header">
-                              <h3>⚠️ Cannot Generate Invoice</h3>
-                              <button className="modal-close-btn" onClick={() => setShowValidationModal(false)}>×</button>
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                          <div className="bg-white rounded-xl shadow-lg max-w-md w-full mx-4">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                              <h3 className="text-lg font-semibold text-gray-900">Cannot Generate Invoice</h3>
+                              <button className="text-gray-500 hover:text-gray-700 text-2xl leading-none" onClick={() => setShowValidationModal(false)}>×</button>
                             </div>
-                            <div className="validation-modal-body">
+                            <div className="px-6 py-4 text-gray-700">
                               <p style={{ whiteSpace: 'pre-line' }}>{validationMessage}</p>
                             </div>
-                            <div className="validation-modal-footer">
-                              <button onClick={() => setShowValidationModal(false)} className="btn btn-primary">
+                            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+                              <button onClick={() => setShowValidationModal(false)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium">
                                 OK, I'll Update the Job
                               </button>
                             </div>
@@ -2743,36 +2763,37 @@ function Billing() {
                     </div>
                   </div>
                 )}
-
                 {(!selectedJob.payItems || selectedJob.payItems.length === 0) && !showPayItemsRow && (
-                  <p className="no-items">No pay items added yet. Click "Add Items" to start.</p>
+                  <p className="text-center text-gray-500 py-8">No pay items added yet. Click "Add Items" to start.</p>
                 )}
               </div>
             </div>
           )}
-        </div>
-      </div>
+      </>
 
-      <div className="card generated-invoices-card">
-        <div className="card-header">
-          <div className="generated-invoices-header">
-            <button
-              onClick={() => setShowGeneratedInvoices(!showGeneratedInvoices)}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0',
-                display: 'flex',
-                alignItems: 'center',
-                fontSize: '18px',
-                color: '#374151'
-              }}
-              title={showGeneratedInvoices ? 'Collapse' : 'Expand'}
-            >
-              {showGeneratedInvoices ? '▼' : '▶'}
-            </button>
-            <h2>Generated Invoices ({filteredBills.length})</h2>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowGeneratedInvoices(!showGeneratedInvoices)}
+                className="flex items-center justify-center w-6 h-6 text-gray-600 hover:text-gray-900 transition"
+                title={showGeneratedInvoices ? 'Collapse' : 'Expand'}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <polyline points={showGeneratedInvoices ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} />
+                </svg>
+              </button>
+              <h2 className="text-xl font-semibold text-gray-900">Generated Invoices ({filteredBills.length})</h2>
+            </div>
             {(statusFilter !== 'All' || customerFilter !== 'All') && (
               <button
                 onClick={() => {
@@ -2780,32 +2801,23 @@ function Billing() {
                   setCustomerFilter('All');
                   setCurrentPage(1);
                 }}
-                className="btn-secondary"
-                style={{ 
-                  padding: '4px 12px', 
-                  fontSize: '12px',
-                  backgroundColor: '#f3f4f6',
-                  color: '#374151',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+                className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition border border-gray-300"
                 title="Clear all filters"
               >
                 Clear Filters
               </button>
             )}
           </div>
-          <div className="generated-invoices-filters">
-            <div className="invoice-filter-group">
-              <span className="invoice-filter-label">Status</span>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="form-control invoice-filter-select"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white"
               >
                 <option value="All">All Status</option>
                 <option value="Paid">Paid</option>
@@ -2813,15 +2825,15 @@ function Billing() {
                 <option value="Unpaid">Unpaid</option>
               </select>
             </div>
-            <div className="invoice-filter-group">
-              <span className="invoice-filter-label">Customer</span>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Customer</label>
               <select
                 value={customerFilter}
                 onChange={(e) => {
                   setCustomerFilter(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="form-control invoice-filter-select"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white"
               >
                 <option value="All">All Customers</option>
                 {customers.map(customer => (
@@ -2831,12 +2843,12 @@ function Billing() {
                 ))}
               </select>
             </div>
-            <div className="invoice-filter-group">
-              <span className="invoice-filter-label">Print Mode</span>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Print Mode</label>
               <select
                 value={printMode}
                 onChange={(e) => setPrintMode(e.target.value)}
-                className="form-control invoice-filter-select"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm bg-white"
               >
                 <option value="color">Color (Theme)</option>
                 <option value="bw">Black & White</option>
@@ -2847,108 +2859,78 @@ function Billing() {
         {showGeneratedInvoices && (
           <>
             {filteredBills.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">📄</div>
-                <p>{bills.length === 0 ? 'No invoices generated yet' : 'No invoices match the selected filters'}</p>
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="text-4xl mb-4 text-gray-300">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="mx-auto"
+                  >
+                    <rect x="6" y="3" width="12" height="18" rx="2" ry="2" />
+                    <line x1="9" y1="8" x2="15" y2="8" />
+                    <line x1="9" y1="12" x2="15" y2="12" />
+                    <line x1="9" y1="16" x2="13" y2="16" />
+                  </svg>
+                </div>
+                <p className="text-gray-500">
+                  {bills.length === 0
+                    ? 'No invoices generated yet'
+                    : 'No invoices match the selected filters'}
+                </p>
               </div>
         ) : (
           <>
-          <div className="invoice-mobile-list">
-            {currentRecords.map(bill => (
-              <article
-                key={`mobile-${bill.billId}`}
-                className={`invoice-mobile-card${bill.isOverdue ? ' overdue' : ''}${expandedBillId === bill.billId ? ' expanded' : ''}`}
-              >
-                <div className="invoice-mobile-card-top">
-                  <strong className="invoice-mobile-card-id">{bill.invoiceNumber || bill.billId}</strong>
-                  <span className={`status-badge status-${(bill.paymentStatus || 'unpaid').toLowerCase().replace(' ', '-')}`}>
-                    {bill.paymentStatus || 'Unpaid'}
-                  </span>
-                </div>
-                <div className="invoice-mobile-card-customer">{getCustomerName(bill.customerId)}</div>
-                <div className="invoice-mobile-card-fields">
-                  <div className="invoice-mobile-field">
-                    <span className="invoice-mobile-field-label">Job ID</span>
-                    <span className="invoice-mobile-field-value">{bill.jobId}</span>
-                  </div>
-                  <div className="invoice-mobile-field">
-                    <span className="invoice-mobile-field-label">Invoice Date</span>
-                    <span className="invoice-mobile-field-value">{formatDate(bill.invoiceDate)}</span>
-                  </div>
-                  <div className="invoice-mobile-field">
-                    <span className="invoice-mobile-field-label">Due Date</span>
-                    <span className="invoice-mobile-field-value">
-                      {bill.dueDate ? formatDate(bill.dueDate) : '-'}
-                      {bill.isOverdue && <span className="overdue-badge">OVERDUE</span>}
-                    </span>
-                  </div>
-                </div>
-                <div className="invoice-mobile-card-actions">
-                  {renderGeneratedInvoiceActions(bill)}
-                </div>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setPaymentBreakdownBill(bill);
-                    setShowPaymentBreakdownModal(true);
-                  }}
-                  style={{ width: '100%', marginTop: '0.5rem' }}
-                >
-                  View Payment Breakdown
-                </button>
-                {expandedBillId === bill.billId && (
-                  <div className="invoice-mobile-card-details">
-                    {renderBillExpandedDetails(bill)}
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
-          <div className="billing-table-wrapper billing-invoices-table-wrap">
-            <table className="billing-table">
-              <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead className="bg-gray-100 border-b-2 border-gray-300">
                 <tr>
-                  <th>Invoice No</th>
-                  <th>Job ID</th>
-                  <th>Customer</th>
-                  <th>Invoice Date</th>
-                  <th>Due Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Invoice No</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Job ID</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Customer</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Invoice Date</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Due Date</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {currentRecords.map(bill => (
                   <React.Fragment key={bill.billId}>
-                    <tr className={`${bill.isOverdue ? 'overdue-row' : ''}${expandedBillId === bill.billId ? ' invoice-row-expanded' : ''}`.trim()}>
-                      <td data-label="Invoice No"><strong>{bill.invoiceNumber || bill.billId}</strong></td>
-                      <td data-label="Job ID"><span className="billing-cell-value">{bill.jobId}</span></td>
-                      <td data-label="Customer"><span className="billing-cell-value">{getCustomerName(bill.customerId)}</span></td>
-                      <td data-label="Invoice Date">
-                        <span className="billing-cell-value">{formatDate(bill.invoiceDate)}</span>
+                    <tr className={`border-b border-gray-200 hover:bg-gray-50 transition ${bill.isOverdue ? 'bg-red-50' : ''} ${expandedBillId === bill.billId ? 'bg-blue-50' : ''}`.trim()}>
+                      <td data-label="Invoice No" className="px-4 py-3"><strong className="text-gray-900">{bill.invoiceNumber || bill.billId}</strong></td>
+                      <td data-label="Job ID" className="px-4 py-3 text-gray-900">{bill.jobId}</td>
+                      <td data-label="Customer" className="px-4 py-3 text-gray-900">{getCustomerName(bill.customerId)}</td>
+                      <td data-label="Invoice Date" className="px-4 py-3 text-gray-900">
+                        {formatDate(bill.invoiceDate)}
                       </td>
-                      <td data-label="Due Date">
+                      <td data-label="Due Date" className="px-4 py-3">
                         {bill.dueDate ? (
-                          <div className="due-date-cell">
-                            <span className="billing-cell-value">{formatDate(bill.dueDate)}</span>
-                            {bill.isOverdue && <span className="overdue-badge">OVERDUE</span>}
+                          <div className="flex items-center gap-2">
+                            <span className={`font-medium ${bill.isOverdue ? 'text-red-600' : 'text-gray-900'}`}>{formatDate(bill.dueDate)}</span>
+                            {bill.isOverdue && <span className="inline-block px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded font-semibold">OVERDUE</span>}
                           </div>
-                        ) : <span className="billing-cell-value">-</span>}
+                        ) : <span className="text-gray-900">-</span>}
                       </td>
-                      <td data-label="Status">
-                        <div className="status-cell">
-                          <span className={`status-badge status-${(bill.paymentStatus || 'unpaid').toLowerCase().replace(' ', '-')}`}>
-                            {bill.paymentStatus || 'Unpaid'}
-                          </span>
-                        </div>
+                      <td data-label="Status" className="px-4 py-3">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                          bill.paymentStatus === 'Paid' ? 'bg-green-100 text-green-800' :
+                          bill.paymentStatus === 'Partially Paid' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {bill.paymentStatus || 'Unpaid'}
+                        </span>
                       </td>
-                      <td data-label="Actions">
+                      <td data-label="Actions" className="px-4 py-3">
                         {renderGeneratedInvoiceActions(bill)}
                       </td>
                     </tr>
                     {expandedBillId === bill.billId && (
-                      <tr className="details-row">
-                        <td colSpan="7">
+                      <tr className="bg-gray-50 border-b border-gray-200">
+                        <td colSpan="7" className="px-4 py-4">
                           {renderBillExpandedDetails(bill)}
                         </td>
                       </tr>
@@ -2976,55 +2958,53 @@ function Billing() {
       </div>
 
       {/* -------------------------------------------------------
-           RECORD PAYMENT MODAL  �  3-Row Professional Layout
+           RECORD PAYMENT MODAL  ï¿½  3-Row Professional Layout
            Row 1: Invoice details strip
            Row 2: Payment type (Full / Partial) + amount
            Row 3: Payment method + cheque / bank fields
       ------------------------------------------------------- */}
       {showPaymentModal && selectedBillForPayment && (
-        <div className="pm-overlay" onClick={() => setShowPaymentModal(false)}>
-          <div className="pm-modal" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" onClick={() => setShowPaymentModal(false)}>
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
 
-            {/* -- Title bar -- */}
-            <div className="pm-titlebar">
-              <div className="pm-titlebar-left">
+            {/* â”€â”€ Title bar â”€â”€ */}
+            <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{flexShrink:0}}>
                   <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
                 </svg>
                 <div>
-                  <span className="pm-title">Record Payment</span>
-                  <span className="pm-subtitle">Invoice&nbsp;#{selectedBillForPayment.invoiceNumber || selectedBillForPayment.billId}</span>
+                  <span className="font-bold text-gray-900">Record Payment</span>
+                  <span className="text-sm text-gray-600 block">Invoice&nbsp;#{selectedBillForPayment.invoiceNumber || selectedBillForPayment.billId}</span>
                 </div>
               </div>
-              <button className="pm-close" onClick={() => setShowPaymentModal(false)} aria-label="Close">�</button>
+              <button className="text-gray-400 hover:text-gray-600 text-2xl" onClick={() => setShowPaymentModal(false)} aria-label="Close">&times;</button>
             </div>
 
-            {/* ------------------------------------------
-                ROW 1 � Invoice details (horizontal strip)
-            ------------------------------------------ */}
-            <div className="pm-body">
-            <div className="pm-row pm-row-details">
-              <div className="pm-detail-cell">
-                <span className="pm-detail-label">Customer</span>
-                <span className="pm-detail-value">{getCustomerName(selectedBillForPayment.customerId)}</span>
+            {/* ROW 1 - Bill details */}
+            <div className="p-6">
+            <div className="flex gap-4 flex-wrap mb-6 pb-6 border-b border-gray-200">
+              <div className="flex-1 min-w-32">
+                <span className="text-xs font-bold text-gray-600 uppercase">Customer</span>
+                <span className="block text-gray-900">{getCustomerName(selectedBillForPayment.customerId)}</span>
               </div>
-              <div className="pm-detail-cell">
-                <span className="pm-detail-label">Job ID</span>
-                <span className="pm-detail-value"><code className="pm-code">{selectedBillForPayment.jobId}</code></span>
+              <div className="flex-1 min-w-32">
+                <span className="text-xs font-bold text-gray-600 uppercase">Invoice</span>
+                <span className="block text-gray-900 font-mono">{selectedBillForPayment.invoiceNumber || selectedBillForPayment.billId}</span>
               </div>
-              <div className="pm-detail-cell">
-                <span className="pm-detail-label">Invoice Total</span>
-                <span className="pm-detail-value pm-amount-total">LKR {formatAmount(selectedBillForPayment.netTotal || selectedBillForPayment.total)}</span>
+              <div className="flex-1 min-w-32">
+                <span className="text-xs font-bold text-gray-600 uppercase">Invoice Total</span>
+                <span className="block text-lg font-bold text-gray-900">LKR {formatAmount(parseFloat(selectedBillForPayment.netTotal || selectedBillForPayment.total) || 0)}</span>
               </div>
               {parseFloat(selectedBillForPayment.paidAmount) > 0 && (
-                <div className="pm-detail-cell">
-                  <span className="pm-detail-label">Already Paid</span>
-                  <span className="pm-detail-value pm-amount-paid">LKR {formatAmount(selectedBillForPayment.paidAmount)}</span>
+                <div className="flex-1 min-w-32">
+                  <span className="text-xs font-bold text-gray-600 uppercase">Already Paid</span>
+                  <span className="block text-lg font-bold text-green-600">LKR {formatAmount(parseFloat(selectedBillForPayment.paidAmount))}</span>
                 </div>
               )}
-              <div className={parseFloat(selectedBillForPayment.paidAmount) > 0 ? 'pm-detail-cell pm-detail-cell--due' : 'pm-detail-cell pm-detail-cell--due pm-detail-cell--due-only'}>
-                <span className="pm-detail-label">Amount Due</span>
-                <span className="pm-detail-value pm-amount-due">
+              <div className="flex-1 min-w-32">
+                <span className="text-xs font-bold text-gray-600 uppercase">Amount Due</span>
+                <span className="block text-lg font-bold text-orange-600">
                   LKR {formatAmount(
                     parseFloat(selectedBillForPayment.remainingAmount) > 0
                       ? selectedBillForPayment.remainingAmount
@@ -3034,72 +3014,67 @@ function Billing() {
               </div>
             </div>
 
-            {/* ------------------------------------------
-                ROW 2 � Payment type + amount
-            ------------------------------------------ */}
-            <div className="pm-row pm-row-type">
+            {/* ROW 2 - Payment type + amount */}
+            <div className="grid grid-cols-2 gap-6 mb-6 pb-6 border-b border-gray-200">
 
               {/* Left: radio buttons */}
-              <div className="pm-type-panel">
-                <p className="pm-panel-label">Payment Type</p>
-                <div className="pm-radio-group">
+              <div>
+                <p className="text-sm font-bold text-gray-700 mb-3">Payment Type</p>
+                <div className="space-y-2">
                   <label
-                    className={`pm-radio-card ${paymentMode === 'full' ? 'pm-radio-card--active' : ''}`}
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${paymentMode === 'full' ? 'bg-blue-50 border-blue-300' : 'border-gray-200 hover:border-gray-300'}`}
                     onClick={() => { setPaymentMode('full'); setPartialPaymentAmount(''); }}
                   >
                     <input
                       type="radio" name="pmMode" value="full"
                       checked={paymentMode === 'full'}
                       onChange={() => { setPaymentMode('full'); setPartialPaymentAmount(''); }}
+                      className="w-4 h-4 mr-3"
                     />
-                    <span className="pm-radio-dot"></span>
-                    <span className="pm-radio-text">
-                      <strong>Full Payment</strong>
-                      <small>Settle entire balance</small>
+                    <span>
+                      <strong className="block text-gray-900 text-sm">Full Payment</strong>
+                      <small className="text-gray-600 text-xs">Settle entire balance</small>
                     </span>
                   </label>
                   <label
-                    className={`pm-radio-card ${paymentMode === 'partial' ? 'pm-radio-card--active' : ''}`}
+                    className={`flex items-center p-3 border rounded-lg cursor-pointer transition ${paymentMode === 'partial' ? 'bg-blue-50 border-blue-300' : 'border-gray-200 hover:border-gray-300'}`}
                     onClick={() => setPaymentMode('partial')}
                   >
                     <input
                       type="radio" name="pmMode" value="partial"
                       checked={paymentMode === 'partial'}
                       onChange={() => setPaymentMode('partial')}
+                      className="w-4 h-4 mr-3"
                     />
-                    <span className="pm-radio-dot"></span>
-                    <span className="pm-radio-text">
-                      <strong>Partial Payment</strong>
-                      <small>Pay a portion now</small>
+                    <span>
+                      <strong className="block text-gray-900 text-sm">Partial Payment</strong>
+                      <small className="text-gray-600 text-xs">Pay a portion now</small>
                     </span>
                   </label>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div className="pm-col-divider" />
-
               {/* Right: amount area */}
-              <div className="pm-amount-panel">
+              <div>
                 {paymentMode === 'full' ? (
-                  <div className="pm-full-amount-display">
-                    <p className="pm-panel-label">Amount to Collect</p>
-                    <div className="pm-full-amount">
+                  <div>
+                    <p className="text-sm font-bold text-gray-700 mb-3">Amount to Collect</p>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">
                       LKR {formatAmount(
                         parseFloat(selectedBillForPayment.remainingAmount) > 0
                           ? selectedBillForPayment.remainingAmount
                           : (parseFloat(selectedBillForPayment.netTotal || selectedBillForPayment.total) - parseFloat(selectedBillForPayment.paidAmount || 0))
                       )}
                     </div>
-                    <span className="pm-full-badge">Full balance</span>
+                    <span className="text-xs text-gray-600 inline-block px-2 py-1 bg-gray-100 rounded">{parseFloat(selectedBillForPayment.paidAmount) > 0 ? 'Remaining balance' : 'Full balance'}</span>
                   </div>
                 ) : (
-                  <div className="pm-partial-area">
-                    <div className="pm-field">
-                      <label className="pm-field-label">Enter Amount (LKR) <span className="pm-req">*</span></label>
+                  <div>
+                    <div className="mb-3">
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Enter Amount (LKR) <span className="text-red-600">*</span></label>
                       <input
                         type="number" step="0.01"
-                        className="pm-input pm-input--amount"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={partialPaymentAmount}
                         onChange={e => setPartialPaymentAmount(e.target.value)}
                         placeholder="0.00"
@@ -3107,24 +3082,24 @@ function Billing() {
                       />
                     </div>
                     {/* Mini breakdown */}
-                    <div className="pm-breakdown">
-                      <div className="pm-bk-row">
-                        <span>Invoice Total</span>
-                        <span>LKR {formatAmount(parseFloat(selectedBillForPayment.netTotal || selectedBillForPayment.total) || 0)}</span>
+                    <div className="bg-gray-50 rounded p-3 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Invoice Total</span>
+                        <span className="text-gray-900">LKR {formatAmount(parseFloat(selectedBillForPayment.netTotal || selectedBillForPayment.total) || 0)}</span>
                       </div>
                       {parseFloat(selectedBillForPayment.paidAmount) > 0 && (
-                        <div className="pm-bk-row">
-                          <span>Already Paid</span>
-                          <span className="pm-bk-paid">LKR {formatAmount(parseFloat(selectedBillForPayment.paidAmount))}</span>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Already Paid</span>
+                          <span className="text-green-600">LKR {formatAmount(parseFloat(selectedBillForPayment.paidAmount))}</span>
                         </div>
                       )}
-                      <div className="pm-bk-row">
-                        <span>This Payment</span>
-                        <span className="pm-bk-current">LKR {formatAmount(parseFloat(partialPaymentAmount) || 0)}</span>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">This Payment</span>
+                        <span className="text-blue-600">LKR {formatAmount(parseFloat(partialPaymentAmount) || 0)}</span>
                       </div>
-                      <div className="pm-bk-row pm-bk-row--total">
-                        <span>Remaining After</span>
-                        <span>LKR {formatAmount(Math.max(0,
+                      <div className="border-t border-gray-200 pt-2 flex justify-between text-sm font-semibold">
+                        <span className="text-gray-900">Remaining After</span>
+                        <span className="text-gray-900">LKR {formatAmount(Math.max(0,
                           (parseFloat(selectedBillForPayment.remainingAmount) ||
                            parseFloat(selectedBillForPayment.netTotal || selectedBillForPayment.total) -
                            parseFloat(selectedBillForPayment.paidAmount || 0))
@@ -3138,20 +3113,18 @@ function Billing() {
 
             </div>{/* end ROW 2 */}
 
-            {/* ------------------------------------------
-                ROW 3 � Payment method + details
-            ------------------------------------------ */}
-            <div className="pm-row pm-row-method">
+            {/* ROW 3 - Payment method + details */}
+            <div className="grid grid-cols-2 gap-6 mb-6">
 
               {/* Left: method selector */}
-              <div className="pm-method-panel">
-                <p className="pm-panel-label">Payment Method</p>
-                <div className="pm-method-tabs">
+              <div>
+                <p className="text-sm font-bold text-gray-700 mb-3">Payment Method</p>
+                <div className="flex gap-2 mb-3">
                   {['Cash','Cheque','Bank Transfer'].map(m => (
                     <button
                       key={m}
                       type="button"
-                      className={`pm-method-tab ${paymentMethod === m ? 'pm-method-tab--active' : ''}`}
+                      className={`flex-1 py-2 px-3 rounded-lg border-2 transition text-sm font-medium flex items-center justify-center gap-2 ${paymentMethod === m ? 'bg-blue-50 border-blue-500 text-blue-700' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`}
                       onClick={() => {
                         setPaymentMethod(m);
                         setChequeAutoFilled(false);
@@ -3168,118 +3141,71 @@ function Billing() {
                   ))}
                 </div>
 
-                {/* Cash � no extra fields */}
+                {/* Cash — no extra fields */}
                 {paymentMethod === 'Cash' && (
-                  <div className="pm-cash-note">
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-sm text-green-800">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
                     Cash payment — no additional details required.
                   </div>
                 )}
               </div>
-
-              {/* Divider */}
-              <div className="pm-col-divider" />
-
               {/* Right: cheque / bank fields */}
-              <div className="pm-details-panel">
+              <div>
 
-                {/* -- Cheque -- */}
+                {/* Cheque */}
                 {paymentMethod === 'Cheque' && (
                   <>
-                    <p className="pm-panel-label">Cheque Details</p>
-
-                    {/* Cheque type toggle */}
-                    <div className="pm-cheque-type-row">
-                      <label className="pm-radio-inline">
-                        <input type="radio" name="chequeType" value="new" checked={chequeType === 'new'} onChange={() => handleChequeTypeChange('new')} />
-                        New Cheque
-                      </label>
-                      <label className="pm-radio-inline">
-                        <input type="radio" name="chequeType" value="existing" checked={chequeType === 'existing'} onChange={() => handleChequeTypeChange('existing')} />
-                        Existing Cheque
-                      </label>
+                    <p className="text-sm font-bold text-gray-700 mb-3">Cheque Details</p>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Cheque Number <span className="text-red-600">*</span></label>
+                        <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                          value={chequeNumber}
+                          onChange={e => { setChequeNumber(e.target.value); setChequeAutoFilled(false); }}
+                          onBlur={e => handleChequeNumberBlur && handleChequeNumberBlur(e.target.value)}
+                          placeholder="e.g. 001234"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Cheque Date <span className="text-red-600">*</span></label>
+                        <input type="date" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                          value={chequeDate}
+                          onChange={e => setChequeDate(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Cheque Amount (LKR) <span className="text-red-600">*</span></label>
+                        <input type="number" step="0.01" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                          value={chequeAmount}
+                          onChange={e => setChequeAmount(e.target.value)}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Bank Name</label>
+                        <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" value={bankName} onChange={e => setBankName(e.target.value)}>
+                          <option>Commercial Bank</option>
+                          <option>Peoples Bank</option>
+                          <option>Bank of Ceylon</option>
+                          <option>Hatton National Bank</option>
+                          <option>Sampath Bank</option>
+                          <option>Nations Trust Bank</option>
+                          <option>DFCC Bank</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
                     </div>
-
-                    {/* Existing cheque picker */}
-                    {chequeType === 'existing' && (
-                      <div className="pm-field pm-field--full">
-                        <label className="pm-field-label">Select Cheque <span className="pm-req">*</span></label>
-                        {loadingExistingCheques ? (
-                          <span className="pm-loading">Loading cheques�</span>
-                        ) : !Array.isArray(existingCheques) || existingCheques.length === 0 ? (
-                          <div className="pm-info-box">No cheques with remaining balance found for this customer.</div>
-                        ) : (
-                          <select className="pm-input" value={chequeNumber} onChange={e => handleExistingChequeSelect(e.target.value)}>
-                            <option value="">— Select a cheque —</option>
-                            {existingCheques.map(c => (
-                              <option key={c.chequeNumber} value={c.chequeNumber}>
-                                Cheque #{c.chequeNumber} — Balance: LKR {parseFloat(c.remainingBalance).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Cheque fields grid */}
-                    {(chequeType === 'new' || (chequeType === 'existing' && chequeNumber)) && (
-                      <div className="pm-fields-grid">
-                        <div className="pm-field">
-                          <label className="pm-field-label">Cheque Number <span className="pm-req">*</span></label>
-                          <input type="text" className="pm-input"
-                            value={chequeNumber}
-                            onChange={e => { setChequeNumber(e.target.value); setChequeAutoFilled(false); }}
-                            onBlur={e => chequeType === 'new' && handleChequeNumberBlur(e.target.value)}
-                            placeholder="e.g. 001234"
-                            readOnly={chequeType === 'existing'}
-                          />
-                        </div>
-                        <div className="pm-field">
-                          <label className="pm-field-label">Cheque Date <span className="pm-req">*</span></label>
-                          <input type="date" className="pm-input"
-                            value={chequeDate}
-                            onChange={e => setChequeDate(e.target.value)}
-                            readOnly={chequeType === 'existing'}
-                          />
-                          {chequeAutoFilled && <small className="pm-autofill">✓ Auto-filled</small>}
-                        </div>
-                        <div className="pm-field">
-                          <label className="pm-field-label">Cheque Amount (LKR) <span className="pm-req">*</span></label>
-                          <input type="number" step="0.01" className="pm-input"
-                            value={chequeAmount}
-                            onChange={e => setChequeAmount(e.target.value)}
-                            placeholder="0.00"
-                            readOnly={chequeType === 'existing'}
-                          />
-                          {chequeAutoFilled && <small className="pm-autofill">✓ Auto-filled</small>}
-                          <small className="pm-hint">Total value written on cheque</small>
-                        </div>
-                        <div className="pm-field">
-                          <label className="pm-field-label">Bank Name</label>
-                          <select className="pm-input" value={bankName} onChange={e => setBankName(e.target.value)} disabled={chequeType === 'existing'}>
-                            <option>Commercial Bank</option>
-                            <option>Peoples Bank</option>
-                            <option>Bank of Ceylon</option>
-                            <option>Hatton National Bank</option>
-                            <option>Sampath Bank</option>
-                            <option>Nations Trust Bank</option>
-                            <option>DFCC Bank</option>
-                            <option>Other</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
 
                 {/* -- Bank Transfer -- */}
                 {paymentMethod === 'Bank Transfer' && (
                   <>
-                    <p className="pm-panel-label">Transfer Details</p>
-                    <div className="pm-fields-grid">
-                      <div className="pm-field pm-field--full">
-                        <label className="pm-field-label">Bank Name <span className="pm-req">*</span></label>
-                        <select className="pm-input" value={bankName} onChange={e => setBankName(e.target.value)}>
+                    <p className="text-sm font-semibold text-gray-900 mb-3">Transfer Details</p>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-600 uppercase mb-1">Bank Name <span className="text-red-600">*</span></label>
+                        <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" value={bankName} onChange={e => setBankName(e.target.value)}>
                           <option>Commercial Bank</option>
                           <option>Peoples Bank</option>
                           <option>Bank of Ceylon</option>
@@ -3296,9 +3222,9 @@ function Billing() {
 
                 {/* -- Cash placeholder -- */}
                 {paymentMethod === 'Cash' && (
-                  <div className="pm-empty-panel">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-                    <p>No additional details needed for cash.</p>
+                  <div className="text-center py-6">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5" className="mx-auto mb-2"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                    <p className="text-sm text-gray-600">No additional details needed for cash.</p>
                   </div>
                 )}
 
@@ -3308,9 +3234,9 @@ function Billing() {
             </div>{/* end pm-body */}
 
             {/* -- Footer -- */}
-            <div className="pm-footer">
-              <button className="pm-btn pm-btn--cancel" onClick={() => setShowPaymentModal(false)}>Cancel</button>
-              <button className="pm-btn pm-btn--confirm" onClick={submitPayment}>
+            <div className="border-t border-gray-200 px-6 py-4 flex gap-3 justify-end">
+              <button className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium" onClick={() => setShowPaymentModal(false)}>Cancel</button>
+              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2" onClick={submitPayment}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 Confirm Payment
               </button>
@@ -3348,7 +3274,7 @@ function Billing() {
               }}
               title={showOldInvoices ? 'Collapse' : 'Expand'}
             >
-              {showOldInvoices ? '?' : '?'}
+              {showOldInvoices ? '▲' : '▼'}
             </button>
             <h2>Old Invoice Management ({oldInvoices.length})</h2>
             {user && (user.role === 'Admin' || user.role === 'Super Admin' || user.role === 'Manager' || user.role === 'Office Executive') && (
@@ -3417,8 +3343,25 @@ function Billing() {
               return matchesSearch && matchesStatus;
             }).length === 0 ? (
               <div className="empty-state">
-                <div className="empty-state-icon">📄</div>
-                <p>{oldInvoices.length === 0 ? 'No old invoices found' : 'No old invoices match the selected filters'}</p>
+                <div className="empty-state-icon">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
+                    <path d="M3 9h18" />
+                    <path d="M7 3h10" />
+                  </svg>
+                </div>
+                <p>
+                  {oldInvoices.length === 0
+                    ? 'No old invoices found'
+                    : 'No old invoices match the selected filters'}
+                </p>
               </div>
             ) : (
               <div className="billing-table-wrapper">
@@ -3605,9 +3548,9 @@ function Billing() {
                                             </div>
                                             <div className="invoice-payment-table-cell payment-method-col">
                                               <span className={`payment-method-badge payment-method-${payment.paymentMethod?.toLowerCase().replace(' ', '-')}`}>
-                                                {payment.paymentMethod === 'Cash' && '??'}
-                                                {payment.paymentMethod === 'Cheque' && '??'}
-                                                {payment.paymentMethod === 'Bank Transfer' && '??'}
+                                                {payment.paymentMethod === 'Cash' && '💵'}
+                                                {payment.paymentMethod === 'Cheque' && '📄'}
+                                                {payment.paymentMethod === 'Bank Transfer' && '🏦'}
                                                 {' '}{payment.paymentMethod || '-'}
                                               </span>
                                             </div>
@@ -3697,7 +3640,7 @@ function Billing() {
                   setOldInvoiceFormErrors({});
                 }}
               >
-                �
+                ï¿½
               </button>
             </div>
             
@@ -3914,7 +3857,7 @@ function Billing() {
                   });
                 }}
               >
-                �
+                ï¿½
               </button>
             </div>
             
@@ -4137,7 +4080,7 @@ function Billing() {
           <div className="modal modal-large">
             <div className="modal-header">
               <h2>Job Information</h2>
-              <button className="btn-close" onClick={() => setShowJobInfoModal(false)}>�</button>
+              <button className="btn-close" onClick={() => setShowJobInfoModal(false)}>ï¿½</button>
             </div>
             <div className="job-info-modal-content">
               <div className="info-grid">
@@ -4228,65 +4171,75 @@ function Billing() {
       )}
 
       {showPaymentBreakdownModal && paymentBreakdownBill && (
-        <div className="payment-modal-overlay" onClick={() => setShowPaymentBreakdownModal(false)}>
-          <div className="payment-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-            <div className="payment-modal-header">
-              <h3>Payment Breakdown - Invoice {paymentBreakdownBill.invoiceNumber || paymentBreakdownBill.billId}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto" onClick={() => setShowPaymentBreakdownModal(false)}>
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-4xl my-8" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 flex items-center justify-between px-8 py-6 border-b border-gray-200 bg-white rounded-t-xl">
+              <h3 className="text-2xl font-bold text-gray-900">Payment Breakdown - Invoice {paymentBreakdownBill.invoiceNumber || paymentBreakdownBill.billId}</h3>
               <button 
-                className="modal-close-btn" 
+                className="text-gray-500 hover:text-gray-700 text-3xl leading-none" 
                 onClick={() => setShowPaymentBreakdownModal(false)}
               >
                 ×
               </button>
             </div>
-            <div style={{ padding: '1.5rem', display: 'block' }}>
-              <div style={{ background: '#f0f9ff', border: '1px solid #0ea5e9', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', paddingBottom: '0.6rem', borderBottom: '1px solid #bae6fd' }}>
-                  <span style={{ fontWeight: 600, color: '#6b7280', fontSize: '0.875rem' }}>Gross Total</span>
-                  <span style={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem', textAlign: 'right' }}>LKR {formatAmount(paymentBreakdownBill.grossTotal || 0)}</span>
+            <div className="p-8 space-y-8 max-h-[calc(100vh-200px)] overflow-y-auto">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="grid grid-cols-2 gap-6 pb-6 border-b border-blue-300">
+                  <div>
+                    <span className="font-semibold text-gray-600 text-sm block mb-1">Gross Total</span>
+                    <span className="font-semibold text-gray-900 text-lg">LKR {formatAmount(paymentBreakdownBill.grossTotal || 0)}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold text-gray-600 text-sm block mb-1">Advance Payment</span>
+                    <span className="font-semibold text-gray-900 text-lg">LKR ({formatAmount(paymentBreakdownBill.advancePayment || 0)})</span>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', paddingTop: '0.6rem', paddingBottom: '0.6rem', borderBottom: '1px solid #bae6fd' }}>
-                  <span style={{ fontWeight: 600, color: '#6b7280', fontSize: '0.875rem' }}>Advance Payment</span>
-                  <span style={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem', textAlign: 'right' }}>LKR ({formatAmount(paymentBreakdownBill.advancePayment || 0)})</span>
+                <div className="grid grid-cols-2 gap-6 py-6 border-b border-blue-300">
+                  <div>
+                    <span className="font-bold text-blue-700 text-sm block mb-1">Net Total</span>
+                    <span className="font-bold text-gray-900 text-2xl">LKR {formatAmount(paymentBreakdownBill.netTotal || paymentBreakdownBill.total || 0)}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold text-gray-600 text-sm block mb-1">Paid Amount</span>
+                    <span className="font-semibold text-gray-900 text-lg">LKR {formatAmount(paymentBreakdownBill.paidAmount || 0)}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', paddingTop: '0.6rem', paddingBottom: '0.6rem', borderBottom: '1px solid #bae6fd' }}>
-                  <span style={{ fontWeight: 600, color: '#0369a1', fontSize: '0.875rem' }}>Net Total</span>
-                  <span style={{ fontWeight: 700, color: '#101036', fontSize: '1.2rem', textAlign: 'right' }}>LKR {formatAmount(paymentBreakdownBill.netTotal || paymentBreakdownBill.total || 0)}</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', paddingTop: '0.6rem', paddingBottom: '0.6rem', borderBottom: '1px solid #bae6fd' }}>
-                  <span style={{ fontWeight: 600, color: '#6b7280', fontSize: '0.875rem' }}>Paid Amount</span>
-                  <span style={{ fontWeight: 600, color: '#111827', fontSize: '0.875rem', textAlign: 'right' }}>LKR {formatAmount(paymentBreakdownBill.paidAmount || 0)}</span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', paddingTop: '0.75rem' }}>
-                  <span style={{ fontWeight: 700, color: '#059669', fontSize: '0.875rem' }}>Remaining Balance</span>
-                  <span style={{ fontWeight: 700, color: '#059669', fontSize: '1.2rem', textAlign: 'right' }}>LKR {formatAmount(paymentBreakdownBill.remainingAmount || 0)}</span>
+                <div className="grid grid-cols-2 gap-6 pt-6">
+                  <div>
+                    <span className="font-bold text-green-700 text-sm block mb-1">Remaining Balance</span>
+                    <span className="font-bold text-green-700 text-2xl">LKR {formatAmount(paymentBreakdownBill.remainingAmount || 0)}</span>
+                  </div>
                 </div>
               </div>
 
               {(paymentBreakdownBill.paymentStatus === 'Partially Paid' || paymentBreakdownBill.paymentStatus === 'Paid') && paymentBreakdownBill.paymentRecords && paymentBreakdownBill.paymentRecords.length > 0 && (
-                <div style={{ marginTop: '1.5rem' }}>
-                  <h4 style={{ margin: '0 0 1rem 0', color: '#101036', fontSize: '0.95rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Payment History</h4>
-                  <div style={{ background: 'white', border: '1px solid #e5e7eb', borderRadius: '6px', overflow: 'hidden' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.5fr 1.2fr 1.2fr 1.2fr', background: '#f3f4f6', borderBottom: '2px solid #d1d5db' }}>
-                      <div style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#374151', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.6px', borderRight: '1px solid #e5e7eb' }}>#</div>
-                      <div style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#374151', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.6px', borderRight: '1px solid #e5e7eb' }}>DATE</div>
-                      <div style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#374151', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.6px', borderRight: '1px solid #e5e7eb' }}>METHOD</div>
-                      <div style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#374151', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.6px', borderRight: '1px solid #e5e7eb' }}>REFERENCE</div>
-                      <div style={{ padding: '0.6rem 0.75rem', fontWeight: 700, color: '#374151', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.6px' }}>AMOUNT</div>
+                <div>
+                  <h4 className="text-lg font-bold text-gray-900 uppercase tracking-wider mb-6">Payment History</h4>
+                  <div className="border border-gray-300 rounded-lg overflow-hidden">
+                    <div className="grid grid-cols-5 bg-gray-100 border-b-2 border-gray-300">
+                      <div className="px-4 py-3 font-bold text-gray-700 text-xs uppercase tracking-wide border-r border-gray-300 text-center">#</div>
+                      <div className="px-4 py-3 font-bold text-gray-700 text-xs uppercase tracking-wide border-r border-gray-300 text-center">DATE</div>
+                      <div className="px-4 py-3 font-bold text-gray-700 text-xs uppercase tracking-wide border-r border-gray-300 text-center">METHOD</div>
+                      <div className="px-4 py-3 font-bold text-gray-700 text-xs uppercase tracking-wide border-r border-gray-300">REFERENCE</div>
+                      <div className="px-4 py-3 font-bold text-gray-700 text-xs uppercase tracking-wide text-right">AMOUNT</div>
                     </div>
                     {paymentBreakdownBill.paymentRecords.map((payment, idx) => (
-                      <div key={idx} style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.5fr 1.2fr 1.2fr 1.2fr', borderBottom: '1px solid #e5e7eb' }}>
-                        <div style={{ padding: '0.6rem 0.75rem', fontSize: '0.9rem', color: '#374151', borderRight: '1px solid #e5e7eb', display: 'flex', alignItems: 'center' }}><span style={{ color: '#9ca3af', fontSize: '0.813rem', fontWeight: 500 }}>{idx + 1}</span></div>
-                        <div style={{ padding: '0.6rem 0.75rem', fontSize: '0.9rem', color: '#374151', borderRight: '1px solid #e5e7eb', display: 'flex', alignItems: 'center' }}>{formatDateWithMonth(payment.paymentDate)}</div>
-                        <div style={{ padding: '0.6rem 0.75rem', fontSize: '0.9rem', color: '#374151', borderRight: '1px solid #e5e7eb', display: 'flex', alignItems: 'center' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.8rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.3px', whiteSpace: 'nowrap', background: payment.paymentMethod === 'Cheque' ? '#fef3c7' : payment.paymentMethod === 'Cash' ? '#dcfce7' : '#dbeafe', color: payment.paymentMethod === 'Cheque' ? '#92400e' : payment.paymentMethod === 'Cash' ? '#166534' : '#1e40af' }}>
+                      <div key={idx} className="grid grid-cols-5 border-b border-gray-200 hover:bg-gray-50 transition">
+                        <div className="px-4 py-3 text-sm text-gray-600 border-r border-gray-300 flex items-center justify-center font-medium">{idx + 1}</div>
+                        <div className="px-4 py-3 text-sm text-gray-900 border-r border-gray-300 flex items-center justify-center">{formatDateWithMonth(payment.paymentDate)}</div>
+                        <div className="px-4 py-3 text-sm border-r border-gray-300 flex items-center justify-center">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide whitespace-nowrap ${
+                            payment.paymentMethod === 'Cheque' ? 'bg-yellow-100 text-yellow-800' : 
+                            payment.paymentMethod === 'Cash' ? 'bg-green-100 text-green-800' : 
+                            'bg-blue-100 text-blue-800'
+                          }`}>
                             {payment.paymentMethod || '-'}
                           </span>
                         </div>
-                        <div style={{ padding: '0.6rem 0.75rem', fontSize: '0.9rem', color: '#374151', borderRight: '1px solid #e5e7eb', display: 'flex', alignItems: 'center' }}>
+                        <div className="px-4 py-3 text-sm text-gray-900 border-r border-gray-300 flex items-center">
                           {payment.paymentMethod === 'Cheque' && payment.chequeNumber ? `CHQ: ${payment.chequeNumber}` : payment.paymentMethod === 'Bank Transfer' && payment.bankName ? payment.bankName : '-'}
                         </div>
-                        <div style={{ padding: '0.6rem 0.75rem', fontSize: '0.9rem', color: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', fontFamily: "'Courier New', monospace", fontWeight: 700 }}>LKR {formatAmount(payment.amount || 0)}</div>
+                        <div className="px-4 py-3 text-sm text-gray-900 flex items-center justify-end font-mono font-bold">LKR {formatAmount(payment.amount || 0)}</div>
                       </div>
                     ))}
                   </div>
