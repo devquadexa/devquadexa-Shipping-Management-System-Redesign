@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { officePayItemService } from '../api/services/officePayItemService';
 
-function OfficePayItems({ jobId, onUpdate, hideTitle }) {
+function OfficePayItems({ jobId, onUpdate }) {
   const { user } = useAuth();
   const [officePayItems, setOfficePayItems] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -213,14 +213,10 @@ function OfficePayItems({ jobId, onUpdate, hideTitle }) {
 
   return (
     <div>
-      {!hideTitle && (
-        <>
-          <div className="font-semibold text-gray-900 mb-2">Office Pay Items</div>
-          <p className="text-sm text-gray-600 mb-4">
-            Record upfront payments made by office staff (e.g., DO charges, port fees)
-          </p>
-        </>
-      )}
+      <div className="font-semibold text-gray-900 mb-2">Office Pay Items</div>
+      <p className="text-sm text-gray-600 mb-4">
+        Record upfront payments made by office staff (e.g., DO charges, port fees)
+      </p>
 
       {message && (
         <div className={`mb-4 p-4 rounded-lg border-l-4 ${message.includes('Error') ? 'bg-red-50 border-red-500 text-red-700' : 'bg-green-50 border-green-500 text-green-700'}`}>

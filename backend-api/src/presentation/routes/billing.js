@@ -2,9 +2,11 @@
  * Billing Routes (Clean Architecture)
  */
 const express = require('express');
-const { auth, checkRole } = require('../../middleware/auth');
+const jwt = require('jsonwebtoken');
+const { auth, checkRole, JWT_SECRET } = require('../../middleware/auth');
 const container = require('../../infrastructure/di/container');
 const BillingController = require('../controllers/BillingController');
+const ExportBillPDF = require('../../application/use-cases/billing/ExportBillPDF');
 
 const router = express.Router();
 
@@ -24,6 +26,41 @@ router.post('/', auth, checkRole('Admin', 'Super Admin', 'Manager'), (req, res) 
 router.get('/', auth, (req, res) =>
   billingController.getAll(req, res)
 );
+
+// Single bill PDF — supports token via query param for browser access
+router.get('/:id/pdf', async (req, res) => {
+  try {
+    // Support auth via header OR query parameter (for browser URL access)
+    const headerToken = req.header('Authorization')?.replace('Bearer ', '');
+    const queryToken = req.query.token;
+    const token = headerToken || queryToken;
+
+    if (!token) {
+      return res.status(401).json({ message: 'Please authenticate' });
+    }
+
+    try {
+      jwt.verify(token, JWT_SECRET);
+    } catch (e) {
+      return res.status(401).json({ message: 'Invalid or expired token' });
+    }
+
+    const billRepository = container.get('billRepository');
+    const customerRepository = container.get('customerRepository');
+    const jobRepository = container.get('jobRepository');
+    const exportBillPDF = new ExportBillPDF(billRepository, customerRepository, jobRepository);
+    const pdfBuffer = await exportBillPDF.execute(req.params.id);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Invoice-${req.params.id}.pdf"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error generating bill PDF:', error);
+    res.status(error.message === 'Bill not found' ? 404 : 500)
+      .json({ message: error.message || 'Error generating PDF' });
+  }
+});
+
 router.get('/:id', auth, (req, res) =>
   billingController.getById(req, res)
 );

@@ -133,20 +133,10 @@ function JobPettyCash({ job, users, onUpdate }) {
     if (
       status === 'Settled' ||
       status === 'Balance Returned' ||
-      status === 'Overdue Collected' ||
-      status === 'Settled / Balance Returned' ||
-      status === 'Settled / Over Due Collected'
+      status === 'Overdue Collected'
     )
       return 'bg-green-100 text-green-800';
-    if (status === 'Over Due' || status === 'Settled/Rejected')
-      return 'bg-red-100 text-red-800';
-    if (
-      status === 'Pending Approval / Balance' ||
-      status === 'Pending Approval / Over Due'
-    )
-      return 'bg-yellow-100 text-yellow-800';
-    if (status === 'Balance To Be Return')
-      return 'bg-orange-100 text-orange-800';
+    if (status === 'Over Due') return 'bg-red-100 text-red-800';
     return 'bg-gray-100 text-gray-700';
   };
 
@@ -380,7 +370,6 @@ function JobPettyCash({ job, users, onUpdate }) {
     try {
       await apiClient.post('/cash-balance-settlements', {
         assignmentId: selectedAssignment.assignmentId,
-        relatedAssignments: [selectedAssignment.assignmentId],
         settlementType: balanceAction,
         amount: amount,
         notes: balanceNotes || `${balanceAction === 'BALANCE_RETURN' ? 'Return balance' : 'Collect overdue'} for Assignment #${selectedAssignment.assignmentId}`,
